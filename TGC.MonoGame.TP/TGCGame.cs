@@ -36,6 +36,8 @@ namespace TGC.MonoGame.TP
             IsMouseVisible = true;
         }
 
+        private const float TAMANIO_CUBO = 10f;
+
         private GraphicsDeviceManager Graphics { get; }
         private SpriteBatch SpriteBatch { get; set; }
         private Model Model { get; set; }
@@ -45,6 +47,8 @@ namespace TGC.MonoGame.TP
         private Matrix View { get; set; }
         private Matrix Projection { get; set; }
         private SpherePrimitive Sphere { get; set; }
+        private CubePrimitive Box { get; set; }
+        private Vector3 BoxPosition { get; set; }
         private Vector3 SpherePosition { get; set; }
         private float Yaw { get; set; }
         private float Pitch { get; set; }
@@ -73,8 +77,17 @@ namespace TGC.MonoGame.TP
             Projection =
                 Matrix.CreatePerspectiveFieldOfView(MathHelper.PiOver4, GraphicsDevice.Viewport.AspectRatio, 1, 250);
             Camera = new TargetCamera(GraphicsDevice.Viewport.AspectRatio, new Vector3(0, 20, 60), Vector3.Zero);
+            
+            // Esfera
             Sphere = new SpherePrimitive(GraphicsDevice, 10);
             SpherePosition = new Vector3(0, -15, 0);
+
+            // Cubo
+
+            Box = new CubePrimitive(GraphicsDevice, TAMANIO_CUBO, Color.DarkCyan, Color.DarkMagenta, Color.DarkGreen,
+                Color.MonoGameOrange, Color.Black, Color.DarkGray);
+            BoxPosition = Vector3.Zero;
+
             base.Initialize();
         }
 
@@ -153,7 +166,9 @@ namespace TGC.MonoGame.TP
             //    mesh.Draw();
             //}
 
-            DrawGeometry(Sphere, SpherePosition, -Yaw, Pitch, Roll);
+            DrawGeometry(Sphere, SpherePosition, -Yaw, Pitch, Roll);  
+            
+            DrawGeometry(Box, BoxPosition, Yaw, Pitch, Roll);
         }
 
         private void DrawGeometry(GeometricPrimitive geometry, Vector3 position, float yaw, float pitch, float roll)
