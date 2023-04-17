@@ -1,7 +1,10 @@
 ﻿using System;
+using BepuPhysics.Collidables;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
 using Microsoft.Xna.Framework.Input;
+using TGC.MonoGame.TP.Cameras;
+using TGC.MonoGame.TP.Geometries;
 
 namespace TGC.MonoGame.TP
 {
@@ -41,6 +44,12 @@ namespace TGC.MonoGame.TP
         private Matrix World { get; set; }
         private Matrix View { get; set; }
         private Matrix Projection { get; set; }
+        private SpherePrimitive Sphere { get; set; }
+        private Vector3 SpherePosition { get; set; }
+        private float Yaw { get; set; }
+        private float Pitch { get; set; }
+        private float Roll { get; set; }
+        private Camera Camera { get; set; }
 
         /// <summary>
         ///     Se llama una sola vez, al principio cuando se ejecuta el ejemplo.
@@ -63,7 +72,9 @@ namespace TGC.MonoGame.TP
             View = Matrix.CreateLookAt(Vector3.UnitZ * 150, Vector3.Zero, Vector3.Up);
             Projection =
                 Matrix.CreatePerspectiveFieldOfView(MathHelper.PiOver4, GraphicsDevice.Viewport.AspectRatio, 1, 250);
-
+            Camera = new TargetCamera(GraphicsDevice.Viewport.AspectRatio, new Vector3(0, 20, 60), Vector3.Zero);
+            Sphere = new SpherePrimitive(GraphicsDevice, 10);
+            SpherePosition = new Vector3(0, -15, 0);
             base.Initialize();
         }
 
@@ -78,7 +89,7 @@ namespace TGC.MonoGame.TP
             SpriteBatch = new SpriteBatch(GraphicsDevice);
 
             // Cargo el modelo del logo.
-            Model = Content.Load<Model>(ContentFolder3D + "tgc-logo/tgc-logo");
+            //Model = Content.Load<Model>(ContentFolder3D + "tgc-logo/tgc-logo");
 
             // Cargo un efecto basico propio declarado en el Content pipeline.
             // En el juego no pueden usar BasicEffect de MG, deben usar siempre efectos propios.
@@ -86,14 +97,14 @@ namespace TGC.MonoGame.TP
 
             // Asigno el efecto que cargue a cada parte del mesh.
             // Un modelo puede tener mas de 1 mesh internamente.
-            foreach (var mesh in Model.Meshes)
-            {
-                // Un mesh puede tener mas de 1 mesh part (cada 1 puede tener su propio efecto).
-                foreach (var meshPart in mesh.MeshParts)
-                {
-                    meshPart.Effect = Effect;
-                }
-            }
+            //foreach (var mesh in Model.Meshes)
+            //{
+            //    // Un mesh puede tener mas de 1 mesh part (cada 1 puede tener su propio efecto).
+            //    foreach (var meshPart in mesh.MeshParts)
+            //    {
+            //        meshPart.Effect = Effect;
+            //    }
+            //}
 
             base.LoadContent();
         }
@@ -135,12 +146,25 @@ namespace TGC.MonoGame.TP
             Effect.Parameters["DiffuseColor"].SetValue(Color.DarkBlue.ToVector3());
             var rotationMatrix = Matrix.CreateRotationY(Rotation);
 
-            foreach (var mesh in Model.Meshes)
-            {
-                World = mesh.ParentBone.Transform * rotationMatrix;
-                Effect.Parameters["World"].SetValue(World);
-                mesh.Draw();
-            }
+            //foreach (var mesh in Model.Meshes)
+            //{
+            //    World = mesh.ParentBone.Transform * rotationMatrix;
+            //    Effect.Parameters["World"].SetValue(World);
+            //    mesh.Draw();
+            //}
+
+            DrawGeometry(Sphere, SpherePosition, -Yaw, Pitch, Roll);
+        }
+
+        private void DrawGeometry(GeometricPrimitive geometry, Vector3 position, float yaw, float pitch, float roll)
+        {
+            var effect = geometry.Effect;
+
+            effect.World = Matrix.CreateFromYawPitchRoll(yaw, pitch, roll) * Matrix.CreateTranslation(position);
+            effect.View = Camera.View;
+            effect.Projection = Camera.Projection;
+
+            geometry.Draw(effect);
         }
 
         /// <summary>
