@@ -37,7 +37,7 @@ namespace TGC.MonoGame.TP
         }
 
         private const float TAMANIO_CUBO = 10f;
-
+        private const int CANTIDAD_CUBOS = 10;
         private GraphicsDeviceManager Graphics { get; }
         private SpriteBatch SpriteBatch { get; set; }
         private Model Model { get; set; }
@@ -84,6 +84,7 @@ namespace TGC.MonoGame.TP
 
             // Cubo
 
+            //en este momento no se estan usando ni box ni boxposition
             Box = new CubePrimitive(GraphicsDevice, TAMANIO_CUBO, Color.DarkCyan, Color.DarkMagenta, Color.DarkGreen,
                 Color.MonoGameOrange, Color.Black, Color.DarkGray);
             BoxPosition = Vector3.Zero;
@@ -168,7 +169,11 @@ namespace TGC.MonoGame.TP
 
             DrawGeometry(Sphere, SpherePosition, -Yaw, Pitch, Roll);  
             
-            DrawGeometry(Box, BoxPosition, Yaw, Pitch, Roll);
+            for (var i = 0; i < CANTIDAD_CUBOS; i++){
+                
+                DrawGeometry(new CubePrimitive(GraphicsDevice, TAMANIO_CUBO, Color.DarkCyan, Color.DarkMagenta, Color.DarkGreen,
+                Color.MonoGameOrange, Color.Black, Color.DarkGray),new Vector3(i*1.1f*TAMANIO_CUBO, 0f, 0f), Yaw, Pitch, Roll);
+            }
         }
 
         private void DrawGeometry(GeometricPrimitive geometry, Vector3 position, float yaw, float pitch, float roll)
