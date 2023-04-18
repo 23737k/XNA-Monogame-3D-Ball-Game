@@ -37,7 +37,7 @@ namespace TGC.MonoGame.TP
         }
 
         private const float TAMANIO_CUBO = 10f;
-        private const int CANTIDAD_CUBOS = 10;
+        private const int CANTIDAD_CUBOS = 100;
         private const float LINEAR_SPEED= 2f;
         private const float ANGULAR_SPEED = 2f;
         private const float CAMERA_FOLLOW_RADIUS = 70f;
@@ -82,17 +82,19 @@ namespace TGC.MonoGame.TP
             // Seria hasta aca.
 
             // Configuramos nuestras matrices de la escena.
-            World = Matrix.Identity;
+            Rotation=-MathHelper.PiOver2;
+            SphereRotationMatrix = Matrix.CreateRotationY(Rotation);
+            World = SphereRotationMatrix;
             View = Matrix.CreateLookAt(Vector3.UnitZ * 150, Vector3.Zero, Vector3.Up);
             Projection =
                 Matrix.CreatePerspectiveFieldOfView(MathHelper.PiOver4, GraphicsDevice.Viewport.AspectRatio, 1, 250);
             Camera = new TargetCamera(GraphicsDevice.Viewport.AspectRatio, new Vector3(0, 20, 60), Vector3.Zero);
-            SphereRotationMatrix = Matrix.Identity;
-            Rotation=0;
+           
+            
             
             // Esfera
             Sphere = new SpherePrimitive(GraphicsDevice, 10);
-            SpherePosition = new Vector3(0, -15, 0);
+            SpherePosition = new Vector3(0, 10, 0);
 
             // Cubo
 
