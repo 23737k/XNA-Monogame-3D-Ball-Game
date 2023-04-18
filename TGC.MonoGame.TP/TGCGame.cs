@@ -38,6 +38,10 @@ namespace TGC.MonoGame.TP
 
         private const float TAMANIO_CUBO = 10f;
         private const int CANTIDAD_CUBOS = 10;
+        private const float LINEAR_SPEED= 2f;
+        private const float ANGULAR_SPEED = 2f;
+        private const float CAMERA_FOLLOW_RADIUS = 70f;
+        private const float CAMERA_UP_DISTANCE = 60f;
         private GraphicsDeviceManager Graphics { get; }
         private SpriteBatch SpriteBatch { get; set; }
         private Model Model { get; set; }
@@ -47,13 +51,14 @@ namespace TGC.MonoGame.TP
         private Matrix View { get; set; }
         private Matrix Projection { get; set; }
         private SpherePrimitive Sphere { get; set; }
+        private Matrix SphereRotationMatrix { get; set; }
         private CubePrimitive Box { get; set; }
         private Vector3 BoxPosition { get; set; }
         private Vector3 SpherePosition { get; set; }
         private float Yaw { get; set; }
         private float Pitch { get; set; }
         private float Roll { get; set; }
-        private Camera Camera { get; set; }
+        private TargetCamera Camera { get; set; }
 
         /// <summary>
         ///     Se llama una sola vez, al principio cuando se ejecuta el ejemplo.
@@ -69,6 +74,11 @@ namespace TGC.MonoGame.TP
             var rasterizerState = new RasterizerState();
             rasterizerState.CullMode = CullMode.None;
             GraphicsDevice.RasterizerState = rasterizerState;
+
+            // Configuro las dimensiones de la pantalla.
+            Graphics.PreferredBackBufferWidth = GraphicsAdapter.DefaultAdapter.CurrentDisplayMode.Width - 100;
+            Graphics.PreferredBackBufferHeight = GraphicsAdapter.DefaultAdapter.CurrentDisplayMode.Height - 100;
+            Graphics.ApplyChanges();
             // Seria hasta aca.
 
             // Configuramos nuestras matrices de la escena.
@@ -77,6 +87,8 @@ namespace TGC.MonoGame.TP
             Projection =
                 Matrix.CreatePerspectiveFieldOfView(MathHelper.PiOver4, GraphicsDevice.Viewport.AspectRatio, 1, 250);
             Camera = new TargetCamera(GraphicsDevice.Viewport.AspectRatio, new Vector3(0, 20, 60), Vector3.Zero);
+            SphereRotationMatrix = Matrix.Identity;
+            Rotation=0;
             
             // Esfera
             Sphere = new SpherePrimitive(GraphicsDevice, 10);
@@ -88,6 +100,9 @@ namespace TGC.MonoGame.TP
             Box = new CubePrimitive(GraphicsDevice, TAMANIO_CUBO, Color.DarkCyan, Color.DarkMagenta, Color.DarkGreen,
                 Color.MonoGameOrange, Color.Black, Color.DarkGray);
             BoxPosition = Vector3.Zero;
+
+            UpdateCamera();
+
 
             base.Initialize();
         }
@@ -123,15 +138,33 @@ namespace TGC.MonoGame.TP
             base.LoadContent();
         }
 
+        private void UpdateCamera()
+        {
+            var sphereBackDirection = -Vector3.Transform(Vector3.Forward, SphereRotationMatrix);
+        
+            var orbitalPosition = sphereBackDirection * CAMERA_FOLLOW_RADIUS;
+
+            var upDistance = Vector3.Up * CAMERA_UP_DISTANCE;
+
+            Camera.Position = SpherePosition + orbitalPosition + upDistance;
+
+            Camera.TargetPosition = SpherePosition;
+
+            Camera.BuildView();
+        }
+
+
         /// <summary>
         ///     Se llama en cada frame.
         ///     Se debe escribir toda la logica de computo del modelo, asi como tambien verificar entradas del usuario y reacciones
         ///     ante ellas.
         /// </summary>
+
         protected override void Update(GameTime gameTime)
         {
             // Aca deberiamos poner toda la logica de actualizacion del juego.
 
+            var deltaTime= Convert.ToSingle(gameTime.ElapsedGameTime.TotalSeconds);
             // Capturar Input teclado
             if (Keyboard.GetState().IsKeyDown(Keys.Escape))
             {
@@ -139,8 +172,31 @@ namespace TGC.MonoGame.TP
                 Exit();
             }
 
-            // Basado en el tiempo que paso se va generando una rotacion.
-            Rotation += Convert.ToSingle(gameTime.ElapsedGameTime.TotalSeconds);
+            if (Keyboard.GetState().IsKeyDown(Keys.W))
+            {
+                SpherePosition += SphereRotationMatrix.Forward * LINEAR_SPEED;
+            }
+
+            if (Keyboard.GetState().IsKeyDown(Keys.S))
+            {
+                SpherePosition -= SphereRotationMatrix.Forward * LINEAR_SPEED;
+            }
+
+            if (Keyboard.GetState().IsKeyDown(Keys.A))
+            {
+                Rotation += ANGULAR_SPEED * deltaTime;
+            }
+
+            if (Keyboard.GetState().IsKeyDown(Keys.D))
+            {
+                Rotation -= ANGULAR_SPEED * deltaTime;
+            }
+            
+            SphereRotationMatrix = Matrix.CreateRotationY(Rotation);
+
+            World = SphereRotationMatrix * Matrix.CreateTranslation(SpherePosition);
+
+            UpdateCamera();
 
             base.Update(gameTime);
         }
