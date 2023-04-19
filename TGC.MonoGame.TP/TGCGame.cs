@@ -37,7 +37,7 @@ namespace TGC.MonoGame.TP
         }
 
         private const float TAMANIO_CUBO = 10f;
-        private const int CANTIDAD_CUBOS = 100;
+        private const int CANTIDAD_CUBOS = 10;
         private const float LINEAR_SPEED= 2f;
         private const float ANGULAR_SPEED = 2f;
         private const float CAMERA_FOLLOW_RADIUS = 70f;
@@ -59,6 +59,15 @@ namespace TGC.MonoGame.TP
         private float Pitch { get; set; }
         private float Roll { get; set; }
         private TargetCamera Camera { get; set; }
+        //Pistas
+        private Model LCurveTrackModel { get; set; }
+        private Model RCurveTrackModel { get; set; }
+        private Model LinearTrackModel { get; set; }
+        private Model TrackModel { get; set; }
+
+        //Rocas
+        private Model RockModel { get; set; } 
+
 
         /// <summary>
         ///     Se llama una sola vez, al principio cuando se ejecuta el ejemplo.
@@ -103,6 +112,8 @@ namespace TGC.MonoGame.TP
                 Color.MonoGameOrange, Color.Black, Color.DarkGray);
             BoxPosition = Vector3.Zero;
 
+
+
             UpdateCamera();
 
 
@@ -125,6 +136,12 @@ namespace TGC.MonoGame.TP
             // Cargo un efecto basico propio declarado en el Content pipeline.
             // En el juego no pueden usar BasicEffect de MG, deben usar siempre efectos propios.
             Effect = Content.Load<Effect>(ContentFolderEffects + "BasicShader");
+
+            LCurveTrackModel = Content.Load<Model>(ContentFolder3D + "pista-con-curva-izquierda");
+            RCurveTrackModel = Content.Load<Model>(ContentFolder3D + "pista-con-curva-derecha");
+            LinearTrackModel = Content.Load<Model>(ContentFolder3D + "pista-con-bordes");
+            RockModel = Content.Load<Model>(ContentFolder3D + "Rock");
+
 
             // Asigno el efecto que cargue a cada parte del mesh.
             // Un modelo puede tener mas de 1 mesh internamente.
@@ -232,6 +249,12 @@ namespace TGC.MonoGame.TP
                 DrawGeometry(new CubePrimitive(GraphicsDevice, TAMANIO_CUBO, Color.DarkCyan, Color.DarkMagenta, Color.DarkGreen,
                 Color.MonoGameOrange, Color.Black, Color.DarkGray),new Vector3(i*1.1f*TAMANIO_CUBO, 0f, 0f), Yaw, Pitch, Roll);
             }
+
+           // LCurveTrackModel.Draw(Matrix.CreateTranslation(new Vector3(22f,0f,0f)),Camera.View, Camera.Projection);
+            RCurveTrackModel.Draw(Matrix.CreateRotationX(-MathHelper.PiOver2)*Matrix.CreateTranslation(new Vector3(280f,0f,0f)),Camera.View, Camera.Projection);
+            LinearTrackModel.Draw(Matrix.CreateRotationX(-MathHelper.PiOver2)*Matrix.CreateRotationY(-MathHelper.PiOver2)*Matrix.CreateTranslation(new Vector3(99f,0f,0f)), Camera.View,Camera.Projection);
+            RockModel.Draw(Matrix.CreateScale(10f)*Matrix.CreateRotationZ(-MathHelper.PiOver2)*Matrix.CreateRotationX(-MathHelper.PiOver2)*Matrix.CreateTranslation(new Vector3(50f,10f,40f)), Camera.View,Camera.Projection);
+
         }
 
         private void DrawGeometry(GeometricPrimitive geometry, Vector3 position, float yaw, float pitch, float roll)
