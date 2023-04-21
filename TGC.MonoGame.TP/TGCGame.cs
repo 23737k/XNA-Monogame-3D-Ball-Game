@@ -42,6 +42,9 @@ namespace TGC.MonoGame.TP
         private const float ANGULAR_SPEED = 2f;
         private const float CAMERA_FOLLOW_RADIUS = 70f;
         private const float CAMERA_UP_DISTANCE = 60f;
+        private const float CYLINDER_HEIGHT = 10F;
+        private const float CYLINDER_DIAMETER = 10f * TAMANIO_CUBO;
+
         private GraphicsDeviceManager Graphics { get; }
         private SpriteBatch SpriteBatch { get; set; }
         private Model Model { get; set; }
@@ -53,6 +56,9 @@ namespace TGC.MonoGame.TP
         private SpherePrimitive Sphere { get; set; }
         private Matrix SphereRotationMatrix { get; set; }
         private CubePrimitive Box { get; set; }
+        private CubePrimitive WallBox { get; set; }
+        private CylinderPrimitive Cylinder { get; set; }
+        private CylinderPrimitive SmallCylinder { get; set; }
         private Vector3 BoxPosition { get; set; }
         private Vector3 SpherePosition { get; set; }
         private float Yaw { get; set; }
@@ -70,7 +76,6 @@ namespace TGC.MonoGame.TP
 
         //Rocas
         private Model RockModel { get; set; } 
-
 
         /// <summary>
         ///     Se llama una sola vez, al principio cuando se ejecuta el ejemplo.
@@ -109,11 +114,15 @@ namespace TGC.MonoGame.TP
             SpherePosition = new Vector3(0, 10, 0);
 
             // Cubo
-
             //en este momento no se estan usando ni box ni boxposition
-            Box = new CubePrimitive(GraphicsDevice, TAMANIO_CUBO, Color.DarkCyan, Color.DarkMagenta, Color.DarkGreen,
-                Color.MonoGameOrange, Color.Black, Color.DarkGray);
-            BoxPosition = Vector3.Zero;
+            Box = new CubePrimitive(GraphicsDevice, TAMANIO_CUBO, Color.MonoGameOrange, Color.MonoGameOrange, Color.MonoGameOrange,
+                Color.MonoGameOrange, Color.MonoGameOrange, Color.MonoGameOrange);
+            //BoxPosition = Vector3.Zero;
+            WallBox = new CubePrimitive(GraphicsDevice, TAMANIO_CUBO, Color.BlueViolet, Color.BlueViolet, Color.BlueViolet, Color.BlueViolet, Color.BlueViolet, Color.BlueViolet);
+
+            //Cilindro
+            Cylinder = new CylinderPrimitive(GraphicsDevice, CYLINDER_HEIGHT, CYLINDER_DIAMETER, 18);
+            SmallCylinder = new CylinderPrimitive(GraphicsDevice, CYLINDER_HEIGHT *2, CYLINDER_DIAMETER/10, 18);
 
             //Pongo todos los modelos en la posicion correcta.
             TrackWorld= Matrix.CreateRotationX(-MathHelper.PiOver2)*Matrix.CreateRotationY(-MathHelper.PiOver2)*Matrix.CreateTranslation(Vector3.Zero);
@@ -139,6 +148,8 @@ namespace TGC.MonoGame.TP
 
             // Cargo un efecto basico propio declarado en el Content pipeline.
             // En el juego no pueden usar BasicEffect de MG, deben usar siempre efectos propios.
+        
+
             Effect = Content.Load<Effect>(ContentFolderEffects + "BasicShader");
 
             LCurveTrackModel = Content.Load<Model>(ContentFolder3D + "curva-izquierda");
@@ -256,16 +267,22 @@ namespace TGC.MonoGame.TP
             //}
 
             DrawGeometry(Sphere, SpherePosition, -Yaw, Pitch, Roll);  
-            
-            for (var i = 0; i < CANTIDAD_CUBOS; i++){
-                
-                DrawGeometry(new CubePrimitive(GraphicsDevice, TAMANIO_CUBO, Color.DarkCyan, Color.DarkMagenta, Color.DarkGreen,
-                Color.MonoGameOrange, Color.Black, Color.DarkGray),new Vector3(i*1.1f*TAMANIO_CUBO, 0f, 0f), Yaw, Pitch, Roll);
-            }
+            DrawPrincipalPlatform();
+            DrawBridge(15f);
+            //Se puede reemplazar con un for.
+            DrawGeometry(Cylinder, new Vector3(30f *1.1f* TAMANIO_CUBO, 0f, 4.5f* 1.1f * TAMANIO_CUBO ), Yaw, Pitch, Roll);
+            DrawGeometry(Cylinder, new Vector3(40f *1.1f* TAMANIO_CUBO, 0f, 4.5f* 1.1f * TAMANIO_CUBO ), Yaw, Pitch, Roll);
+            DrawGeometry(Cylinder, new Vector3(50f *1.1f* TAMANIO_CUBO, 0f, 4.5f* 1.1f * TAMANIO_CUBO ), Yaw, Pitch, Roll);
+            //Se puede reemplazar con un for.
+            DrawGeometry(SmallCylinder, new Vector3(30f *1.1f* TAMANIO_CUBO, TAMANIO_CUBO, 4.5f* 1.1f * TAMANIO_CUBO ), Yaw, Pitch, Roll);
+            DrawGeometry(SmallCylinder, new Vector3(40f *1.1f* TAMANIO_CUBO, TAMANIO_CUBO, 4.5f* 1.1f * TAMANIO_CUBO ), Yaw, Pitch, Roll);
+            DrawGeometry(SmallCylinder, new Vector3(50f *1.1f* TAMANIO_CUBO, TAMANIO_CUBO, 4.5f* 1.1f * TAMANIO_CUBO ), Yaw, Pitch, Roll);
+            DrawBridge(55.5f);
+
 
            // LCurveTrackModel.Draw(Matrix.CreateTranslation(new Vector3(22f,0f,0f)),Camera.View, Camera.Projection);
     
-            LinearTrackModel.Draw(TrackWorld*Matrix.CreateTranslation(new Vector3(110f,0f,0f)), Camera.View,Camera.Projection);
+           /* LinearTrackModel.Draw(TrackWorld*Matrix.CreateTranslation(new Vector3(110f,0f,0f)), Camera.View,Camera.Projection);
             LinearTrackModel.Draw(TrackWorld*Matrix.CreateTranslation(new Vector3(141f,0f,0f)), Camera.View,Camera.Projection);
             LinearTrackModel.Draw(TrackWorld*Matrix.CreateTranslation(new Vector3(172f,0f,0f)), Camera.View,Camera.Projection);
             RCurveTrackModel.Draw(TrackWorld*Matrix.CreateTranslation(new Vector3(203f,0f,20f)), Camera.View,Camera.Projection);
@@ -294,7 +311,7 @@ namespace TGC.MonoGame.TP
             //LinearTrackModel.Draw(TrackWorld*Matrix.CreateRotationZ(-0.5f)*Matrix.CreateTranslation(new Vector3(559f,32f,532f)), Camera.View,Camera.Projection);
 
 
-            RockModel.Draw(Matrix.CreateScale(10f)*Matrix.CreateRotationZ(-MathHelper.PiOver2)*Matrix.CreateRotationX(-MathHelper.PiOver2)*Matrix.CreateTranslation(new Vector3(50f,10f,40f)), Camera.View,Camera.Projection);
+            RockModel.Draw(Matrix.CreateScale(10f)*Matrix.CreateRotationZ(-MathHelper.PiOver2)*Matrix.CreateRotationX(-MathHelper.PiOver2)*Matrix.CreateTranslation(new Vector3(50f,10f,40f)), Camera.View,Camera.Projection);*/
 
         }
 
@@ -308,6 +325,51 @@ namespace TGC.MonoGame.TP
 
             geometry.Draw(effect);
         }
+
+
+        private void DrawPrincipalPlatform(){
+            const int CANTIDAD_LINEAS = 15;
+            const int CANTIDAD_COLUMNAS = 10;
+
+            //Rectangulo de plataforma inciial(Pasar a función separada para dibujar rectangulos);
+            for (var i = 0; i < CANTIDAD_LINEAS; i++){
+                for(var j=0; j < CANTIDAD_COLUMNAS; j++){
+                DrawGeometry(Box,new Vector3(i*1.1f*TAMANIO_CUBO,0f, j*1.1f*TAMANIO_CUBO), Yaw, Pitch, Roll);
+                }
+            }
+
+            DrawWalls(CANTIDAD_LINEAS, 10f, -1f, 0f, 0f, 0f);
+        }
+
+        private void DrawBridge(float upOffset){
+            const float bridgelength = 10f;
+
+            for (var i = 0; i < bridgelength; i++){
+                for (var j = 0; j < 2; j++){
+                    DrawGeometry(Box,new Vector3(upOffset * 1.1f * TAMANIO_CUBO + i*1.1f*TAMANIO_CUBO, 0f, 4* 1.1f * TAMANIO_CUBO + j*1.1f*TAMANIO_CUBO), Yaw, Pitch, Roll);
+                }
+            }
+
+            DrawWalls(bridgelength,0f,0f,6* 1.1f * TAMANIO_CUBO, 3* 1.1f * TAMANIO_CUBO, upOffset*1.1f*TAMANIO_CUBO);
+
+        }
+
+        private void DrawWalls(float wallLength, float rightLimit, float leftLimit, float rightOffset, float leftOffset, float upOffset){
+            // Pared Derecha.
+            for (var k = 0; k < wallLength; k++){
+                for(var j = 0; j < 2; j++){
+                    DrawGeometry(WallBox, new Vector3(upOffset + k*1.1f * TAMANIO_CUBO,j * 0.7f * TAMANIO_CUBO, rightOffset + rightLimit*1.1f * TAMANIO_CUBO), Yaw, Pitch, Roll);
+                }
+            }
+
+            // Pared Izquierda.
+            for (var k = 0; k < wallLength; k++){
+                for(var j = 0; j < 2; j++){
+                    DrawGeometry(WallBox, new Vector3(upOffset + k*1.1f * TAMANIO_CUBO,j * 0.7f * TAMANIO_CUBO, leftOffset + leftLimit*1.1f * TAMANIO_CUBO), Yaw, Pitch, Roll);
+                }
+            }
+        }
+
 
         /// <summary>
         ///     Libero los recursos que se cargaron en el juego.
