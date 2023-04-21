@@ -45,6 +45,7 @@ namespace TGC.MonoGame.TP
         private const float CYLINDER_HEIGHT = 10F;
         private const float CYLINDER_DIAMETER = 10f * TAMANIO_CUBO;
 
+        private float CylinderYaw = 0.0f;
         private GraphicsDeviceManager Graphics { get; }
         private SpriteBatch SpriteBatch { get; set; }
         private Model Model { get; set; }
@@ -234,6 +235,8 @@ namespace TGC.MonoGame.TP
             {
                 SpherePosition -= Vector3.Up* LINEAR_SPEED;
             }
+
+            CylinderYaw += deltaTime * 1.1f;
             
             SphereRotationMatrix = Matrix.CreateRotationY(Rotation);
 
@@ -270,9 +273,9 @@ namespace TGC.MonoGame.TP
             DrawPrincipalPlatform();
             DrawBridge(15f);
             //Se puede reemplazar con un for.
-            DrawGeometry(Cylinder, new Vector3(30f *1.1f* TAMANIO_CUBO, 0f, 4.5f* 1.1f * TAMANIO_CUBO ), Yaw, Pitch, Roll);
-            DrawGeometry(Cylinder, new Vector3(40f *1.1f* TAMANIO_CUBO, 0f, 4.5f* 1.1f * TAMANIO_CUBO ), Yaw, Pitch, Roll);
-            DrawGeometry(Cylinder, new Vector3(50f *1.1f* TAMANIO_CUBO, 0f, 4.5f* 1.1f * TAMANIO_CUBO ), Yaw, Pitch, Roll);
+            DrawGeometry(Cylinder, new Vector3(30f *1.1f* TAMANIO_CUBO, 0f, 4.5f* 1.1f * TAMANIO_CUBO ), CylinderYaw, Pitch, Roll);
+            DrawGeometry(Cylinder, new Vector3(40f *1.1f* TAMANIO_CUBO, 0f, 4.5f* 1.1f * TAMANIO_CUBO ), -CylinderYaw, Pitch, Roll);
+            DrawGeometry(Cylinder, new Vector3(50f *1.1f* TAMANIO_CUBO, 0f, 4.5f* 1.1f * TAMANIO_CUBO ), CylinderYaw, Pitch, Roll);
             //Se puede reemplazar con un for.
             DrawGeometry(SmallCylinder, new Vector3(30f *1.1f* TAMANIO_CUBO, TAMANIO_CUBO, 4.5f* 1.1f * TAMANIO_CUBO ), Yaw, Pitch, Roll);
             DrawGeometry(SmallCylinder, new Vector3(40f *1.1f* TAMANIO_CUBO, TAMANIO_CUBO, 4.5f* 1.1f * TAMANIO_CUBO ), Yaw, Pitch, Roll);
