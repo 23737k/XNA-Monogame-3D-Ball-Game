@@ -330,15 +330,17 @@ namespace TGC.MonoGame.TP
         private void DrawPrincipalPlatform(){
             const int CANTIDAD_LINEAS = 15;
             const int CANTIDAD_COLUMNAS = 10;
+            DrawRectangle(CANTIDAD_LINEAS, CANTIDAD_COLUMNAS);
+            DrawWalls(CANTIDAD_LINEAS, 10f, -1f, 0f, 0f, 0f);
+        }
 
-            //Rectangulo de plataforma inciial(Pasar a función separada para dibujar rectangulos);
-            for (var i = 0; i < CANTIDAD_LINEAS; i++){
-                for(var j=0; j < CANTIDAD_COLUMNAS; j++){
+
+        private void DrawRectangle(int lines, int columns){
+            for (var i = 0; i < lines; i++){
+                for(var j=0; j < columns; j++){
                 DrawGeometry(Box,new Vector3(i*1.1f*TAMANIO_CUBO,0f, j*1.1f*TAMANIO_CUBO), Yaw, Pitch, Roll);
                 }
             }
-
-            DrawWalls(CANTIDAD_LINEAS, 10f, -1f, 0f, 0f, 0f);
         }
 
         private void DrawBridge(float upOffset){
