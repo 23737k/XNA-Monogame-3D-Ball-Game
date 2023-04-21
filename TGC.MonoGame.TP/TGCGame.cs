@@ -38,14 +38,15 @@ namespace TGC.MonoGame.TP
 
         private const float TAMANIO_CUBO = 10f;
         private const int CANTIDAD_CUBOS = 10;
-        private const float LINEAR_SPEED= 2f;
-        private const float ANGULAR_SPEED = 2f;
+        private const float LINEAR_SPEED= 3f;
+        private const float ANGULAR_SPEED = 5f;
         private const float CAMERA_FOLLOW_RADIUS = 70f;
         private const float CAMERA_UP_DISTANCE = 60f;
         private const float CYLINDER_HEIGHT = 10F;
         private const float CYLINDER_DIAMETER = 10f * TAMANIO_CUBO;
 
         private float CylinderYaw = 0.0f;
+        private float PlatformHeight = 0f;
         private GraphicsDeviceManager Graphics { get; }
         private SpriteBatch SpriteBatch { get; set; }
         private Model Model { get; set; }
@@ -66,17 +67,6 @@ namespace TGC.MonoGame.TP
         private float Pitch { get; set; }
         private float Roll { get; set; }
         private TargetCamera Camera { get; set; }
-        //Pistas
-        private Model LCurveTrackModel { get; set; }
-        private Model RCurveTrackModel { get; set; }
-        private Model LinearTrackModel { get; set; }
-        private Model TrackModel { get; set; }
-        private Model RampModel { get; set; }
-        //Esta matriz es comun a todos los modelos estaticos. Es utilizada para posicionar los objetos correctamente.
-        private Matrix TrackWorld { get; set; }
-
-        //Rocas
-        private Model RockModel { get; set; } 
 
         /// <summary>
         ///     Se llama una sola vez, al principio cuando se ejecuta el ejemplo.
@@ -123,10 +113,7 @@ namespace TGC.MonoGame.TP
 
             //Cilindro
             Cylinder = new CylinderPrimitive(GraphicsDevice, CYLINDER_HEIGHT, CYLINDER_DIAMETER, 18);
-            SmallCylinder = new CylinderPrimitive(GraphicsDevice, CYLINDER_HEIGHT *2, CYLINDER_DIAMETER/10, 18);
-
-            //Pongo todos los modelos en la posicion correcta.
-            TrackWorld= Matrix.CreateRotationX(-MathHelper.PiOver2)*Matrix.CreateRotationY(-MathHelper.PiOver2)*Matrix.CreateTranslation(Vector3.Zero);
+            SmallCylinder = new CylinderPrimitive(GraphicsDevice, CYLINDER_HEIGHT *2, CYLINDER_DIAMETER/10, 18);    
 
             UpdateCamera();
 
@@ -152,13 +139,6 @@ namespace TGC.MonoGame.TP
         
 
             Effect = Content.Load<Effect>(ContentFolderEffects + "BasicShader");
-
-            LCurveTrackModel = Content.Load<Model>(ContentFolder3D + "curva-izquierda");
-            RCurveTrackModel = Content.Load<Model>(ContentFolder3D + "curva-derecha");
-            LinearTrackModel = Content.Load<Model>(ContentFolder3D + "pista-recta");
-            RockModel = Content.Load<Model>(ContentFolder3D + "Rock");
-            RampModel =  Content.Load<Model>(ContentFolder3D + "loma");
-
             // Asigno el efecto que cargue a cada parte del mesh.
             // Un modelo puede tener mas de 1 mesh internamente.
             //foreach (var mesh in Model.Meshes)
@@ -237,6 +217,8 @@ namespace TGC.MonoGame.TP
             }
 
             CylinderYaw += deltaTime * 1.1f;
+
+            PlatformHeight = 50* MathF.Cos(4*Convert.ToSingle(gameTime.TotalGameTime.TotalSeconds))-50; 
             
             SphereRotationMatrix = Matrix.CreateRotationY(Rotation);
 
@@ -269,7 +251,7 @@ namespace TGC.MonoGame.TP
             //    mesh.Draw();
             //}
 
-            DrawGeometry(Sphere, SpherePosition, -Yaw, Pitch, Roll);  
+            DrawGeometry(Sphere, SpherePosition, -Yaw, Pitch, Roll);
             DrawPrincipalPlatform();
             DrawBridge(15f);
             //Se puede reemplazar con un for.
@@ -281,51 +263,18 @@ namespace TGC.MonoGame.TP
             DrawGeometry(SmallCylinder, new Vector3(40f *1.1f* TAMANIO_CUBO, TAMANIO_CUBO, 4.5f* 1.1f * TAMANIO_CUBO ), Yaw, Pitch, Roll);
             DrawGeometry(SmallCylinder, new Vector3(50f *1.1f* TAMANIO_CUBO, TAMANIO_CUBO, 4.5f* 1.1f * TAMANIO_CUBO ), Yaw, Pitch, Roll);
             DrawBridge(55.5f);
-
-
-           // LCurveTrackModel.Draw(Matrix.CreateTranslation(new Vector3(22f,0f,0f)),Camera.View, Camera.Projection);
-    
-           /* LinearTrackModel.Draw(TrackWorld*Matrix.CreateTranslation(new Vector3(110f,0f,0f)), Camera.View,Camera.Projection);
-            LinearTrackModel.Draw(TrackWorld*Matrix.CreateTranslation(new Vector3(141f,0f,0f)), Camera.View,Camera.Projection);
-            LinearTrackModel.Draw(TrackWorld*Matrix.CreateTranslation(new Vector3(172f,0f,0f)), Camera.View,Camera.Projection);
-            RCurveTrackModel.Draw(TrackWorld*Matrix.CreateTranslation(new Vector3(203f,0f,20f)), Camera.View,Camera.Projection);
-            LinearTrackModel.Draw(TrackWorld*Matrix.CreateTranslation(new Vector3(233f,0f,31f)), Camera.View,Camera.Projection);
-            LinearTrackModel.Draw(TrackWorld*Matrix.CreateTranslation(new Vector3(233f,10f,62f)), Camera.View,Camera.Projection);
-            LinearTrackModel.Draw(TrackWorld*Matrix.CreateTranslation(new Vector3(233f,20f,93f)), Camera.View,Camera.Projection);
-            LinearTrackModel.Draw(TrackWorld*Matrix.CreateTranslation(new Vector3(233f,20f,124f)), Camera.View,Camera.Projection);
-            LinearTrackModel.Draw(TrackWorld*Matrix.CreateTranslation(new Vector3(233f,20f,155f)), Camera.View,Camera.Projection);
-            LinearTrackModel.Draw(TrackWorld*Matrix.CreateTranslation(new Vector3(233f,20f,186f)), Camera.View,Camera.Projection);
-            LinearTrackModel.Draw(TrackWorld*Matrix.CreateTranslation(new Vector3(233f,20f,217f)), Camera.View,Camera.Projection);
-            LinearTrackModel.Draw(TrackWorld*Matrix.CreateTranslation(new Vector3(264f,30f,248f)), Camera.View,Camera.Projection);
-            LinearTrackModel.Draw(TrackWorld*Matrix.CreateTranslation(new Vector3(233f,40f,279f)), Camera.View,Camera.Projection);
-            LinearTrackModel.Draw(TrackWorld*Matrix.CreateTranslation(new Vector3(202f,50f,310f)), Camera.View,Camera.Projection);
-            LinearTrackModel.Draw(TrackWorld*Matrix.CreateTranslation(new Vector3(233f,60f,341f)), Camera.View,Camera.Projection);
-            LinearTrackModel.Draw(TrackWorld*Matrix.CreateTranslation(new Vector3(202f,70f,372f)), Camera.View,Camera.Projection);
-            LinearTrackModel.Draw(TrackWorld*Matrix.CreateTranslation(new Vector3(233f,60f,403f)), Camera.View,Camera.Projection);
-            LinearTrackModel.Draw(TrackWorld*Matrix.CreateTranslation(new Vector3(202f,50f,434f)), Camera.View,Camera.Projection);
-            LinearTrackModel.Draw(TrackWorld*Matrix.CreateTranslation(new Vector3(233f,40f,465f)), Camera.View,Camera.Projection);
-            LinearTrackModel.Draw(TrackWorld*Matrix.CreateTranslation(new Vector3(202f,30f,496f)), Camera.View,Camera.Projection);
-            RampModel.Draw(TrackWorld*Matrix.CreateRotationY(MathHelper.PiOver2)*Matrix.CreateTranslation(new Vector3(351f,31f,557f)), Camera.View,Camera.Projection);
-            LinearTrackModel.Draw(TrackWorld*Matrix.CreateTranslation(new Vector3(528f,32f,532f)), Camera.View,Camera.Projection);
-            LinearTrackModel.Draw(TrackWorld*Matrix.CreateRotationX(MathHelper.PiOver4)*Matrix.CreateTranslation(new Vector3(559f,32f,532f)), Camera.View,Camera.Projection);
-            LinearTrackModel.Draw(TrackWorld*Matrix.CreateRotationX(-MathHelper.PiOver4)*Matrix.CreateTranslation(new Vector3(590,32f,563f)), Camera.View,Camera.Projection);
-           // LinearTrackModel.Draw(TrackWorld*Matrix.CreateRotationZ(-0.5f)*Matrix.CreateTranslation(new Vector3(559f,32f,532f)), Camera.View,Camera.Projection);
-           // LinearTrackModel.Draw(TrackWorld*Matrix.CreateRotationZ(-0.5f)*Matrix.CreateTranslation(new Vector3(559f,32f,532f)), Camera.View,Camera.Projection);
-            //LinearTrackModel.Draw(TrackWorld*Matrix.CreateRotationZ(-0.5f)*Matrix.CreateTranslation(new Vector3(559f,32f,532f)), Camera.View,Camera.Projection);
-
-
-            RockModel.Draw(Matrix.CreateScale(10f)*Matrix.CreateRotationZ(-MathHelper.PiOver2)*Matrix.CreateRotationX(-MathHelper.PiOver2)*Matrix.CreateTranslation(new Vector3(50f,10f,40f)), Camera.View,Camera.Projection);*/
-
+            DrawRectangle(5,5,new Vector3(721.1f,PlatformHeight,22f));
+            DrawRectangle(5,5,new Vector3(809.1f,-PlatformHeight,22f));
+            DrawRectangle(2,40,new Vector3(864.1f,100f,105f));
+            DrawRectangle(10,2,new Vector3(754.1f,100f,523));
         }
 
         private void DrawGeometry(GeometricPrimitive geometry, Vector3 position, float yaw, float pitch, float roll)
         {
             var effect = geometry.Effect;
-
             effect.World = Matrix.CreateFromYawPitchRoll(yaw, pitch, roll) * Matrix.CreateTranslation(position);
             effect.View = Camera.View;
             effect.Projection = Camera.Projection;
-
             geometry.Draw(effect);
         }
 
@@ -333,17 +282,8 @@ namespace TGC.MonoGame.TP
         private void DrawPrincipalPlatform(){
             const int CANTIDAD_LINEAS = 15;
             const int CANTIDAD_COLUMNAS = 10;
-            DrawRectangle(CANTIDAD_LINEAS, CANTIDAD_COLUMNAS);
+            DrawRectangle(CANTIDAD_LINEAS,CANTIDAD_COLUMNAS, Vector3.Zero);
             DrawWalls(CANTIDAD_LINEAS, 10f, -1f, 0f, 0f, 0f);
-        }
-
-
-        private void DrawRectangle(int lines, int columns){
-            for (var i = 0; i < lines; i++){
-                for(var j=0; j < columns; j++){
-                DrawGeometry(Box,new Vector3(i*1.1f*TAMANIO_CUBO,0f, j*1.1f*TAMANIO_CUBO), Yaw, Pitch, Roll);
-                }
-            }
         }
 
         private void DrawBridge(float upOffset){
@@ -358,6 +298,18 @@ namespace TGC.MonoGame.TP
             DrawWalls(bridgelength,0f,0f,6* 1.1f * TAMANIO_CUBO, 3* 1.1f * TAMANIO_CUBO, upOffset*1.1f*TAMANIO_CUBO);
 
         }
+
+        ///<sumary>
+        ///     Dibuja una plataforma rectangular hecha de cubos
+        ///</sumary>
+        private void DrawRectangle (int lines, int columns, Vector3 position){
+             for (var i = 0; i < lines; i++){
+                for(var j=0; j < columns; j++){
+                DrawGeometry(Box,new Vector3(position.X + i*1.1f*TAMANIO_CUBO, position.Y, position.Z + j*1.1f*TAMANIO_CUBO), Yaw, Pitch, Roll);
+                }
+            }
+        }
+
 
         private void DrawWalls(float wallLength, float rightLimit, float leftLimit, float rightOffset, float leftOffset, float upOffset){
             // Pared Derecha.
