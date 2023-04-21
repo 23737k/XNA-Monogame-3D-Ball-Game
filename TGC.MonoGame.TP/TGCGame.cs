@@ -64,6 +64,7 @@ namespace TGC.MonoGame.TP
         private Model RCurveTrackModel { get; set; }
         private Model LinearTrackModel { get; set; }
         private Model TrackModel { get; set; }
+        private Model RampModel { get; set; }
         //Esta matriz es comun a todos los modelos estaticos. Es utilizada para posicionar los objetos correctamente.
         private Matrix TrackWorld { get; set; }
 
@@ -144,7 +145,7 @@ namespace TGC.MonoGame.TP
             RCurveTrackModel = Content.Load<Model>(ContentFolder3D + "curva-derecha");
             LinearTrackModel = Content.Load<Model>(ContentFolder3D + "pista-recta");
             RockModel = Content.Load<Model>(ContentFolder3D + "Rock");
-
+            RampModel =  Content.Load<Model>(ContentFolder3D + "loma");
 
             // Asigno el efecto que cargue a cada parte del mesh.
             // Un modelo puede tener mas de 1 mesh internamente.
@@ -271,7 +272,27 @@ namespace TGC.MonoGame.TP
             LinearTrackModel.Draw(TrackWorld*Matrix.CreateTranslation(new Vector3(233f,0f,31f)), Camera.View,Camera.Projection);
             LinearTrackModel.Draw(TrackWorld*Matrix.CreateTranslation(new Vector3(233f,10f,62f)), Camera.View,Camera.Projection);
             LinearTrackModel.Draw(TrackWorld*Matrix.CreateTranslation(new Vector3(233f,20f,93f)), Camera.View,Camera.Projection);
-            
+            LinearTrackModel.Draw(TrackWorld*Matrix.CreateTranslation(new Vector3(233f,20f,124f)), Camera.View,Camera.Projection);
+            LinearTrackModel.Draw(TrackWorld*Matrix.CreateTranslation(new Vector3(233f,20f,155f)), Camera.View,Camera.Projection);
+            LinearTrackModel.Draw(TrackWorld*Matrix.CreateTranslation(new Vector3(233f,20f,186f)), Camera.View,Camera.Projection);
+            LinearTrackModel.Draw(TrackWorld*Matrix.CreateTranslation(new Vector3(233f,20f,217f)), Camera.View,Camera.Projection);
+            LinearTrackModel.Draw(TrackWorld*Matrix.CreateTranslation(new Vector3(264f,30f,248f)), Camera.View,Camera.Projection);
+            LinearTrackModel.Draw(TrackWorld*Matrix.CreateTranslation(new Vector3(233f,40f,279f)), Camera.View,Camera.Projection);
+            LinearTrackModel.Draw(TrackWorld*Matrix.CreateTranslation(new Vector3(202f,50f,310f)), Camera.View,Camera.Projection);
+            LinearTrackModel.Draw(TrackWorld*Matrix.CreateTranslation(new Vector3(233f,60f,341f)), Camera.View,Camera.Projection);
+            LinearTrackModel.Draw(TrackWorld*Matrix.CreateTranslation(new Vector3(202f,70f,372f)), Camera.View,Camera.Projection);
+            LinearTrackModel.Draw(TrackWorld*Matrix.CreateTranslation(new Vector3(233f,60f,403f)), Camera.View,Camera.Projection);
+            LinearTrackModel.Draw(TrackWorld*Matrix.CreateTranslation(new Vector3(202f,50f,434f)), Camera.View,Camera.Projection);
+            LinearTrackModel.Draw(TrackWorld*Matrix.CreateTranslation(new Vector3(233f,40f,465f)), Camera.View,Camera.Projection);
+            LinearTrackModel.Draw(TrackWorld*Matrix.CreateTranslation(new Vector3(202f,30f,496f)), Camera.View,Camera.Projection);
+            RampModel.Draw(TrackWorld*Matrix.CreateRotationY(MathHelper.PiOver2)*Matrix.CreateTranslation(new Vector3(351f,31f,557f)), Camera.View,Camera.Projection);
+            LinearTrackModel.Draw(TrackWorld*Matrix.CreateTranslation(new Vector3(528f,32f,532f)), Camera.View,Camera.Projection);
+            LinearTrackModel.Draw(TrackWorld*Matrix.CreateRotationX(MathHelper.PiOver4)*Matrix.CreateTranslation(new Vector3(559f,32f,532f)), Camera.View,Camera.Projection);
+            LinearTrackModel.Draw(TrackWorld*Matrix.CreateRotationX(-MathHelper.PiOver4)*Matrix.CreateTranslation(new Vector3(590,32f,563f)), Camera.View,Camera.Projection);
+           // LinearTrackModel.Draw(TrackWorld*Matrix.CreateRotationZ(-0.5f)*Matrix.CreateTranslation(new Vector3(559f,32f,532f)), Camera.View,Camera.Projection);
+           // LinearTrackModel.Draw(TrackWorld*Matrix.CreateRotationZ(-0.5f)*Matrix.CreateTranslation(new Vector3(559f,32f,532f)), Camera.View,Camera.Projection);
+            //LinearTrackModel.Draw(TrackWorld*Matrix.CreateRotationZ(-0.5f)*Matrix.CreateTranslation(new Vector3(559f,32f,532f)), Camera.View,Camera.Projection);
+
 
             RockModel.Draw(Matrix.CreateScale(10f)*Matrix.CreateRotationZ(-MathHelper.PiOver2)*Matrix.CreateRotationX(-MathHelper.PiOver2)*Matrix.CreateTranslation(new Vector3(50f,10f,40f)), Camera.View,Camera.Projection);
 
