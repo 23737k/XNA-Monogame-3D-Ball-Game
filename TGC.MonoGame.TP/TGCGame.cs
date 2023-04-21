@@ -64,6 +64,8 @@ namespace TGC.MonoGame.TP
         private Model RCurveTrackModel { get; set; }
         private Model LinearTrackModel { get; set; }
         private Model TrackModel { get; set; }
+        //Esta matriz es comun a todos los modelos estaticos. Es utilizada para posicionar los objetos correctamente.
+        private Matrix TrackWorld { get; set; }
 
         //Rocas
         private Model RockModel { get; set; } 
@@ -112,7 +114,8 @@ namespace TGC.MonoGame.TP
                 Color.MonoGameOrange, Color.Black, Color.DarkGray);
             BoxPosition = Vector3.Zero;
 
-
+            //Pongo todos los modelos en la posicion correcta.
+            TrackWorld= Matrix.CreateRotationX(-MathHelper.PiOver2)*Matrix.CreateRotationY(-MathHelper.PiOver2)*Matrix.CreateTranslation(Vector3.Zero);
 
             UpdateCamera();
 
@@ -137,9 +140,9 @@ namespace TGC.MonoGame.TP
             // En el juego no pueden usar BasicEffect de MG, deben usar siempre efectos propios.
             Effect = Content.Load<Effect>(ContentFolderEffects + "BasicShader");
 
-            LCurveTrackModel = Content.Load<Model>(ContentFolder3D + "pista-con-curva-izquierda");
-            RCurveTrackModel = Content.Load<Model>(ContentFolder3D + "pista-con-curva-derecha");
-            LinearTrackModel = Content.Load<Model>(ContentFolder3D + "pista-con-bordes");
+            LCurveTrackModel = Content.Load<Model>(ContentFolder3D + "curva-izquierda");
+            RCurveTrackModel = Content.Load<Model>(ContentFolder3D + "curva-derecha");
+            LinearTrackModel = Content.Load<Model>(ContentFolder3D + "pista-recta");
             RockModel = Content.Load<Model>(ContentFolder3D + "Rock");
 
 
@@ -210,6 +213,15 @@ namespace TGC.MonoGame.TP
             {
                 Rotation -= ANGULAR_SPEED * deltaTime;
             }
+
+             if (Keyboard.GetState().IsKeyDown(Keys.Up))
+            {
+                SpherePosition += Vector3.Up* LINEAR_SPEED;
+            }
+             if (Keyboard.GetState().IsKeyDown(Keys.Down))
+            {
+                SpherePosition -= Vector3.Up* LINEAR_SPEED;
+            }
             
             SphereRotationMatrix = Matrix.CreateRotationY(Rotation);
 
@@ -251,8 +263,16 @@ namespace TGC.MonoGame.TP
             }
 
            // LCurveTrackModel.Draw(Matrix.CreateTranslation(new Vector3(22f,0f,0f)),Camera.View, Camera.Projection);
-            RCurveTrackModel.Draw(Matrix.CreateRotationX(-MathHelper.PiOver2)*Matrix.CreateTranslation(new Vector3(280f,0f,0f)),Camera.View, Camera.Projection);
-            LinearTrackModel.Draw(Matrix.CreateRotationX(-MathHelper.PiOver2)*Matrix.CreateRotationY(-MathHelper.PiOver2)*Matrix.CreateTranslation(new Vector3(99f,0f,0f)), Camera.View,Camera.Projection);
+    
+            LinearTrackModel.Draw(TrackWorld*Matrix.CreateTranslation(new Vector3(110f,0f,0f)), Camera.View,Camera.Projection);
+            LinearTrackModel.Draw(TrackWorld*Matrix.CreateTranslation(new Vector3(141f,0f,0f)), Camera.View,Camera.Projection);
+            LinearTrackModel.Draw(TrackWorld*Matrix.CreateTranslation(new Vector3(172f,0f,0f)), Camera.View,Camera.Projection);
+            RCurveTrackModel.Draw(TrackWorld*Matrix.CreateTranslation(new Vector3(203f,0f,20f)), Camera.View,Camera.Projection);
+            LinearTrackModel.Draw(TrackWorld*Matrix.CreateTranslation(new Vector3(233f,0f,31f)), Camera.View,Camera.Projection);
+            LinearTrackModel.Draw(TrackWorld*Matrix.CreateTranslation(new Vector3(233f,10f,62f)), Camera.View,Camera.Projection);
+            LinearTrackModel.Draw(TrackWorld*Matrix.CreateTranslation(new Vector3(233f,20f,93f)), Camera.View,Camera.Projection);
+            
+
             RockModel.Draw(Matrix.CreateScale(10f)*Matrix.CreateRotationZ(-MathHelper.PiOver2)*Matrix.CreateRotationX(-MathHelper.PiOver2)*Matrix.CreateTranslation(new Vector3(50f,10f,40f)), Camera.View,Camera.Projection);
 
         }
