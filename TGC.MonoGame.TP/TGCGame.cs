@@ -298,6 +298,10 @@ namespace TGC.MonoGame.TP
             DrawRectangle(8,10,new Vector3(2870,55,1185));
             DrawRectangle(8,10,new Vector3(2870,70,1325));
             DrawRectangle(8,10,new Vector3(2870,85,1465));
+            DrawRectangle(8,40,new Vector3(2870,85,1605));
+            DrawGeometry(new CylinderPrimitive(GraphicsDevice, 60, 10, 18),new Vector3(2930,100,1700), 3*CylinderYaw,Pitch,MathHelper.PiOver2);
+            DrawGeometry(new CylinderPrimitive(GraphicsDevice, 60, 10, 18),new Vector3(2880,100,1750), 3*CylinderYaw,Pitch,MathHelper.PiOver2);
+
 
 
 
