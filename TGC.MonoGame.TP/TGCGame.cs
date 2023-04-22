@@ -68,6 +68,10 @@ namespace TGC.MonoGame.TP
         private float Roll { get; set; }
         private TargetCamera Camera { get; set; }
 
+        private Model InclinedTrackModel { get; set; }
+        private Model CurveTrackModel { get; set; }
+        private Matrix TrackWorld { get; set; }
+
         /// <summary>
         ///     Se llama una sola vez, al principio cuando se ejecuta el ejemplo.
         ///     Escribir aqui el codigo de inicializacion: el procesamiento que podemos pre calcular para nuestro juego.
@@ -114,6 +118,10 @@ namespace TGC.MonoGame.TP
             //Cilindro
             Cylinder = new CylinderPrimitive(GraphicsDevice, CYLINDER_HEIGHT, CYLINDER_DIAMETER, 18);
             SmallCylinder = new CylinderPrimitive(GraphicsDevice, CYLINDER_HEIGHT *2, CYLINDER_DIAMETER/10, 18);    
+
+            InclinedTrackModel = Content.Load<Model>(ContentFolder3D + "rampa");
+            CurveTrackModel = Content.Load<Model>(ContentFolder3D + "curva");
+            TrackWorld= Matrix.CreateRotationX(-MathHelper.PiOver2)*Matrix.CreateRotationY(-MathHelper.PiOver2)*Matrix.CreateTranslation(Vector3.Zero);
 
             UpdateCamera();
 
@@ -266,10 +274,28 @@ namespace TGC.MonoGame.TP
             DrawRectangle(5,5,new Vector3(721.1f,PlatformHeight,22f));
             DrawRectangle(5,5,new Vector3(809.1f,-PlatformHeight,22f));
             DrawRectangle(2,40,new Vector3(864.1f,100f,105f));
-            DrawRectangle(10,2,new Vector3(754.1f,100f,523));
+            //DrawRectangle(10,2,new Vector3(754.1f,100f,523));
+            //DrawRectangle(10,2,new Vector3(754.1f,100f,523));
+            //DrawRectangle(10,2,new Vector3(754.1f,100f,523));
             //Trato de dibujar rampa
             DrawGeometry(Box, new Vector3(23.7f * 1.0f* TAMANIO_CUBO,1f, 4.0f * 1.0f* TAMANIO_CUBO), Yaw, Pitch, 0.5f);
             DrawGeometry(Box, new Vector3(23.7f * 1.0f* TAMANIO_CUBO,1f, 5.0f * 1.0f* TAMANIO_CUBO), Yaw, Pitch, 0.5f);
+            InclinedTrackModel.Draw(TrackWorld* Matrix.CreateTranslation(864.1f,100f,505),Camera.View, Camera.Projection);
+            DrawRectangle(35,3,new Vector3(1120f,20f,495f));
+            DrawRectangle(35,8,new Vector3(1470,20f,495f));
+            DrawObstacle(5,4,new Vector3(1470,20f,535f+PlatformHeight));
+            DrawObstacle(5,4,new Vector3(1645,20f,535f+-PlatformHeight));
+            DrawObstacle(5,4,new Vector3(1820,20f,535f+PlatformHeight));
+            DrawObstacle(5,4,new Vector3(1995,20f,535f-PlatformHeight));
+            DrawObstacle(5,4,new Vector3(2170,20f,535f+PlatformHeight));
+            DrawRectangle(35,8,new Vector3(1820,20f,495f));
+            DrawRectangle(35,8,new Vector3(2170,20f,495f));
+            DrawRectangle(35,8,new Vector3(2520,20f,495f));
+
+
+            //CurveTrackModel.Draw(TrackWorld* Matrix.CreateTranslation(864.1f,100f,505),Camera.View, Camera.Projection);
+
+            
         }
 
         private void DrawGeometry(GeometricPrimitive geometry, Vector3 position, float yaw, float pitch, float roll)
@@ -313,6 +339,13 @@ namespace TGC.MonoGame.TP
             }
         }
 
+        private void DrawObstacle (int height, int width, Vector3 position){
+            for (var i = 0; i < height; i++){
+                for(var j=0; j < width; j++){
+                 DrawGeometry(Box,new Vector3(position.X , position.Y+ i*TAMANIO_CUBO, position.Z + j*TAMANIO_CUBO), Yaw, Pitch, Roll);
+                }
+            }
+        }
 
         private void DrawWalls(float wallLength, float rightLimit, float leftLimit, float rightOffset, float leftOffset, float upOffset){
             // Pared Derecha.
