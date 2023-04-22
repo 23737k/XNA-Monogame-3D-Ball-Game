@@ -39,9 +39,9 @@ namespace TGC.MonoGame.TP
         private const float TAMANIO_CUBO = 10f;
         private const int CANTIDAD_CUBOS = 10;
         private const float LINEAR_SPEED= 3f;
-        private const float ANGULAR_SPEED = 5f;
+        private const float ANGULAR_SPEED = 3f;
         private const float CAMERA_FOLLOW_RADIUS = 70f;
-        private const float CAMERA_UP_DISTANCE = 60f;
+        private const float CAMERA_UP_DISTANCE = 30f;
         private const float CYLINDER_HEIGHT = 10F;
         private const float CYLINDER_DIAMETER = 10f * TAMANIO_CUBO;
 
