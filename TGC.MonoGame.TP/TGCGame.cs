@@ -47,6 +47,7 @@ namespace TGC.MonoGame.TP
 
         private float CylinderYaw = 0.0f;
         private float PlatformHeight = 0f;
+        private float WallLength = 0f;
         private GraphicsDeviceManager Graphics { get; }
         private SpriteBatch SpriteBatch { get; set; }
         private Model Model { get; set; }
@@ -227,7 +228,7 @@ namespace TGC.MonoGame.TP
             CylinderYaw += deltaTime * 1.1f;
 
             PlatformHeight = 50* MathF.Cos(4*Convert.ToSingle(gameTime.TotalGameTime.TotalSeconds))-50; 
-            
+            WallLength = 50* MathF.Cos(8*Convert.ToSingle(gameTime.TotalGameTime.TotalSeconds))-50; 
             SphereRotationMatrix = Matrix.CreateRotationY(Rotation);
 
             World = SphereRotationMatrix * Matrix.CreateTranslation(SpherePosition);
@@ -273,7 +274,7 @@ namespace TGC.MonoGame.TP
             DrawBridge(55.5f);
             DrawRectangle(5,5,new Vector3(721.1f,PlatformHeight,22f));
             DrawRectangle(5,5,new Vector3(809.1f,-PlatformHeight,22f));
-            DrawRectangle(2,40,new Vector3(864.1f,100f,105f));
+            DrawRectangle(3,40,new Vector3(864.1f,100f,105f));
             //DrawRectangle(10,2,new Vector3(754.1f,100f,523));
             //DrawRectangle(10,2,new Vector3(754.1f,100f,523));
             //DrawRectangle(10,2,new Vector3(754.1f,100f,523));
@@ -284,11 +285,11 @@ namespace TGC.MonoGame.TP
             DrawRectangle(35,3,new Vector3(1120f,20f,495f));
             DrawRectangle(35,8,new Vector3(1470,20f,495f));
             //paredes que se mueven
-            DrawObstacle(5,4,new Vector3(1470,20f,535f+PlatformHeight));
-            DrawObstacle(5,4,new Vector3(1645,20f,455-PlatformHeight));
-            DrawObstacle(5,4,new Vector3(1820,20f,535f+PlatformHeight));
-            DrawObstacle(5,4,new Vector3(1995,20f,455-PlatformHeight));
-            DrawObstacle(5,4,new Vector3(2170,20f,535f+PlatformHeight));
+            DrawObstacle(5,4,new Vector3(1470,30,535f+WallLength));
+            DrawObstacle(5,4,new Vector3(1570,30,455-WallLength));
+            DrawObstacle(5,4,new Vector3(1670,30,535f+WallLength));
+            DrawObstacle(5,4,new Vector3(1770,30,455-WallLength));
+            DrawObstacle(5,4,new Vector3(1870,30,535f+WallLength));
             DrawRectangle(35,8,new Vector3(1820,20f,495f));
             DrawRectangle(35,8,new Vector3(2170,20f,495f));
             DrawRectangle(35,8,new Vector3(2520,20f,495f));
