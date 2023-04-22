@@ -291,6 +291,16 @@ namespace TGC.MonoGame.TP
             DrawRectangle(35,8,new Vector3(1820,20f,495f));
             DrawRectangle(35,8,new Vector3(2170,20f,495f));
             DrawRectangle(35,8,new Vector3(2520,20f,495f));
+            DrawRectangle(35,8,new Vector3(2520,20f,495f));
+            DrawRectangle(8,40,new Vector3(2870,20f,495f));
+            DrawRectangle(8,10,new Vector3(2870,30,915));
+            DrawRectangle(8,10,new Vector3(2870,40,1045));
+            DrawRectangle(8,10,new Vector3(2870,55,1185));
+            DrawRectangle(8,10,new Vector3(2870,70,1325));
+            DrawRectangle(8,10,new Vector3(2870,85,1465));
+
+
+
 
 
             //CurveTrackModel.Draw(TrackWorld* Matrix.CreateTranslation(864.1f,100f,505),Camera.View, Camera.Projection);
