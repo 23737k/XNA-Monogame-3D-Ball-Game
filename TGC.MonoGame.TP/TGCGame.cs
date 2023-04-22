@@ -255,18 +255,21 @@ namespace TGC.MonoGame.TP
             DrawPrincipalPlatform();
             DrawBridge(15f);
             //Se puede reemplazar con un for.
-            DrawGeometry(Cylinder, new Vector3(30f *1.1f* TAMANIO_CUBO, 0f, 4.5f* 1.1f * TAMANIO_CUBO ), CylinderYaw, Pitch, Roll);
-            DrawGeometry(Cylinder, new Vector3(40f *1.1f* TAMANIO_CUBO, 0f, 4.5f* 1.1f * TAMANIO_CUBO ), -CylinderYaw, Pitch, Roll);
-            DrawGeometry(Cylinder, new Vector3(50f *1.1f* TAMANIO_CUBO, 0f, 4.5f* 1.1f * TAMANIO_CUBO ), CylinderYaw, Pitch, Roll);
+            DrawGeometry(Cylinder, new Vector3(30f *1.0f* TAMANIO_CUBO, 0f, 4.5f* 1.0f * TAMANIO_CUBO ), CylinderYaw, Pitch, Roll);
+            DrawGeometry(Cylinder, new Vector3(40f *1.0f* TAMANIO_CUBO, 0f, 4.5f* 1.0f * TAMANIO_CUBO ), -CylinderYaw, Pitch, Roll);
+            DrawGeometry(Cylinder, new Vector3(50f *1.0f* TAMANIO_CUBO, 0f, 4.5f* 1.0f * TAMANIO_CUBO ), CylinderYaw, Pitch, Roll);
             //Se puede reemplazar con un for.
-            DrawGeometry(SmallCylinder, new Vector3(30f *1.1f* TAMANIO_CUBO, TAMANIO_CUBO, 4.5f* 1.1f * TAMANIO_CUBO ), Yaw, Pitch, Roll);
-            DrawGeometry(SmallCylinder, new Vector3(40f *1.1f* TAMANIO_CUBO, TAMANIO_CUBO, 4.5f* 1.1f * TAMANIO_CUBO ), Yaw, Pitch, Roll);
-            DrawGeometry(SmallCylinder, new Vector3(50f *1.1f* TAMANIO_CUBO, TAMANIO_CUBO, 4.5f* 1.1f * TAMANIO_CUBO ), Yaw, Pitch, Roll);
+            DrawGeometry(SmallCylinder, new Vector3(30f *1.0f* TAMANIO_CUBO, TAMANIO_CUBO, 4.5f* 1.0f * TAMANIO_CUBO ), Yaw, Pitch, Roll);
+            DrawGeometry(SmallCylinder, new Vector3(40f *1.0f* TAMANIO_CUBO, TAMANIO_CUBO, 4.5f* 1.0f * TAMANIO_CUBO ), Yaw, Pitch, Roll);
+            DrawGeometry(SmallCylinder, new Vector3(50f *1.0f* TAMANIO_CUBO, TAMANIO_CUBO, 4.5f* 1.0f * TAMANIO_CUBO ), Yaw, Pitch, Roll);
             DrawBridge(55.5f);
             DrawRectangle(5,5,new Vector3(721.1f,PlatformHeight,22f));
             DrawRectangle(5,5,new Vector3(809.1f,-PlatformHeight,22f));
             DrawRectangle(2,40,new Vector3(864.1f,100f,105f));
             DrawRectangle(10,2,new Vector3(754.1f,100f,523));
+            //Trato de dibujar rampa
+            DrawGeometry(Box, new Vector3(23.7f * 1.0f* TAMANIO_CUBO,1f, 4.0f * 1.0f* TAMANIO_CUBO), Yaw, Pitch, 0.5f);
+            DrawGeometry(Box, new Vector3(23.7f * 1.0f* TAMANIO_CUBO,1f, 5.0f * 1.0f* TAMANIO_CUBO), Yaw, Pitch, 0.5f);
         }
 
         private void DrawGeometry(GeometricPrimitive geometry, Vector3 position, float yaw, float pitch, float roll)
@@ -291,11 +294,11 @@ namespace TGC.MonoGame.TP
 
             for (var i = 0; i < bridgelength; i++){
                 for (var j = 0; j < 2; j++){
-                    DrawGeometry(Box,new Vector3(upOffset * 1.1f * TAMANIO_CUBO + i*1.1f*TAMANIO_CUBO, 0f, 4* 1.1f * TAMANIO_CUBO + j*1.1f*TAMANIO_CUBO), Yaw, Pitch, Roll);
+                    DrawGeometry(Box,new Vector3(upOffset * 1.0f * TAMANIO_CUBO + i*1.0f*TAMANIO_CUBO, 0f, 4* 1.0f * TAMANIO_CUBO + j*1.0f*TAMANIO_CUBO), Yaw, Pitch, Roll);
                 }
             }
 
-            DrawWalls(bridgelength,0f,0f,6* 1.1f * TAMANIO_CUBO, 3* 1.1f * TAMANIO_CUBO, upOffset*1.1f*TAMANIO_CUBO);
+            DrawWalls(bridgelength,0f,0f,6* 1.0f * TAMANIO_CUBO, 3* 1.0f * TAMANIO_CUBO, upOffset*1.0f*TAMANIO_CUBO);
 
         }
 
@@ -305,7 +308,7 @@ namespace TGC.MonoGame.TP
         private void DrawRectangle (int lines, int columns, Vector3 position){
              for (var i = 0; i < lines; i++){
                 for(var j=0; j < columns; j++){
-                DrawGeometry(Box,new Vector3(position.X + i*1.1f*TAMANIO_CUBO, position.Y, position.Z + j*1.1f*TAMANIO_CUBO), Yaw, Pitch, Roll);
+                DrawGeometry(Box,new Vector3(position.X + i*1.0f*TAMANIO_CUBO, position.Y, position.Z + j*1.0f*TAMANIO_CUBO), Yaw, Pitch, Roll);
                 }
             }
         }
@@ -315,14 +318,14 @@ namespace TGC.MonoGame.TP
             // Pared Derecha.
             for (var k = 0; k < wallLength; k++){
                 for(var j = 0; j < 2; j++){
-                    DrawGeometry(WallBox, new Vector3(upOffset + k*1.1f * TAMANIO_CUBO,j * 0.7f * TAMANIO_CUBO, rightOffset + rightLimit*1.1f * TAMANIO_CUBO), Yaw, Pitch, Roll);
+                    DrawGeometry(WallBox, new Vector3(upOffset + k*1.0f * TAMANIO_CUBO,j * 0.7f * TAMANIO_CUBO, rightOffset + rightLimit*1.0f * TAMANIO_CUBO), Yaw, Pitch, Roll);
                 }
             }
 
             // Pared Izquierda.
             for (var k = 0; k < wallLength; k++){
                 for(var j = 0; j < 2; j++){
-                    DrawGeometry(WallBox, new Vector3(upOffset + k*1.1f * TAMANIO_CUBO,j * 0.7f * TAMANIO_CUBO, leftOffset + leftLimit*1.1f * TAMANIO_CUBO), Yaw, Pitch, Roll);
+                    DrawGeometry(WallBox, new Vector3(upOffset + k*1.0f * TAMANIO_CUBO,j * 0.7f * TAMANIO_CUBO, leftOffset + leftLimit*1.0f * TAMANIO_CUBO), Yaw, Pitch, Roll);
                 }
             }
         }
