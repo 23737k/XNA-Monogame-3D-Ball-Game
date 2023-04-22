@@ -283,10 +283,11 @@ namespace TGC.MonoGame.TP
             InclinedTrackModel.Draw(TrackWorld* Matrix.CreateTranslation(864.1f,100f,505),Camera.View, Camera.Projection);
             DrawRectangle(35,3,new Vector3(1120f,20f,495f));
             DrawRectangle(35,8,new Vector3(1470,20f,495f));
+            //paredes que se mueven
             DrawObstacle(5,4,new Vector3(1470,20f,535f+PlatformHeight));
-            DrawObstacle(5,4,new Vector3(1645,20f,535f+-PlatformHeight));
+            DrawObstacle(5,4,new Vector3(1645,20f,455-PlatformHeight));
             DrawObstacle(5,4,new Vector3(1820,20f,535f+PlatformHeight));
-            DrawObstacle(5,4,new Vector3(1995,20f,535f-PlatformHeight));
+            DrawObstacle(5,4,new Vector3(1995,20f,455-PlatformHeight));
             DrawObstacle(5,4,new Vector3(2170,20f,535f+PlatformHeight));
             DrawRectangle(35,8,new Vector3(1820,20f,495f));
             DrawRectangle(35,8,new Vector3(2170,20f,495f));
@@ -299,8 +300,11 @@ namespace TGC.MonoGame.TP
             DrawRectangle(8,10,new Vector3(2870,70,1325));
             DrawRectangle(8,10,new Vector3(2870,85,1465));
             DrawRectangle(8,40,new Vector3(2870,85,1605));
+            //cilindros que giran
             DrawGeometry(new CylinderPrimitive(GraphicsDevice, 60, 10, 18),new Vector3(2930,100,1700), 3*CylinderYaw,Pitch,MathHelper.PiOver2);
             DrawGeometry(new CylinderPrimitive(GraphicsDevice, 60, 10, 18),new Vector3(2880,100,1750), 3*CylinderYaw,Pitch,MathHelper.PiOver2);
+            DrawGeometry(new CylinderPrimitive(GraphicsDevice, 60, 10, 18),new Vector3(2930,100,1900), 3*CylinderYaw,Pitch,MathHelper.PiOver2);
+            DrawGeometry(new CylinderPrimitive(GraphicsDevice, 60, 10, 18),new Vector3(2880,100,1950), 3*CylinderYaw,Pitch,MathHelper.PiOver2);
 
 
 
