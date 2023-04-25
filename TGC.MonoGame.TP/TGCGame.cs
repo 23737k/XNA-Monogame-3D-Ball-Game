@@ -38,7 +38,7 @@ namespace TGC.MonoGame.TP
 
         private const float TAMANIO_CUBO = 10f;
         private const int CANTIDAD_CUBOS = 10;
-        private const float LINEAR_SPEED= 15f;
+        private const float LINEAR_SPEED= 2f;
         private const float ANGULAR_SPEED = 3f;
         private const float CAMERA_FOLLOW_RADIUS = 70f;
         private const float CAMERA_UP_DISTANCE = 30f;
@@ -128,9 +128,6 @@ namespace TGC.MonoGame.TP
             //Cilindro
             Cylinder = new CylinderPrimitive(GraphicsDevice, CYLINDER_HEIGHT, CYLINDER_DIAMETER, 18);
             SmallCylinder = new CylinderPrimitive(GraphicsDevice, CYLINDER_HEIGHT *2, CYLINDER_DIAMETER/10, 18);    
-
-            InclinedTrackModel = Content.Load<Model>(ContentFolder3D + "rampa");
-            CurveTrackModel = Content.Load<Model>(ContentFolder3D + "curva");
             TrackWorld= Matrix.CreateRotationX(-MathHelper.PiOver2)*Matrix.CreateRotationY(-MathHelper.PiOver2)*Matrix.CreateTranslation(Vector3.Zero);
 
             UpdateCamera();
@@ -157,6 +154,7 @@ namespace TGC.MonoGame.TP
         
 
             Effect = Content.Load<Effect>(ContentFolderEffects + "BasicShader");
+            InclinedTrackModel = Content.Load<Model>(ContentFolder3D + "rampa");
             // Asigno el efecto que cargue a cada parte del mesh.
             // Un modelo puede tener mas de 1 mesh internamente.
             //foreach (var mesh in Model.Meshes)
