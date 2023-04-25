@@ -284,8 +284,29 @@ namespace TGC.MonoGame.TP
             DrawGeometry(Box, new Vector3(23.7f * 1.0f* TAMANIO_CUBO,1f, 4.0f * 1.0f* TAMANIO_CUBO), Yaw, Pitch, 0.5f);
             DrawGeometry(Box, new Vector3(23.7f * 1.0f* TAMANIO_CUBO,1f, 5.0f * 1.0f* TAMANIO_CUBO), Yaw, Pitch, 0.5f);
             InclinedTrackModel.Draw(Matrix.CreateScale(1.5f) * TrackWorld* Matrix.CreateTranslation(864.1f,100f,505) ,Camera.View, Camera.Projection);
-            DrawXZRectangle(Box,32,3,new Vector3(1150f,20f,495f));
-            DrawXZRectangle(Box,35,8,new Vector3(1470,20f,495f));
+            DrawXZRectangle(Box,15,3,new Vector3(1160f,20f,495f));
+            //Muro
+            DrawXZRectangle(ObstacleBox,1,3,new Vector3(1360f,30f,495f));
+            DrawXZRectangle(Box,15,8,new Vector3(1330f,20f,495f));
+            DrawXZRectangle(Box,30,8,new Vector3(1520f,20f,495f));
+            //Muro
+            DrawXZRectangle(ObstacleBox,1,8,new Vector3(1560f,30f,495f));
+            //Islas
+            DrawGeometry(new CylinderPrimitive(GraphicsDevice, 10, 20, 18), new Vector3(1840f,20,495f), Yaw, Pitch, Roll);
+            DrawGeometry(new CylinderPrimitive(GraphicsDevice, 10, 20, 18), new Vector3(1890,20,520f), Yaw, Pitch, Roll);
+            DrawGeometry(new CylinderPrimitive(GraphicsDevice, 10, 20, 18), new Vector3(1930,20,545f), Yaw, Pitch, Roll);
+            DrawGeometry(new CylinderPrimitive(GraphicsDevice, 10, 20, 18), new Vector3(1980,20,545f), Yaw, Pitch, Roll);
+            DrawGeometry(new CylinderPrimitive(GraphicsDevice, 10, 20, 18), new Vector3(2030,20,520f), Yaw, Pitch, Roll);
+            DrawGeometry(new CylinderPrimitive(GraphicsDevice, 10, 20, 18), new Vector3(2080,20,495f), Yaw, Pitch, Roll);
+            DrawGeometry(new CylinderPrimitive(GraphicsDevice, 10, 20, 18), new Vector3(2130,20,520f), Yaw, Pitch, Roll);
+
+           // DrawGeometry(Box, new Vector3(23.7f * 1.0f* TAMANIO_CUBO,1f, 5.0f * 1.0f* TAMANIO_CUBO), Yaw, Pitch, Roll);
+            //DrawGeometry(Box, new Vector3(23.7f * 1.0f* TAMANIO_CUBO,1f, 5.0f * 1.0f* TAMANIO_CUBO), Yaw, Pitch, Roll);
+            //DrawXZRectangle(ObstacleBox,1,2,new Vector3(1840f,30f,495f));
+            
+
+
+            /*
             //paredes que se mueven
             DrawYZRectangle(ObstacleBox, 5,4,new Vector3(1470,30,535f+WallLength));
             DrawYZRectangle(ObstacleBox, 5,4,new Vector3(1570,30,455-WallLength));
@@ -293,14 +314,15 @@ namespace TGC.MonoGame.TP
             DrawYZRectangle(ObstacleBox, 5,4,new Vector3(1770,30,455-WallLength));
             DrawYZRectangle(ObstacleBox, 5,4,new Vector3(1870,30,535f+WallLength));
 
-            //Pared que aplasta
+            //Pared que aplastadw
             DrawXZRectangle(ObstacleBox,8,8,new Vector3(2070,-PlatformHeight+20,495f));
         
             //Paredes verticales que aplastan
             DrawXYRectangle(ObstacleBox, 8,8,new Vector3(2370,30,0.8f*WallLength+530));
             DrawXYRectangle(ObstacleBox, 8,8,new Vector3(2370,30,0.8f*-WallLength+530));
+            */
 
-            DrawXZRectangle(Box,35,8,new Vector3(1820,20f,495f));
+            DrawXZRectangle(Box,10,8,new Vector3(2270f,20f,495f));
             DrawXZRectangle(Box,35,8,new Vector3(2170,20f,495f));
             DrawXZRectangle(Box,35,8,new Vector3(2520,20f,495f));
             DrawXZRectangle(Box,35,8,new Vector3(2520,20f,495f));
