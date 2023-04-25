@@ -38,7 +38,7 @@ namespace TGC.MonoGame.TP
 
         private const float TAMANIO_CUBO = 10f;
         private const int CANTIDAD_CUBOS = 10;
-        private const float LINEAR_SPEED= 3f;
+        private const float LINEAR_SPEED= 6f;
         private const float ANGULAR_SPEED = 3f;
         private const float CAMERA_FOLLOW_RADIUS = 70f;
         private const float CAMERA_UP_DISTANCE = 30f;
@@ -304,8 +304,6 @@ namespace TGC.MonoGame.TP
             //DrawGeometry(Box, new Vector3(23.7f * 1.0f* TAMANIO_CUBO,1f, 5.0f * 1.0f* TAMANIO_CUBO), Yaw, Pitch, Roll);
             //DrawXZRectangle(ObstacleBox,1,2,new Vector3(1840f,30f,495f));
             
-
-
             /*
             //paredes que se mueven
             DrawYZRectangle(ObstacleBox, 5,4,new Vector3(1470,30,535f+WallLength));
@@ -323,10 +321,15 @@ namespace TGC.MonoGame.TP
             */
 
             DrawXZRectangle(Box,10,8,new Vector3(2270f,20f,495f));
+            //Muro
+            DrawXZRectangle(ObstacleBox,1,8,new Vector3(2650,30f,495f));
             DrawXZRectangle(Box,35,8,new Vector3(2170,20f,495f));
             DrawXZRectangle(Box,35,8,new Vector3(2520,20f,495f));
-            DrawXZRectangle(Box,35,8,new Vector3(2520,20f,495f));
             DrawXZRectangle(Box,8,40,new Vector3(2870,20f,495f));
+            //Muro insaltable (existe esa palabra?)
+            DrawXYRectangle(ObstacleBox,4,4,new Vector3(2870,30f,605));
+            DrawXYRectangle(ObstacleBox,4,4,new Vector3(2910,30f,685));
+            DrawXYRectangle(ObstacleBox,4,4,new Vector3(2870,30f,765));
             DrawXZRectangle(Box,8,10,new Vector3(2870,30,915));
             DrawXZRectangle(Box,8,10,new Vector3(2870,40,1045));
             DrawXZRectangle(Box,8,10,new Vector3(2870,55,1185));
