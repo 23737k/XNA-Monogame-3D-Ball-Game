@@ -8,7 +8,7 @@ using TGC.MonoGame.TP.Geometries;
 //
 namespace TGC.MonoGame.TP
 {
-    /// <summary>
+    /// <summary>d
     ///     Esta es la clase principal del juego.
     ///     Inicialmente puede ser renombrado o copiado para hacer mas ejemplos chicos, en el caso de copiar para que se
     ///     ejecute el nuevo ejemplo deben cambiar la clase que ejecuta Program <see cref="Program.Main()" /> linea 10.
@@ -253,6 +253,8 @@ namespace TGC.MonoGame.TP
             // Aca deberiamos poner toda la logia de renderizado del juego.
             GraphicsDevice.Clear(Color.Black);
 
+            var time= Convert.ToSingle(gameTime.TotalGameTime.TotalSeconds);
+
             // Para dibujar le modelo necesitamos pasarle informacion que el efecto esta esperando.
             Effect.Parameters["View"].SetValue(View);
             Effect.Parameters["Projection"].SetValue(Projection);
@@ -279,8 +281,8 @@ namespace TGC.MonoGame.TP
             DrawGeometry(SmallCylinder, new Vector3(50f *1.0f* TAMANIO_CUBO, TAMANIO_CUBO, 4.5f* 1.0f * TAMANIO_CUBO ), Yaw, Pitch, Roll);
             DrawBridge(55.5f);
 
-            DrawXZRectangle(Box,5,5,new Vector3(721.1f,PlatformHeight,22f));
-            DrawXZRectangle(Box,5,5,new Vector3(809.1f,-PlatformHeight,22f));
+            DrawXZRectangle(Box,5,5,new Vector3(721.1f,70*MathF.Cos(3*time)-60,22f));
+            DrawXZRectangle(Box,5,5,new Vector3(809.1f,-70*MathF.Cos(3*time)+60,22f));
             DrawXZRectangle(Box,14,38,new Vector3(800f,100f,105f));
             //DrawRectangle(10,2,new Vector3(754.1f,100f,523));
             //DrawRectangle(10,2,new Vector3(754.1f,100f,523));
@@ -354,14 +356,14 @@ namespace TGC.MonoGame.TP
             DrawXZRectangle(Box,80,4,new Vector3(1990,85,2460));
             DrawXZRectangle(Box,80,4,new Vector3(1990,85,2540));
             DrawXZRectangle(Box,80,4,new Vector3(1990,85,2540));
-            DrawXZRectangle(Box,2,2,new Vector3(2000,-PlatformHeight,2510));
+            DrawXZRectangle(Box,2,2,new Vector3(2000,42.5f*MathF.Cos(3*time)+42.5f,2510));
             DrawXZRectangle(Box,8,200,new Vector3(1970,0,2510));
             //paredes que se mueven
-            DrawYZRectangle(CyanBox, 5,4,new Vector3(2050+WallLength,10,3010));  
-            DrawYZRectangle(CyanBox, 5,4,new Vector3(1970-WallLength,10,3110));
-            DrawYZRectangle(CyanBox, 5,4,new Vector3(2050+WallLength,10,3210));
-            DrawYZRectangle(CyanBox, 5,4,new Vector3(1970-WallLength,10,3310));
-            DrawYZRectangle(CyanBox, 5,4,new Vector3(2050+WallLength,10,3410));
+            DrawYZRectangle(CyanBox, 5,4,new Vector3(40*MathF.Cos(5*time)+2010,10,3010));  
+            DrawYZRectangle(CyanBox, 5,4,new Vector3(-40*MathF.Cos(5*time)+2010,10,3110));
+            DrawYZRectangle(CyanBox, 5,4,new Vector3(40*MathF.Cos(5*time)+2010,10,3210));
+            DrawYZRectangle(CyanBox, 5,4,new Vector3(-40*MathF.Cos(5*time)+2010,10,3310));
+            DrawYZRectangle(CyanBox, 5,4,new Vector3(40*MathF.Cos(5*time)+2010,10,3410));
 
             
             //Monedas
