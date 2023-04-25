@@ -284,6 +284,7 @@ namespace TGC.MonoGame.TP
             DrawXZRectangle(Box,5,5,new Vector3(721.1f,70*MathF.Cos(3*time)-60,22f));
             DrawXZRectangle(Box,5,5,new Vector3(809.1f,-70*MathF.Cos(3*time)+60,22f));
             DrawXZRectangle(Box,14,38,new Vector3(800f,100f,105f));
+
             //DrawRectangle(10,2,new Vector3(754.1f,100f,523));
             //DrawRectangle(10,2,new Vector3(754.1f,100f,523));
             //DrawRectangle(10,2,new Vector3(754.1f,100f,523));
@@ -351,8 +352,10 @@ namespace TGC.MonoGame.TP
             DrawGeometry(new CylinderPrimitive(GraphicsDevice, 60, 10, 18),new Vector3(2880,100,1950), 3*CylinderYaw,Pitch,MathHelper.PiOver2);
             DrawXZRectangle(Box,8,20,new Vector3(2870,85,2260));
             DrawXZRectangle(Box,16,12,new Vector3(2790,85,2460));
+            //Pista dividida
             DrawXZRectangle(Box,80,4,new Vector3(1990,85,2460));
             DrawXZRectangle(Box,80,4,new Vector3(1990,85,2540));
+            //
             DrawXZRectangle(Box,80,4,new Vector3(1990,85,2540));
             DrawXZRectangle(Box,2,2,new Vector3(2000,42.5f*MathF.Cos(3*time)+42.5f,2510));
             DrawXZRectangle(Box,8,150,new Vector3(1970,0,2510));
@@ -394,9 +397,24 @@ namespace TGC.MonoGame.TP
             DrawCoin(290f, 10f, 170f);
             DrawCoin(290f, 10, 190f);
 
+            //Troncos que cuando la pelota llegue a cierto punto arrancan a rodar.
+            DrawGeometry(new TrunkPrimitive(GraphicsDevice, 70f,20f, 18),new Vector3(870f, 115f, 440f), Yaw, Pitch, MathHelper.PiOver2);
+            DrawGeometry(new TrunkPrimitive(GraphicsDevice, 70f,20f, 18),new Vector3(870f, 115f, 420f), Yaw, Pitch, MathHelper.PiOver2);
+            DrawGeometry(new TrunkPrimitive(GraphicsDevice, 70f,20f, 18),new Vector3(870f, 115f, 400f), Yaw, Pitch, MathHelper.PiOver2);
+            DrawGeometry(new TrunkPrimitive(GraphicsDevice, 70f,20f, 18),new Vector3(870f, 135f, 440f), Yaw, Pitch, MathHelper.PiOver2);
+            DrawGeometry(new TrunkPrimitive(GraphicsDevice, 70f,20f, 18),new Vector3(870f, 135f, 420f), Yaw, Pitch, MathHelper.PiOver2);
+            DrawGeometry(new TrunkPrimitive(GraphicsDevice, 70f,20f, 18),new Vector3(870f, 155f, 440f), Yaw, Pitch, MathHelper.PiOver2);
+            // En pista dividida
+            DrawGeometry(new TrunkPrimitive(GraphicsDevice, 40f,20f, 18),new Vector3(2000, 98, 2555), MathHelper.PiOver2, Pitch, MathHelper.PiOver2);
+            DrawGeometry(new TrunkPrimitive(GraphicsDevice, 40f,20f, 18),new Vector3(2030, 98, 2555), MathHelper.PiOver2, Pitch, MathHelper.PiOver2);
+            DrawGeometry(new TrunkPrimitive(GraphicsDevice, 40f,20f, 18),new Vector3(2060, 98, 2555), MathHelper.PiOver2, Pitch, MathHelper.PiOver2);
+            DrawGeometry(new TrunkPrimitive(GraphicsDevice, 40f,20f, 18),new Vector3(2090, 98, 2555), MathHelper.PiOver2, Pitch, MathHelper.PiOver2);
+            DrawGeometry(new TrunkPrimitive(GraphicsDevice, 40f,20f, 18),new Vector3(2000, 98, 2475), MathHelper.PiOver2, Pitch, MathHelper.PiOver2);
+            DrawGeometry(new TrunkPrimitive(GraphicsDevice, 40f,20f, 18),new Vector3(2030, 98, 2475), MathHelper.PiOver2, Pitch, MathHelper.PiOver2);
+            DrawGeometry(new TrunkPrimitive(GraphicsDevice, 40f,20f, 18),new Vector3(2060, 98, 2475), MathHelper.PiOver2, Pitch, MathHelper.PiOver2);
+            DrawGeometry(new TrunkPrimitive(GraphicsDevice, 40f,20f, 18),new Vector3(2090, 98, 2475), MathHelper.PiOver2, Pitch, MathHelper.PiOver2);
 
-
-           // DrawChequeredFlag(8, 15);
+           DrawChequeredFlag(8, 15);
 
 
             
@@ -489,9 +507,9 @@ namespace TGC.MonoGame.TP
             for(var i = 0; i < rows; i++){
                 for(var j = 0; j <= columns; j++){
                 if((i%2==1 && j%2==1) || (i%2==0 && j%2==0))
-                    DrawGeometry(WhiteBox, new Vector3(1970 + i*TAMANIO_CUBO, 0f,4510 + j*TAMANIO_CUBO), Yaw, Pitch, Roll);
+                    DrawGeometry(WhiteBox, new Vector3(1970 + i*TAMANIO_CUBO, 0f,5000 + j*TAMANIO_CUBO), Yaw, Pitch, Roll);
                 else
-                    DrawGeometry(BlackBox, new Vector3(1970 + i*TAMANIO_CUBO, 0f,4510 + j* TAMANIO_CUBO), Yaw, Pitch, Roll);
+                    DrawGeometry(BlackBox, new Vector3(1970 + i*TAMANIO_CUBO, 0f,5000 + j* TAMANIO_CUBO), Yaw, Pitch, Roll);
                 }
             }
         }
