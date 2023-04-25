@@ -38,7 +38,7 @@ namespace TGC.MonoGame.TP
 
         private const float TAMANIO_CUBO = 10f;
         private const int CANTIDAD_CUBOS = 10;
-        private const float LINEAR_SPEED= 5f;
+        private const float LINEAR_SPEED= 15f;
         private const float ANGULAR_SPEED = 3f;
         private const float CAMERA_FOLLOW_RADIUS = 70f;
         private const float CAMERA_UP_DISTANCE = 30f;
@@ -367,14 +367,22 @@ namespace TGC.MonoGame.TP
             DrawXZRectangle(CyanBox,8,1,new Vector3(1970,10,3610));
 
             //
-            DrawXZRectangle(Box,8,180,new Vector3(1970,0,4030));
+            DrawXZRectangle(Box,8,100,new Vector3(1970,0,4030));
             //muro insaltable
             DrawXYRectangle(CyanBox,4,4,new Vector3(1970,10,3940));
             //Muro insaltable (ya fue, asi le voy a decir)
             DrawXYRectangle(CyanBox,4,4,new Vector3(2010,10,4080));
 
              //Pared que aplastan contra el suelo
-            DrawXZRectangle(ObstacleBox,8,8,new Vector3(1970,40*MathF.Cos(4*time)+30,4300));
+            DrawXZRectangle(ObstacleBox,8,8,new Vector3(1970,35*MathF.Cos(4*time)+30,4300));
+            DrawXZRectangle(ObstacleBox,8,8,new Vector3(1970,35*MathF.Cos(4*time+MathHelper.PiOver2)+30,4430));
+            DrawXZRectangle(ObstacleBox,8,8,new Vector3(1970,35*MathF.Cos(4*time+MathHelper.PiOver4)+30,4540));
+            //Muro 
+            DrawXZRectangle(CyanBox,8,1,new Vector3(1970,10,4700));
+            
+
+
+
 
            // DrawXZRectangle(Box,35,8,new Vector3(2520,20f,495f));
            // DrawXZRectangle(Box,8,40,new Vector3(2870,20f,495f));
@@ -395,7 +403,7 @@ namespace TGC.MonoGame.TP
             DrawCoin(290f, 10, 190f);
 
 
-
+            //FINAL DE CARRERA
            // DrawChequeredFlag(8, 15);
 
 
