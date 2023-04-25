@@ -64,6 +64,7 @@ namespace TGC.MonoGame.TP
         private CubePrimitive WhiteBox { get; set; }
         private CubePrimitive  BlackBox { get; set; }
         private CubePrimitive CyanBox { get; set; }
+        private CubePrimitive YellowBox { get; set; }
         private CylinderPrimitive Cylinder { get; set; }
         private CylinderPrimitive SmallCylinder { get; set; }
         private Vector3 BoxPosition { get; set; }
@@ -123,6 +124,7 @@ namespace TGC.MonoGame.TP
             WhiteBox = new CubePrimitive(GraphicsDevice, TAMANIO_CUBO, Color.White, Color.White, Color.White, Color.White, Color.White, Color.White);
             BlackBox = new CubePrimitive(GraphicsDevice, TAMANIO_CUBO, Color.Black, Color.Black, Color.Black, Color.Black, Color.Black, Color.Black);
             CyanBox = new CubePrimitive(GraphicsDevice, TAMANIO_CUBO, Color.Cyan, Color.Cyan, Color.Cyan, Color.Cyan, Color.Cyan, Color.Cyan);
+            YellowBox = new CubePrimitive(GraphicsDevice, TAMANIO_CUBO, Color.YellowGreen, Color.YellowGreen, Color.YellowGreen, Color.YellowGreen, Color.YellowGreen, Color.YellowGreen);
             //Cilindro
             Cylinder = new CylinderPrimitive(GraphicsDevice, CYLINDER_HEIGHT, CYLINDER_DIAMETER, 18);
             SmallCylinder = new CylinderPrimitive(GraphicsDevice, CYLINDER_HEIGHT *2, CYLINDER_DIAMETER/10, 18);    
@@ -272,9 +274,9 @@ namespace TGC.MonoGame.TP
             DrawPrincipalPlatform();
             DrawBridge(15f);
             //Se puede reemplazar con un for.
-            DrawGeometry(Cylinder, new Vector3(30f *1.0f* TAMANIO_CUBO, 0f, 4.5f* 1.0f * TAMANIO_CUBO ), CylinderYaw, Pitch, Roll);
-            DrawGeometry(Cylinder, new Vector3(40f *1.0f* TAMANIO_CUBO, 0f, 4.5f* 1.0f * TAMANIO_CUBO ), -CylinderYaw, Pitch, Roll);
-            DrawGeometry(Cylinder, new Vector3(50f *1.0f* TAMANIO_CUBO, 0f, 4.5f* 1.0f * TAMANIO_CUBO ), CylinderYaw, Pitch, Roll);
+            DrawGeometry(Cylinder, new Vector3(30f * TAMANIO_CUBO, 0f, 4.5f* TAMANIO_CUBO ), CylinderYaw, Pitch, Roll);
+            DrawGeometry(Cylinder, new Vector3(40f * TAMANIO_CUBO, 0f, 4.5f* TAMANIO_CUBO ), -CylinderYaw, Pitch, Roll);
+            DrawGeometry(Cylinder, new Vector3(50f * TAMANIO_CUBO, 0f, 4.5f* TAMANIO_CUBO ), CylinderYaw, Pitch, Roll);
             //Se puede reemplazar con un for.
             DrawGeometry(SmallCylinder, new Vector3(30f *1.0f* TAMANIO_CUBO, TAMANIO_CUBO, 4.5f* 1.0f * TAMANIO_CUBO ), Yaw, Pitch, Roll);
             DrawGeometry(SmallCylinder, new Vector3(40f *1.0f* TAMANIO_CUBO, TAMANIO_CUBO, 4.5f* 1.0f * TAMANIO_CUBO ), Yaw, Pitch, Roll);
@@ -308,22 +310,10 @@ namespace TGC.MonoGame.TP
             DrawGeometry(new CylinderPrimitive(GraphicsDevice, 10, 20, 18), new Vector3(2080,20,495f), Yaw, Pitch, Roll);
             DrawGeometry(new CylinderPrimitive(GraphicsDevice, 10, 20, 18), new Vector3(2130,20,520f), Yaw, Pitch, Roll);
 
-           // DrawGeometry(Box, new Vector3(23.7f * 1.0f* TAMANIO_CUBO,1f, 5.0f * 1.0f* TAMANIO_CUBO), Yaw, Pitch, Roll);
-            //DrawGeometry(Box, new Vector3(23.7f * 1.0f* TAMANIO_CUBO,1f, 5.0f * 1.0f* TAMANIO_CUBO), Yaw, Pitch, Roll);
-            //DrawXZRectangle(ObstacleBox,1,2,new Vector3(1840f,30f,495f));
-            
-            /*
-            //paredes que se mueven
-            DrawYZRectangle(ObstacleBox, 5,4,new Vector3(1470,30,535f+WallLength));
-            DrawYZRectangle(ObstacleBox, 5,4,new Vector3(1570,30,455-WallLength));
-            DrawYZRectangle(ObstacleBox, 5,4,new Vector3(1670,30,535f+WallLength));
-            DrawYZRectangle(ObstacleBox, 5,4,new Vector3(1770,30,455-WallLength));
-            DrawYZRectangle(ObstacleBox, 5,4,new Vector3(1870,30,535f+WallLength));
-        
             //Paredes verticales que aplastan
-            DrawXYRectangle(ObstacleBox, 8,8,new Vector3(2370,30,0.8f*WallLength+530));
-            DrawXYRectangle(ObstacleBox, 8,8,new Vector3(2370,30,0.8f*-WallLength+530));
-            */
+            //DrawXYRectangle(ObstacleBox, 8,8,new Vector3(2370,30,0.8f*WallLength+530));
+            //DrawXYRectangle(ObstacleBox, 8,8,new Vector3(2370,30,0.8f*-WallLength+530));
+            
 
             DrawXZRectangle(Box,10,8,new Vector3(2270f,20f,495f));
             //Muro
@@ -382,28 +372,66 @@ namespace TGC.MonoGame.TP
             DrawXZRectangle(ObstacleBox,8,8,new Vector3(1970,35*MathF.Cos(4*time+MathHelper.PiOver4)+30,4540));
             //Muro 
             DrawXZRectangle(CyanBox,8,1,new Vector3(1970,10,4700));
-            
-
-
-
-
-           // DrawXZRectangle(Box,35,8,new Vector3(2520,20f,495f));
-           // DrawXZRectangle(Box,8,40,new Vector3(2870,20f,495f));
-
+            //Plataformas que se mueven
+            DrawXZRectangle(CyanBox,4,8,new Vector3(1970,0,200*MathF.Cos(2*time)+5230));  
+            DrawXZRectangle(CyanBox,4,8,new Vector3(2020,0,200*MathF.Cos(2*time+MathHelper.Pi)+5600));
+            DrawXZRectangle(CyanBox,4,8,new Vector3(1970,0,200*MathF.Cos(2*time)+6010));
+            //
+            DrawXZRectangle(Box,10,40,new Vector3(1970,0,6320));
+            DrawXZRectangle(YellowBox,10,10,new Vector3(1970,0,6510));
+            DrawXZRectangle(Box,10,200,new Vector3(1970,0,6720));
             
             //Monedas
-            DrawCoin(8f,2f,4.5f);
-            DrawCoin(8f,2f, 2.5f);
-            DrawCoin(8f,2f, 6.5f);
-            DrawCoin(30f,2f, 2.5f);
-            DrawCoin(40f,2f, 6.5f);
-            DrawCoin(50f,2f, 2.5f);
-            DrawCoin(150f, 3f,53.5f);
-            DrawCoin(1605f, 3f,53.5f);
-            DrawCoin(170.5f, 3f,53.5f);
-            DrawCoin(180f, 3f,53.5f);
-            DrawCoin(290f, 10f, 170f);
-            DrawCoin(290f, 10, 190f);
+            DrawCoin(30,10,30);
+            DrawCoin(50,10,30);
+            DrawCoin(70,10,30);
+            DrawCoin(90,10,30);
+            DrawCoin(270,10,60);
+            DrawCoin(300,10,60);
+            DrawCoin(380,10,60);
+            //DrawCoin(380,10,60);
+            //DrawCoin(170.5f, 3f,53.5f);
+            // DrawCoin(180f, 3f,53.5f);
+            //DrawCoin(290f, 10f, 170f);
+            //DrawCoin(290f, 10, 190f);
+            DrawCoin(1970, 10, 6660);
+            DrawCoin(1970, 10, 6690);
+            DrawCoin(1970, 10, 6720);
+            DrawCoin(1970, 10, 6750);
+            DrawCoin(2000, 10, 6780);
+            DrawCoin(2000, 10, 6810);
+            DrawCoin(2000, 10, 6840);
+            DrawCoin(2000, 10, 6870);
+            DrawCoin(2030, 10, 6900);
+            DrawCoin(2030, 10, 6930);
+            DrawCoin(2030, 10, 6960);
+            DrawCoin(2030, 10, 6990);
+            DrawCoin(2030, 10, 7010);
+
+            DrawCoin(2000, 10, 7050);
+            DrawCoin(2000, 10, 7080);
+            DrawCoin(2000, 10, 7110);
+            DrawCoin(2000, 10, 7140);
+            DrawCoin(2000, 10, 7170);
+            DrawCoin(2000, 10, 7200);
+            DrawCoin(2000, 10, 7230);
+            DrawCoin(2000, 10, 7260);
+            DrawCoin(2000, 10, 7290);
+            DrawCoin(2000, 10, 7320);
+            DrawCoin(2000, 10, 7350);
+
+            DrawCoin(1970, 10, 7380);
+            DrawCoin(1970, 10, 7410);
+            DrawCoin(1970, 10, 7440);
+            DrawCoin(1970, 10, 7470);
+            DrawCoin(1970, 10, 7500);
+            DrawCoin(1970, 10, 7530);
+            DrawCoin(1970, 10, 7560);
+            DrawCoin(1970, 10, 7590);
+
+            
+
+
 
             //Troncos que cuando la pelota llegue a cierto punto arrancan a rodar.
             DrawGeometry(new TrunkPrimitive(GraphicsDevice, 70f,20f, 18),new Vector3(870f, 115f, 440f), Yaw, Pitch, MathHelper.PiOver2);
@@ -422,7 +450,9 @@ namespace TGC.MonoGame.TP
             DrawGeometry(new TrunkPrimitive(GraphicsDevice, 40f,20f, 18),new Vector3(2060, 98, 2475), MathHelper.PiOver2, Pitch, MathHelper.PiOver2);
             DrawGeometry(new TrunkPrimitive(GraphicsDevice, 40f,20f, 18),new Vector3(2090, 98, 2475), MathHelper.PiOver2, Pitch, MathHelper.PiOver2);
 
-           DrawChequeredFlag(8, 15);
+
+
+            DrawChequeredFlag(10, 15);
 
 
             
@@ -492,8 +522,9 @@ namespace TGC.MonoGame.TP
         }
 
         private void DrawCoin(float x, float y, float z){
-             DrawGeometry(new CoinPrimitive(GraphicsDevice,1,10,40), new Vector3(x * TAMANIO_CUBO, y * TAMANIO_CUBO, z * TAMANIO_CUBO), CylinderYaw, Pitch, MathHelper.PiOver2);
+             DrawGeometry(new CoinPrimitive(GraphicsDevice,1,10,40), new Vector3(x + TAMANIO_CUBO, y + TAMANIO_CUBO, z + TAMANIO_CUBO), CylinderYaw, Pitch, MathHelper.PiOver2);
         }
+
 
         private void DrawWalls(float wallLength, float rightLimit, float leftLimit, float rightOffset, float leftOffset, float upOffset, float BridgeRoll, float BridgeYaw, float y){
             // Pared Derecha.
@@ -515,9 +546,9 @@ namespace TGC.MonoGame.TP
             for(var i = 0; i < rows; i++){
                 for(var j = 0; j <= columns; j++){
                 if((i%2==1 && j%2==1) || (i%2==0 && j%2==0))
-                    DrawGeometry(WhiteBox, new Vector3(1970 + i*TAMANIO_CUBO, 0f,5000 + j*TAMANIO_CUBO), Yaw, Pitch, Roll);
+                    DrawGeometry(WhiteBox, new Vector3(1970 + i*TAMANIO_CUBO, 0f,8720 + j*TAMANIO_CUBO), Yaw, Pitch, Roll);
                 else
-                    DrawGeometry(BlackBox, new Vector3(1970 + i*TAMANIO_CUBO, 0f,5000 + j* TAMANIO_CUBO), Yaw, Pitch, Roll);
+                    DrawGeometry(BlackBox, new Vector3(1970 + i*TAMANIO_CUBO, 0f,8720 + j* TAMANIO_CUBO), Yaw, Pitch, Roll);
                 }
             }
         }
