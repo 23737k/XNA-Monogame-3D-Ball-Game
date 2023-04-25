@@ -38,7 +38,7 @@ namespace TGC.MonoGame.TP
 
         private const float TAMANIO_CUBO = 10f;
         private const int CANTIDAD_CUBOS = 10;
-        private const float LINEAR_SPEED= 6f;
+        private const float LINEAR_SPEED= 10f;
         private const float ANGULAR_SPEED = 3f;
         private const float CAMERA_FOLLOW_RADIUS = 70f;
         private const float CAMERA_UP_DISTANCE = 30f;
@@ -335,12 +335,27 @@ namespace TGC.MonoGame.TP
             DrawXZRectangle(Box,8,10,new Vector3(2870,55,1185));
             DrawXZRectangle(Box,8,10,new Vector3(2870,70,1325));
             DrawXZRectangle(Box,8,10,new Vector3(2870,85,1465));
-            DrawXZRectangle(Box,8,40,new Vector3(2870,85,1605));
+            DrawXZRectangle(Box,8,60,new Vector3(2870,85,1605));
             //cilindros que giran
             DrawGeometry(new CylinderPrimitive(GraphicsDevice, 60, 10, 18),new Vector3(2930,100,1700), 3*CylinderYaw,Pitch,MathHelper.PiOver2);
             DrawGeometry(new CylinderPrimitive(GraphicsDevice, 60, 10, 18),new Vector3(2880,100,1750), 3*CylinderYaw,Pitch,MathHelper.PiOver2);
             DrawGeometry(new CylinderPrimitive(GraphicsDevice, 60, 10, 18),new Vector3(2930,100,1900), 3*CylinderYaw,Pitch,MathHelper.PiOver2);
             DrawGeometry(new CylinderPrimitive(GraphicsDevice, 60, 10, 18),new Vector3(2880,100,1950), 3*CylinderYaw,Pitch,MathHelper.PiOver2);
+            DrawXZRectangle(Box,8,20,new Vector3(2870,85,2260));
+            DrawXZRectangle(Box,16,12,new Vector3(2790,85,2460));
+            DrawXZRectangle(Box,80,4,new Vector3(1990,85,2460));
+            DrawXZRectangle(Box,80,4,new Vector3(1990,85,2540));
+            DrawXZRectangle(Box,80,4,new Vector3(1990,85,2540));
+            DrawXZRectangle(Box,2,2,new Vector3(2000,-PlatformHeight,2510));
+            DrawXZRectangle(Box,8,200,new Vector3(1970,0,2510));
+            //paredes que se mueven
+            DrawYZRectangle(ObstacleBox, 5,4,new Vector3(2050+WallLength,10,3010));  
+            DrawYZRectangle(ObstacleBox, 5,4,new Vector3(1970-WallLength,10,3110));
+            DrawYZRectangle(ObstacleBox, 5,4,new Vector3(2050+WallLength,10,3210));
+            DrawYZRectangle(ObstacleBox, 5,4,new Vector3(1970-WallLength,10,3310));
+            DrawYZRectangle(ObstacleBox, 5,4,new Vector3(2050+WallLength,10,3410));
+
+            
             //Monedas
             DrawCoin(8f,2f,4.5f);
             DrawCoin(8f,2f, 2.5f);
