@@ -268,9 +268,9 @@ namespace TGC.MonoGame.TP
 
             var time= Convert.ToSingle(gameTime.TotalGameTime.TotalSeconds);
 
-            // Para dibujar le modelo necesitamos pasarle informacion que el efecto esta esperando.
-            Effect.Parameters["View"].SetValue(View);
-            Effect.Parameters["Projection"].SetValue(Projection);
+            // Estos 3 parametros quedan fijos.
+            Effect.Parameters["View"].SetValue(Camera.View);
+            Effect.Parameters["Projection"].SetValue(Camera.Projection);
             Effect.Parameters["DiffuseColor"].SetValue(Color.DarkBlue.ToVector3());
             var rotationMatrix = Matrix.CreateRotationY(Rotation);
 
@@ -462,32 +462,28 @@ namespace TGC.MonoGame.TP
 
         private void DrawGeometry(GeometricPrimitive geometry, Vector3 position, float yaw, float pitch, float roll)
         {
-            var effect = geometry.Effect;
-            effect.World = Matrix.CreateFromYawPitchRoll(yaw, pitch, roll) * Matrix.CreateTranslation(position);
-            effect.View = Camera.View;
-            effect.Projection = Camera.Projection;
-            geometry.Draw(effect);
+            DrawGeometricPrimitive(Matrix.CreateFromYawPitchRoll(yaw, pitch, roll) * Matrix.CreateTranslation(position), geometry);
         }
 
         ///<summary>
         /// Dibuja una plataforma rectangular en el plano XZ (Horizontal)
         ///</summary>
         private void DrawXZRectangle (CubePrimitive BoxType ,int length, int width, Vector3 position){
-            BoxType.Draw(Matrix.CreateScale(length,1f, width) * Matrix.CreateTranslation(position.X, position.Y, position.Z), Camera.View, Camera.Projection);
+            DrawGeometricPrimitive(Matrix.CreateScale(length,1f, width) * Matrix.CreateTranslation(position.X, position.Y, position.Z), BoxType);
         }
 
           ///<summary>
         /// Dibuja una plataforma rectangular en el plano YZ (Vertical)
         ///</summary>
         private void DrawYZRectangle (CubePrimitive BoxType, int height, int width, Vector3 position){
-            BoxType.Draw(Matrix.CreateScale(1f,height, width) * Matrix.CreateTranslation(position.X, position.Y, position.Z), Camera.View, Camera.Projection);
+            DrawGeometricPrimitive(Matrix.CreateScale(1f,height, width) * Matrix.CreateTranslation(position.X, position.Y, position.Z), BoxType);
         }
 
         ///<summary>
         /// Dibuja una plataforma rectangular en el plano XY (Longitudinal)
         ///</summary>
          private void DrawXYRectangle (CubePrimitive BoxType, int depth, int height, Vector3 position){
-            BoxType.Draw(Matrix.CreateScale(depth,height,1f) * Matrix.CreateTranslation(position), Camera.View, Camera.Projection);
+            DrawGeometricPrimitive(Matrix.CreateScale(depth,height,1f) * Matrix.CreateTranslation(position), BoxType);
         }
 
         private void DrawCoin(float x, float y, float z){
@@ -497,7 +493,7 @@ namespace TGC.MonoGame.TP
 
         private void DrawWall(float wallLength, Vector3 position){
             // Pared Derecha.
-            WallBox.Draw(Matrix.CreateScale(wallLength, 2f, 1f) * Matrix.CreateTranslation(position), Camera.View, Camera.Projection);
+            DrawGeometricPrimitive(Matrix.CreateScale(wallLength, 2f, 1f) * Matrix.CreateTranslation(position), WallBox);
         }
 
         private void DrawChequeredFlag(float rows, float columns){
@@ -508,6 +504,27 @@ namespace TGC.MonoGame.TP
                 else
                     DrawGeometry(BlackBox, new Vector3(1970 + i*TAMANIO_CUBO, 0f,8720 + j* TAMANIO_CUBO), Yaw, Pitch, Roll);
                 }
+            }
+        }
+        private void DrawGeometricPrimitive(Matrix World, GeometricPrimitive geometricPrimitive){
+            
+            //Usa el VertexBuffer y el IndexBuffer generado por la clase GeometricPrimitive.
+            //Pero no utilizamos el metodo Draw de dicha clase para no utilizar el shader BasicEffect.
+            //En cambio, dibujamos la primitiva mediante este metodo.
+
+            Effect.Parameters["World"].SetValue(World);
+
+            GraphicsDevice.SetVertexBuffer(geometricPrimitive.VertexBuffer);
+
+            GraphicsDevice.Indices = geometricPrimitive.IndexBuffer;
+
+            foreach (var effectPass in Effect.CurrentTechnique.Passes)
+            {
+                effectPass.Apply();
+
+                var primitiveCount = geometricPrimitive.Indices.Count / 3;
+
+                GraphicsDevice.DrawIndexedPrimitives(PrimitiveType.TriangleList, 0, 0, primitiveCount);
             }
         }
        /// <summary>
