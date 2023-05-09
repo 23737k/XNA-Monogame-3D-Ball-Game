@@ -271,7 +271,7 @@ namespace TGC.MonoGame.TP
             // Estos 3 parametros quedan fijos.
             Effect.Parameters["View"].SetValue(Camera.View);
             Effect.Parameters["Projection"].SetValue(Camera.Projection);
-            Effect.Parameters["DiffuseColor"].SetValue(Color.DarkBlue.ToVector3());
+            
             var rotationMatrix = Matrix.CreateRotationY(Rotation);
 
             //foreach (var mesh in Model.Meshes)
