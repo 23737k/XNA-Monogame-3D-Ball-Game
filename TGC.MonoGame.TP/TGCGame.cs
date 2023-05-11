@@ -38,7 +38,7 @@ namespace TGC.MonoGame.TP
 
         private const float TAMANIO_CUBO = 10f;
         private const int CANTIDAD_CUBOS = 10;
-        private const float LINEAR_SPEED= 2f;
+        private const float LINEAR_SPEED= 6f;
         private const float ANGULAR_SPEED = 3f;
         private const float CAMERA_FOLLOW_RADIUS = 70f;
         private const float CAMERA_UP_DISTANCE = 30f;
@@ -129,7 +129,6 @@ namespace TGC.MonoGame.TP
             SpherePosition = new Vector3(0, 10, 0);
 
             // Cubo
-            //en este momento no se estan usando ni box ni boxposition
             Box = new CubePrimitive(GraphicsDevice, TAMANIO_CUBO, Color.MonoGameOrange, Color.MonoGameOrange, Color.MonoGameOrange,
             Color.MonoGameOrange, Color.MonoGameOrange, Color.MonoGameOrange);
             ObstacleBox = new CubePrimitive(GraphicsDevice, TAMANIO_CUBO, Color.BlueViolet,Color.BlueViolet, Color.BlueViolet, Color.BlueViolet, Color.BlueViolet, Color.BlueViolet);
@@ -274,114 +273,124 @@ namespace TGC.MonoGame.TP
             
             var rotationMatrix = Matrix.CreateRotationY(Rotation);
 
-            //foreach (var mesh in Model.Meshes)
-            //{
-            //    World = mesh.ParentBone.Transform * rotationMatrix;
-            //    Effect.Parameters["World"].SetValue(World);
-            //    mesh.Draw();
-            //}
-
             DrawGeometry(Sphere, SpherePosition, -Yaw, Pitch, Roll);
-            DrawXZRectangle(Box,15,10, Vector3.Zero);
-            DrawXZRectangle(Box,15,4, new Vector3(15* TAMANIO_CUBO, 0f, 2f));
-            //Se puede reemplazar con un for.
+
+            DrawRectangle(Box,15,1,10, Vector3.Zero);
+            
+            DrawRectangle(Box,15,1,4, new Vector3(150, 0f, 2f));
+
             DrawGeometry(Cylinder, new Vector3(30f * TAMANIO_CUBO , 0f, 4.5f ), CylinderYaw, Pitch, Roll);
             DrawGeometry(Cylinder, new Vector3(40f * TAMANIO_CUBO, 0f, 4.5f ), -CylinderYaw, Pitch, Roll);
             DrawGeometry(Cylinder, new Vector3(50f * TAMANIO_CUBO, 0f, 4.5f ), CylinderYaw, Pitch, Roll);
-            //Se puede reemplazar con un for.
+            
             DrawGeometry(SmallCylinder, new Vector3(30f * TAMANIO_CUBO, TAMANIO_CUBO, 4.5f ), Yaw, Pitch, Roll);
             DrawGeometry(SmallCylinder, new Vector3(40f * TAMANIO_CUBO, TAMANIO_CUBO, 4.5f ), Yaw, Pitch, Roll);
             DrawGeometry(SmallCylinder, new Vector3(50f * TAMANIO_CUBO, TAMANIO_CUBO, 4.5f ), Yaw, Pitch, Roll);
 
-            DrawXZRectangle(Box,5,5,new Vector3(600f,70*MathF.Cos(3*time)-60,4.5f));
-            DrawXZRectangle(Box,5,5,new Vector3(700f,-70*MathF.Cos(3*time)+60,4.5f));
-            DrawXZRectangle(Box,14,38,new Vector3(800f,100f,105f));
+            DrawRectangle(Box,5,1,5,new Vector3(600f,70*MathF.Cos(3*time)-60,4.5f));
+            DrawRectangle(Box,5,1,5,new Vector3(700f,-70*MathF.Cos(3*time)+60,4.5f));
+
+            DrawRectangle(Box,14,1,38,new Vector3(800f,100f,245f));
 
             //DrawRectangle(10,2,new Vector3(754.1f,100f,523));
             //DrawRectangle(10,2,new Vector3(754.1f,100f,523));
             //DrawRectangle(10,2,new Vector3(754.1f,100f,523));
-            InclinedTrackModel.Draw(Matrix.CreateScale(1.5f) * TrackWorld* Matrix.CreateTranslation(864.1f,100f,230f) ,Camera.View, Camera.Projection);
-            DrawXZRectangle(Box,20,3,new Vector3(1260f,20f,230f));
-            //Muroa
-            DrawXZRectangle(CyanBox,1,3,new Vector3(1400f,30f,230f));
-            DrawXZRectangle(Box,15,8,new Vector3(1430f,20f,230f));
-            DrawXZRectangle(Box,30,8,new Vector3(1520f,20f,230f));
-            //Muro
-            DrawXZRectangle(CyanBox,1,8,new Vector3(1560f,30f,230f));
-            //Islas
-            DrawGeometry(new CylinderPrimitive(GraphicsDevice, 10, 20, 18), new Vector3(1700f,20,230f), Yaw, Pitch, Roll);
-            DrawGeometry(new CylinderPrimitive(GraphicsDevice, 10, 20, 18), new Vector3(1750,20,260f), Yaw, Pitch, Roll);
-            DrawGeometry(new CylinderPrimitive(GraphicsDevice, 10, 20, 18), new Vector3(1800,20,280f), Yaw, Pitch, Roll);
-            DrawGeometry(new CylinderPrimitive(GraphicsDevice, 10, 20, 18), new Vector3(1850,20,280f), Yaw, Pitch, Roll);
-            DrawGeometry(new CylinderPrimitive(GraphicsDevice, 10, 20, 18), new Vector3(1900,20,260f), Yaw, Pitch, Roll);
-            DrawGeometry(new CylinderPrimitive(GraphicsDevice, 10, 20, 18), new Vector3(1950,20,230f), Yaw, Pitch, Roll);
-            DrawGeometry(new CylinderPrimitive(GraphicsDevice, 10, 20, 18), new Vector3(1980,20,240f), Yaw, Pitch, Roll);
-            DrawXZRectangle(Box,10,8,new Vector3(2050f,20f,240f));
-            //Paredes verticales que aplastan
-            //DrawXYRectangle(ObstacleBox, 8,8,new Vector3(2370,30,0.8f*WallLength+530));
-            //DrawXYRectangle(ObstacleBox, 8,8,new Vector3(2370,30,0.8f*-WallLength+530));
+
+
+            InclinedTrackModel.Draw(Matrix.CreateScale(1.5f) * TrackWorld* Matrix.CreateTranslation(864.1f,100f,415f) ,Camera.View, Camera.Projection);
             
+            DrawRectangle(Box,15,1,3,new Vector3(1235f,20f,415f));
+
             //Muro
-            DrawXZRectangle(CyanBox,1,8,new Vector3(2250,30f,240f));
+            DrawRectangle(CyanBox,1,1,3,new Vector3(1360f,30f,410f));
             //
-            DrawXZRectangle(Box,35,8,new Vector3(2170,20f,240f));
-            DrawXZRectangle(Box,35,8,new Vector3(2520,20f,240f));
-            DrawXZRectangle(Box,8,40,new Vector3(2670,20f,400f));
+            DrawRectangle(Box,15,1,8,new Vector3(1405,20f,435f));
+            
+            DrawRectangle(Box,30,1,8,new Vector3(1670f,20f,435f));
+           
+            //Muro
+            DrawRectangle(CyanBox,1,1,8,new Vector3(1565f,30f,435f));
+            //
+
+            //Islas
+            DrawGeometry(new CylinderPrimitive(GraphicsDevice, 10, 20, 18), new Vector3(1850,20,404), Yaw, Pitch, Roll);
+            DrawGeometry(new CylinderPrimitive(GraphicsDevice, 10, 20, 18), new Vector3(1890,20,434.5f), Yaw, Pitch, Roll);
+            DrawGeometry(new CylinderPrimitive(GraphicsDevice, 10, 20, 18), new Vector3(1930,20,454.5f), Yaw, Pitch, Roll);
+            DrawGeometry(new CylinderPrimitive(GraphicsDevice, 10, 20, 18), new Vector3(1980,20,454.5f), Yaw, Pitch, Roll);
+            DrawGeometry(new CylinderPrimitive(GraphicsDevice, 10, 20, 18), new Vector3(2030,20,434.5f), Yaw, Pitch, Roll);
+            DrawGeometry(new CylinderPrimitive(GraphicsDevice, 10, 20, 18), new Vector3(2080,20,404.5f), Yaw, Pitch, Roll);
+            DrawGeometry(new CylinderPrimitive(GraphicsDevice, 10, 20, 18), new Vector3(2130,20,414.5f), Yaw, Pitch, Roll);
+            //
+
+
+            DrawRectangle(Box,10,1,8,new Vector3(2230f,20f,435f));
+            
+
+            //Muro
+            DrawRectangle(CyanBox,1,1,8,new Vector3(2565f,30f,435f));
+            //
+            DrawRectangle(Box,35,1,8,new Vector3(2475f,20f,435f));
+            
+            /*
+            DrawRectangle(Box,35,1,8,new Vector3(2520,20f,394.5f));
+            DrawRectangle(Box,8,1,40,new Vector3(2670,20f,400f));
             //
             //DrawWalls(48f,0f,0f, 575f,485f, 1340f,Roll, Yaw, 20f);
             //DrawWalls(70f,0f,0f,575f,485f,2170f,Roll, Yaw, 20f);
+
             //Muro insaltable (existe esa palabra?)
-            DrawXYRectangle(CyanBox,4,4,new Vector3(2670,50f,405));
-            DrawXYRectangle(CyanBox,4,4,new Vector3(2610,50f,485));
-            DrawXYRectangle(CyanBox,4,4,new Vector3(2670,50f,565));
-            DrawXZRectangle(Box,8,10,new Vector3(2670,30,680));
-            DrawXZRectangle(Box,8,10,new Vector3(2670,40,800));
-            DrawXZRectangle(Box,8,10,new Vector3(2670,55,920));
-            DrawXZRectangle(Box,8,10,new Vector3(2670,70,1040));
-            DrawXZRectangle(Box,8,10,new Vector3(2670,85,1160));
-            DrawXZRectangle(Box,8,60,new Vector3(2670,85,1450));
+            DrawRectangle(CyanBox,4,4,1,new Vector3(2670,50f,405));
+            DrawRectangle(CyanBox,4,4,1,new Vector3(2610,50f,485));
+            DrawRectangle(CyanBox,4,4,1,new Vector3(2670,50f,565));
+
+            DrawRectangle(Box,8,1,10,new Vector3(2670,30,680));
+            DrawRectangle(Box,8,1,10,new Vector3(2670,40,800));
+            DrawRectangle(Box,8,1,10,new Vector3(2670,55,920));
+            DrawRectangle(Box,8,1,10,new Vector3(2670,70,1040));
+            DrawRectangle(Box,8,1,10,new Vector3(2670,85,1160));
+            DrawRectangle(Box,8,1,60,new Vector3(2670,85,1450));
             //cilindros que giran
             DrawGeometry(new CylinderPrimitive(GraphicsDevice, 60, 10, 18),new Vector3(2700,100,1400), 3*CylinderYaw,Pitch,MathHelper.PiOver2);
             DrawGeometry(new CylinderPrimitive(GraphicsDevice, 60, 10, 18),new Vector3(2650,100,1500), 3*CylinderYaw,Pitch,MathHelper.PiOver2);
             DrawGeometry(new CylinderPrimitive(GraphicsDevice, 60, 10, 18),new Vector3(2700,100,1600), 3*CylinderYaw,Pitch,MathHelper.PiOver2);
             DrawGeometry(new CylinderPrimitive(GraphicsDevice, 60, 10, 18),new Vector3(2650,100,1700), 3*CylinderYaw,Pitch,MathHelper.PiOver2);
-            DrawXZRectangle(Box,8,20,new Vector3(2670,85,1700));
+            DrawRectangle(Box,8,1,20,new Vector3(2670,85,1700));
             //Pista dividida
-            DrawXZRectangle(Box,80,4,new Vector3(2300,85,1780));
-            DrawXZRectangle(Box,80,4,new Vector3(2300,85,1700));
-            DrawXZRectangle(Box,2,2,new Vector3(2000,42.5f*MathF.Cos(3*time)+42.5f,2510));
-            DrawXZRectangle(Box,8,150,new Vector3(1970,0,2510));
+            DrawRectangle(Box,80,1,4,new Vector3(2300,85,1780));
+            DrawRectangle(Box,80,1,4,new Vector3(2300,85,1700));
+            DrawRectangle(Box,2,1,2,new Vector3(2000,42.5f*MathF.Cos(3*time)+42.5f,2510));
+            DrawRectangle(Box,8,1,150,new Vector3(1970,0,2510));
             //paredes que se mueven
-            DrawYZRectangle(CyanBox, 5,4,new Vector3(40*MathF.Cos(5*time)+2010,10,3010));  
-            DrawYZRectangle(CyanBox, 5,4,new Vector3(-40*MathF.Cos(5*time)+2010,10,3110));
-            DrawYZRectangle(CyanBox, 5,4,new Vector3(40*MathF.Cos(5*time)+2010,10,3210));
-            DrawYZRectangle(CyanBox, 5,4,new Vector3(-40*MathF.Cos(5*time)+2010,10,3310));
-            DrawYZRectangle(CyanBox, 5,4,new Vector3(40*MathF.Cos(5*time)+2010,10,3410));
+            DrawRectangle(CyanBox,1, 5,4,new Vector3(40*MathF.Cos(5*time)+2010,10,3010));  
+            DrawRectangle(CyanBox, 1,5,4,new Vector3(-40*MathF.Cos(5*time)+2010,10,3110));
+            DrawRectangle(CyanBox,1, 5,4,new Vector3(40*MathF.Cos(5*time)+2010,10,3210));
+            DrawRectangle(CyanBox,1, 5,4,new Vector3(-40*MathF.Cos(5*time)+2010,10,3310));
+            DrawRectangle(CyanBox,1, 5,4,new Vector3(40*MathF.Cos(5*time)+2010,10,3410));
             //muros
-            DrawXZRectangle(CyanBox,8,1,new Vector3(1970,10,3490));
-            DrawXZRectangle(CyanBox,8,1,new Vector3(1970,10,3610));
+            DrawRectangle(CyanBox,8,1,1,new Vector3(1970,10,3490));
+            DrawRectangle(CyanBox,8,1,1,new Vector3(1970,10,3610));
 
             //
-            DrawXZRectangle(Box,8,100,new Vector3(1970,0,4030));
+            DrawRectangle(Box,8,1,100,new Vector3(1970,0,4030));
             //muro insaltable
-            DrawXYRectangle(CyanBox,4,4,new Vector3(1970,10,3940));
+            DrawRectangle(CyanBox,4,4,1,new Vector3(1970,10,3940));
             //Muro insaltable (ya fue, asi le voy a decir)
-            DrawXYRectangle(CyanBox,4,4,new Vector3(2010,10,4080));
+            DrawRectangle(CyanBox,4,4,1,new Vector3(2010,10,4080));
 
              //Pared que aplastan contra el suelo
-            DrawXZRectangle(ObstacleBox,8,8,new Vector3(1970,35*MathF.Cos(4*time)+30,4300));
-            DrawXZRectangle(ObstacleBox,8,8,new Vector3(1970,35*MathF.Cos(4*time+MathHelper.PiOver2)+30,4430));
-            DrawXZRectangle(ObstacleBox,8,8,new Vector3(1970,35*MathF.Cos(4*time+MathHelper.PiOver4)+30,4540));
+            DrawRectangle(ObstacleBox,8,1,8,new Vector3(1970,35*MathF.Cos(4*time)+30,4300));
+            DrawRectangle(ObstacleBox,8,1,8,new Vector3(1970,35*MathF.Cos(4*time+MathHelper.PiOver2)+30,4430));
+            DrawRectangle(ObstacleBox,8,1,8,new Vector3(1970,35*MathF.Cos(4*time+MathHelper.PiOver4)+30,4540));
             //Muro 
-            DrawXZRectangle(CyanBox,8,1,new Vector3(1970,10,4700));
+            DrawRectangle(CyanBox,8,1,1,new Vector3(1970,10,4700));
             //Plataformas que se mueven
-            DrawXZRectangle(CyanBox,4,8,new Vector3(1970,0,200*MathF.Cos(2*time)+5230));  
-            DrawXZRectangle(CyanBox,4,8,new Vector3(2020,0,200*MathF.Cos(2*time+MathHelper.Pi)+5600));
-            DrawXZRectangle(CyanBox,4,8,new Vector3(1970,0,200*MathF.Cos(2*time)+6010));
+            DrawRectangle(CyanBox,4,1,8,new Vector3(1970,0,200*MathF.Cos(2*time)+5230));  
+            DrawRectangle(CyanBox,4,1,8,new Vector3(2020,0,200*MathF.Cos(2*time+MathHelper.Pi)+5600));
+            DrawRectangle(CyanBox,4,1,8,new Vector3(1970,0,200*MathF.Cos(2*time)+6010));
             //
-            DrawXZRectangle(Box,10,40,new Vector3(1970,0,6320));
-            DrawXZRectangle(YellowBox,10,10,new Vector3(1970,0,6510));
-            DrawXZRectangle(Box,10,200,new Vector3(1970,0,6720));
+            DrawRectangle(Box,10,1,40,new Vector3(1970,0,6320));
+            DrawRectangle(YellowBox,10,1,10,new Vector3(1970,0,6510));
+            DrawRectangle(Box,10,1,200,new Vector3(1970,0,6720));
             
             //Monedas
             DrawCoin(35,10,4f);
@@ -456,7 +465,7 @@ namespace TGC.MonoGame.TP
 
             DrawChequeredFlag(10, 15);
 
-
+*/
             
         }
 
@@ -468,22 +477,8 @@ namespace TGC.MonoGame.TP
         ///<summary>
         /// Dibuja una plataforma rectangular en el plano XZ (Horizontal)
         ///</summary>
-        private void DrawXZRectangle (CubePrimitive BoxType ,int length, int width, Vector3 position){
-            DrawGeometricPrimitive(Matrix.CreateScale(length,1f, width) * Matrix.CreateTranslation(position.X, position.Y, position.Z), BoxType);
-        }
-
-          ///<summary>
-        /// Dibuja una plataforma rectangular en el plano YZ (Vertical)
-        ///</summary>
-        private void DrawYZRectangle (CubePrimitive BoxType, int height, int width, Vector3 position){
-            DrawGeometricPrimitive(Matrix.CreateScale(1f,height, width) * Matrix.CreateTranslation(position.X, position.Y, position.Z), BoxType);
-        }
-
-        ///<summary>
-        /// Dibuja una plataforma rectangular en el plano XY (Longitudinal)
-        ///</summary>
-         private void DrawXYRectangle (CubePrimitive BoxType, int depth, int height, Vector3 position){
-            DrawGeometricPrimitive(Matrix.CreateScale(depth,height,1f) * Matrix.CreateTranslation(position), BoxType);
+        private void DrawRectangle   (CubePrimitive BoxType ,float length, float height, float width, Vector3 position){
+            DrawGeometricPrimitive(Matrix.CreateScale(length,height, width) * Matrix.CreateTranslation(position.X, position.Y, position.Z ), BoxType);
         }
 
         private void DrawCoin(float x, float y, float z){
