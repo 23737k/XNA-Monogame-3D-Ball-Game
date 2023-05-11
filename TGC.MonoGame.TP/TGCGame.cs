@@ -45,6 +45,10 @@ namespace TGC.MonoGame.TP
         private const float CYLINDER_HEIGHT = 10F;
         private const float CYLINDER_DIAMETER = 10f * TAMANIO_CUBO;
 
+        private const float SALTO_BUFFER_VALUE = 20f;
+
+        private const float SALTO_BUFFER_DECREMENT_ALPHA = 25f;
+
         private float CylinderYaw = 0.0f;
         private float PlatformHeight = 0f;
         private float WallLength = 0f;
@@ -78,6 +82,9 @@ namespace TGC.MonoGame.TP
         private Model CurveTrackModel { get; set; }
         private Matrix TrackWorld { get; set; }
 
+        private float SaltoBuffer { get; set;}
+        private bool EstaSubiendoEnSalto { get; set;}
+        private bool EstaBajandoEnSalto { get; set;}
         private Matrix[] StairsWorld { get; set; }
 
         /// <summary>
@@ -216,6 +223,21 @@ namespace TGC.MonoGame.TP
                 Exit();
             }
 
+            AdministrarMovimientoDePelota(deltaTime);
+
+            CylinderYaw += deltaTime * 1.1f;
+            PlatformHeight = 70* MathF.Cos(4*Convert.ToSingle(gameTime.TotalGameTime.TotalSeconds))-60; 
+            WallLength = 50* MathF.Cos(8*Convert.ToSingle(gameTime.TotalGameTime.TotalSeconds))-50; 
+            SphereRotationMatrix = Matrix.CreateRotationY(Rotation);
+
+            World = SphereRotationMatrix * Matrix.CreateTranslation(SpherePosition);
+
+            UpdateCamera();
+
+            base.Update(gameTime);
+        }
+
+        protected void AdministrarMovimientoDePelota(float deltaTime){
             if (Keyboard.GetState().IsKeyDown(Keys.W))
             {
                 SpherePosition += SphereRotationMatrix.Forward * LINEAR_SPEED;
@@ -236,25 +258,47 @@ namespace TGC.MonoGame.TP
                 Rotation -= ANGULAR_SPEED * deltaTime;
             }
 
-             if (Keyboard.GetState().IsKeyDown(Keys.Up))
+            //AdministrarSalto(deltaTime); HABILITAR CUANDO FUNCIONE PelotaEstaEnElSuelo()
+        }
+
+        protected void AdministrarSalto(float deltaTime){
+
+            if (Keyboard.GetState().IsKeyDown(Keys.Space))
             {
-                SpherePosition += Vector3.Up* LINEAR_SPEED;
+                if (PelotaEstaEnElSuelo()){
+                    SaltoBuffer = SALTO_BUFFER_VALUE;
+                    EstaSubiendoEnSalto = true;
+                    EstaBajandoEnSalto = false;
+                }
             }
-             if (Keyboard.GetState().IsKeyDown(Keys.Down))
-            {
-                SpherePosition -= Vector3.Up* LINEAR_SPEED;
+
+            if(EstaSubiendoEnSalto && SaltoBuffer == 0){
+                EstaSubiendoEnSalto = false;
+                EstaBajandoEnSalto = true;
             }
 
-            CylinderYaw += deltaTime * 1.1f;
-            PlatformHeight = 70* MathF.Cos(4*Convert.ToSingle(gameTime.TotalGameTime.TotalSeconds))-60; 
-            WallLength = 50* MathF.Cos(8*Convert.ToSingle(gameTime.TotalGameTime.TotalSeconds))-50; 
-            SphereRotationMatrix = Matrix.CreateRotationY(Rotation);
+            if(EstaSubiendoEnSalto){
+                SpherePosition += Vector3.Up* LINEAR_SPEED * SaltoBuffer * deltaTime;
 
-            World = SphereRotationMatrix * Matrix.CreateTranslation(SpherePosition);
+                if (SaltoBuffer > 0) SaltoBuffer -= SALTO_BUFFER_DECREMENT_ALPHA * deltaTime;
+                else if (SaltoBuffer < 0) SaltoBuffer = 0;
 
-            UpdateCamera();
+                if(SaltoBuffer == 0){
+                    EstaSubiendoEnSalto = false;
+                    EstaBajandoEnSalto = true;
+                }
+            }
 
-            base.Update(gameTime);
+            if (EstaBajandoEnSalto && !PelotaEstaEnElSuelo()){
+                SaltoBuffer += SALTO_BUFFER_DECREMENT_ALPHA * deltaTime;
+                SpherePosition -= Vector3.Up* LINEAR_SPEED * SaltoBuffer * deltaTime;
+            }
+            
+        }
+
+        protected bool PelotaEstaEnElSuelo(){
+            //TODO
+            return true;
         }
 
         /// <summary>
