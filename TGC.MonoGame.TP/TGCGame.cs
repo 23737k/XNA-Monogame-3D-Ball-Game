@@ -80,6 +80,8 @@ namespace TGC.MonoGame.TP
 
         private Matrix[] StairsWorld { get; set; }
 
+        private Matrix[] GroundWorld { get; set; }
+
         /// <summary>
         ///     Se llama una sola vez, al principio cuando se ejecuta el ejemplo.
         ///     Escribir aqui el codigo de inicializacion: el procesamiento que podemos pre calcular para nuestro juego.
@@ -123,7 +125,36 @@ namespace TGC.MonoGame.TP
                 Matrix.CreateScale(40f, 20f, 100f) * Matrix.CreateTranslation(-130f, 45f, 152.5f),
             };
             
+            GroundWorld = new Matrix [] 
+            {
+                Matrix.CreateScale(15,1,10) * Matrix.CreateTranslation(Vector3.Zero),
+                Matrix.CreateScale(15,1,4) * Matrix.CreateTranslation(new Vector3(150, 0f, 2f)),
+                Matrix.CreateScale(14,1,38) * Matrix.CreateTranslation(new Vector3(800f,100f,245f)),
+                Matrix.CreateScale(15,1,3) * Matrix.CreateTranslation(new Vector3(1235f,20f,415f)),
+                Matrix.CreateScale(15,1,8) * Matrix.CreateTranslation(new Vector3(1405,20f,435f)),
+                Matrix.CreateScale(30,1,8) * Matrix.CreateTranslation(new Vector3(1670f,20f,435f)),
+                Matrix.CreateScale(10,1,8) * Matrix.CreateTranslation(new Vector3(2230f,20f,435f)),
+                Matrix.CreateScale(35,1,8) * Matrix.CreateTranslation(new Vector3(2475f,20f,435f)),
+                Matrix.CreateScale(35,1,8) * Matrix.CreateTranslation(new Vector3(2855f,20f,435f)),
+                Matrix.CreateScale(8,1,40) * Matrix.CreateTranslation(new Vector3(3070f,20f,595f)),
+                Matrix.CreateScale(8,1,10) * Matrix.CreateTranslation(new Vector3(3070f,30,865f)),
+                Matrix.CreateScale(8,1,10) * Matrix.CreateTranslation(new Vector3(3070f,40,1005f)),
+                Matrix.CreateScale(8,1,10) * Matrix.CreateTranslation(new Vector3(3070f,55,1145f)),
+                Matrix.CreateScale(8,1,10) * Matrix.CreateTranslation(new Vector3(3070f,70,1285f)),
+                Matrix.CreateScale(8,1,10) * Matrix.CreateTranslation(new Vector3(3070f,85,1425f)),
+                Matrix.CreateScale(8,1,60) * Matrix.CreateTranslation(new Vector3(3070f,85,1825f)),
+                Matrix.CreateScale(8,1,20) * Matrix.CreateTranslation(new Vector3(3070f,85,2245)),
+                Matrix.CreateScale(60,1,12) * Matrix.CreateTranslation(new Vector3(2810,85,2405)),
+                Matrix.CreateScale(80,1,4) * Matrix.CreateTranslation(new Vector3(2110,85,2365)),
+                Matrix.CreateScale(80,1,4) * Matrix.CreateTranslation(new Vector3(2110,85,2445)),
+                Matrix.CreateScale(8,1,150) * Matrix.CreateTranslation(new Vector3(1720,0,3175)),
+                Matrix.CreateScale(8,1,100) * Matrix.CreateTranslation(new Vector3(1720,0,4455)),
+                Matrix.CreateScale(10,1,260) * Matrix.CreateTranslation(new Vector3(1720,0,7620)),
+                Matrix.CreateScale(10,1,15) * Matrix.CreateTranslation(new Vector3(1720,0,8995))
+
+            };
             
+
             // Esfera
             Sphere = new SpherePrimitive(GraphicsDevice, 10);
             SpherePosition = new Vector3(0, 10, 0);
@@ -142,6 +173,9 @@ namespace TGC.MonoGame.TP
             Cylinder = new CylinderPrimitive(GraphicsDevice, CYLINDER_HEIGHT, CYLINDER_DIAMETER, 18);
             SmallCylinder = new CylinderPrimitive(GraphicsDevice, CYLINDER_HEIGHT *2, CYLINDER_DIAMETER/10, 18);    
             TrackWorld= Matrix.CreateRotationX(-MathHelper.PiOver2)*Matrix.CreateRotationY(-MathHelper.PiOver2)*Matrix.CreateTranslation(Vector3.Zero);
+
+            
+
 
             UpdateCamera();
 
@@ -273,16 +307,21 @@ namespace TGC.MonoGame.TP
             
             var rotationMatrix = Matrix.CreateRotationY(Rotation);
 
+
+            //Dibujo el suelo
+            for (int i = 0; i < 23; i++)
+            {
+                // Get the World Matrix
+                var matrix = GroundWorld[i];
+                DrawGeometricPrimitive(matrix,Box);
+            }
+
+
             DrawGeometry(Sphere, SpherePosition, -Yaw, Pitch, Roll);
-
-            DrawRectangle(Box,15,1,10, Vector3.Zero);
-            
-            DrawRectangle(Box,15,1,4, new Vector3(150, 0f, 2f));
-
             DrawGeometry(Cylinder, new Vector3(30f * TAMANIO_CUBO , 0f, 4.5f ), CylinderYaw, Pitch, Roll);
             DrawGeometry(Cylinder, new Vector3(40f * TAMANIO_CUBO, 0f, 4.5f ), -CylinderYaw, Pitch, Roll);
             DrawGeometry(Cylinder, new Vector3(50f * TAMANIO_CUBO, 0f, 4.5f ), CylinderYaw, Pitch, Roll);
-            
+
             DrawGeometry(SmallCylinder, new Vector3(30f * TAMANIO_CUBO, TAMANIO_CUBO, 4.5f ), Yaw, Pitch, Roll);
             DrawGeometry(SmallCylinder, new Vector3(40f * TAMANIO_CUBO, TAMANIO_CUBO, 4.5f ), Yaw, Pitch, Roll);
             DrawGeometry(SmallCylinder, new Vector3(50f * TAMANIO_CUBO, TAMANIO_CUBO, 4.5f ), Yaw, Pitch, Roll);
@@ -290,23 +329,11 @@ namespace TGC.MonoGame.TP
             DrawRectangle(Box,5,1,5,new Vector3(600f,70*MathF.Cos(3*time)-60,4.5f));
             DrawRectangle(Box,5,1,5,new Vector3(700f,-70*MathF.Cos(3*time)+60,4.5f));
 
-            DrawRectangle(Box,14,1,38,new Vector3(800f,100f,245f));
-
-            //DrawRectangle(10,2,new Vector3(754.1f,100f,523));
-            //DrawRectangle(10,2,new Vector3(754.1f,100f,523));
-            //DrawRectangle(10,2,new Vector3(754.1f,100f,523));
-
-
             InclinedTrackModel.Draw(Matrix.CreateScale(1.5f) * TrackWorld* Matrix.CreateTranslation(864.1f,100f,415f) ,Camera.View, Camera.Projection);
-            
-            DrawRectangle(Box,15,1,3,new Vector3(1235f,20f,415f));
 
             //Muro
             DrawRectangle(CyanBox,1,1,3,new Vector3(1360f,30f,410f));
             //
-            DrawRectangle(Box,15,1,8,new Vector3(1405,20f,435f));
-            
-            DrawRectangle(Box,30,1,8,new Vector3(1670f,20f,435f));
            
             //Muro
             DrawRectangle(CyanBox,1,1,8,new Vector3(1565f,30f,435f));
@@ -322,28 +349,15 @@ namespace TGC.MonoGame.TP
             DrawGeometry(new CylinderPrimitive(GraphicsDevice, 10, 20, 18), new Vector3(2130,20,414.5f), Yaw, Pitch, Roll);
             //
 
-            DrawRectangle(Box,10,1,8,new Vector3(2230f,20f,435f));
 
             //Muro
             DrawRectangle(CyanBox,1,1,8,new Vector3(2565f,30f,435f));
             //
-            DrawRectangle(Box,35,1,8,new Vector3(2475f,20f,435f));
-            
-            DrawRectangle(Box,35,1,8,new Vector3(2855f,20f,435f));
-        
-            DrawRectangle(Box,8,1,40,new Vector3(3070f,20f,595f));
-
             //Muro alto 
             DrawRectangle(CyanBox,4,4,1,new Vector3(3090f,45f,510f));
             DrawRectangle(CyanBox,4,4,1,new Vector3(3050f,45f,590f));
             DrawRectangle(CyanBox,4,4,1,new Vector3(3090f,45f,670f));
             //
-            DrawRectangle(Box,8,1,10,new Vector3(3070f,30,865f));
-            DrawRectangle(Box,8,1,10,new Vector3(3070f,40,1005f));
-            DrawRectangle(Box,8,1,10,new Vector3(3070f,55,1145f));
-            DrawRectangle(Box,8,1,10,new Vector3(3070f,70,1285f));
-            DrawRectangle(Box,8,1,10,new Vector3(3070f,85,1425f));
-            DrawRectangle(Box,8,1,60,new Vector3(3070f,85,1825f));
 
             //cilindros que giran
             DrawGeometry(new CylinderPrimitive(GraphicsDevice, 60, 10, 18),new Vector3(3100,100,1775), 3*CylinderYaw,Pitch,MathHelper.PiOver2);
@@ -351,15 +365,8 @@ namespace TGC.MonoGame.TP
             DrawGeometry(new CylinderPrimitive(GraphicsDevice, 60, 10, 18),new Vector3(3100,100,1870), 3*CylinderYaw,Pitch,MathHelper.PiOver2);
             DrawGeometry(new CylinderPrimitive(GraphicsDevice, 60, 10, 18),new Vector3(3050,100,1920), 3*CylinderYaw,Pitch,MathHelper.PiOver2);
             //
-            DrawRectangle(Box,8,1,20,new Vector3(3070f,85,2245));
-            DrawRectangle(Box,60,1,12,new Vector3(2810,85,2405));
-           
-            //Pista dividida
-            DrawRectangle(Box,80,1,4,new Vector3(2110,85,2365));
-            DrawRectangle(Box,80,1,4,new Vector3(2110,85,2445));
 
             DrawRectangle(Box,2,1,2,new Vector3(1720,42.5f*MathF.Cos(3*time)+42.5f,2405));
-            DrawRectangle(Box,8,1,150,new Vector3(1720,0,3175));
 
             //paredes que se mueven
             DrawRectangle(CyanBox,1, 5,4,new Vector3(40*MathF.Cos(5*time)+1720,40,2800));  
@@ -372,7 +379,6 @@ namespace TGC.MonoGame.TP
             DrawRectangle(CyanBox,8,1,1,new Vector3(1720,10,3320));
             DrawRectangle(CyanBox,8,1,1,new Vector3(1720,10,3460));
 
-            DrawRectangle(Box,8,1,100,new Vector3(1720,0,4455));
             //muro insaltable
             DrawRectangle(CyanBox,4,4,1,new Vector3(1700,25,3895));
             //Muro insaltable 
@@ -389,10 +395,6 @@ namespace TGC.MonoGame.TP
             DrawRectangle(CyanBox,4,1,8,new Vector3(1740,0,200*MathF.Cos(2*time)+5230));  
             DrawRectangle(CyanBox,4,1,8,new Vector3(1690,0,200*MathF.Cos(2*time+MathHelper.Pi)+5600));
             DrawRectangle(CyanBox,4,1,8,new Vector3(1740,0,200*MathF.Cos(2*time)+6010));
-        
-            DrawRectangle(Box,10,1,260,new Vector3(1720,0,7620));
-            //Meta
-            DrawRectangle(Box,10,1,15,new Vector3(1720,0,8995));
             
         }
 
