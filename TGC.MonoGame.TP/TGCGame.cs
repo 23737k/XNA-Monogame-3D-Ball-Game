@@ -49,7 +49,7 @@ namespace TGC.MonoGame.TP
 
         private const float GRAVEDAD_VALUE = 25f;
 
-        private Vector3 SPHERE_INITIAL_POSITION = new Vector3(50.0f, 9.99f, 0.0f);
+        private Vector3 SPHERE_INITIAL_POSITION = new Vector3(0.0f, 9.99f, 0.0f);
 
         //CHECKPOINTS DEBE ESTAR ORDENADO ASCENDENTEMENTE
         //EL PRIMER VALOR DEBE SER LA POSICION INICIAL DE LA ESFERA
@@ -168,9 +168,11 @@ namespace TGC.MonoGame.TP
             Sphere = new SpherePrimitive(GraphicsDevice, 10);
             SpherePosition = SPHERE_INITIAL_POSITION;
             SphereCollider = new BoundingCylinder(SpherePosition, 5f, 5f);
+            /*
             SphereVelocity = Vector3.Zero;
             SphereAcceleration = Vector3.Down * 9.8f;
             SphereFrontDirection =  Vector3.Backward;
+            */
             SphereRotation = Matrix.Identity;
             SphereScale = Matrix.CreateScale(0.3f);
 
@@ -195,7 +197,7 @@ namespace TGC.MonoGame.TP
             for(int i = 0; i < GroundWorld.Length; i++)
                 CollidersBoxes[i] = BoundingVolumesExtensions.FromMatrix(GroundWorld[i] * Matrix.CreateTranslation(0f,10f, 0f));
 
-            OnGround = true;
+            //OnGround = true;
             UpdateCamera();
 
 
@@ -285,18 +287,15 @@ namespace TGC.MonoGame.TP
 
             SphereRotationMatrix = Matrix.CreateRotationY(Rotation);
 
-            //Habría que ver el tema de la aceleración.
-            //Esta línea sería la gravedad
-            //SphereVelocity += Vector3.Down* SphereAcceleration * deltaTime;
-            
+            /*
             SphereAcceleration = Vector3.Down * 100f;
 
             SphereCollider.Center -= SphereAcceleration * deltaTime;
 
             SphereVelocity += SphereAcceleration * deltaTime; 
-
+            
             SolveVerticalMovement(SphereVelocity);
-
+            
             SphereVelocity = new Vector3(SphereVelocity.X, 0f, SphereVelocity.Z);
 
             SolveHorizontalMovementSliding(SphereVelocity);
@@ -304,7 +303,7 @@ namespace TGC.MonoGame.TP
             SpherePosition = SphereCollider.Center;
         
             SphereVelocity = new Vector3(0f, SphereVelocity.Y, 0f);
-            
+            */
             World = SphereRotationMatrix * Matrix.CreateTranslation(SpherePosition);
 
             UpdateCamera();
@@ -334,10 +333,10 @@ namespace TGC.MonoGame.TP
                 SpherePosition -= SphereRotationMatrix.Forward * LINEAR_SPEED;
             }
 
-            /*
+            
             AdministrarSalto(deltaTime);
             AdministrarCaida(deltaTime); //HABILITAR CUANDO FUNCIONE PelotaEstaEnElSuelo()
-            */
+            
             
         }
 
@@ -363,8 +362,15 @@ namespace TGC.MonoGame.TP
             else CaidaBuffer = 0;
         }
         protected bool PelotaEstaEnElSuelo(){
-            //TODO
-            return true;
+            // Chequea si colisiona con el suelo
+            
+            for (var i = 0; i < CollidersBoxes.Length; i++)
+            {   
+                BoundingBox aCollider = CollidersBoxes[i];
+                if (SphereCollider.Intersects(aCollider).Equals(BoxCylinderIntersection.Intersecting)) return true;
+            }
+            
+            return false;
         }
 
         protected bool PelotaSeCayo(){
@@ -377,7 +383,7 @@ namespace TGC.MonoGame.TP
 
             //Supone que CHECKPOINT esta en orden ascendente
             for(int i = 0; i < CHECKPOINTS.Length; i++){
-                if (CHECKPOINTS[i].X < SpherePosition.X) SpherePosition = CHECKPOINTS[i];
+                if (CHECKPOINTS[i].X <= SpherePosition.X) SpherePosition = CHECKPOINTS[i];
             }
         }
 
@@ -403,7 +409,7 @@ namespace TGC.MonoGame.TP
                 foundIndex = i;
                 break;
             }
-
+            
             while(collided)
             {
                 var collider = CollidersBoxes[foundIndex];
@@ -661,3 +667,25 @@ namespace TGC.MonoGame.TP
         }
     }
 }
+
+/*
+        //CollidersBoxes[0] = new BoundingBox(new Vector3(75f, -5f, 50f), new Vector3(-75f, 5f, -50f));
+        private BoundingBox BoundingBoxOfCubePrimitive(Matrix CubePrimitiveWorldMatrix){
+            // Min
+            Vector3 minNormal = -Vector3.UnitY;
+            Vector3 minSide1 = new Vector3(minNormal.Y, minNormal.Z, minNormal.X);
+            Vector3 minSide2 = Vector3.Cross(minNormal, minSide1);
+
+            Vector3 min = (minNormal - minSide1 - minSide2) * TAMANIO_CUBO / 2;
+
+            // Max
+            Vector3 maxNormal = Vector3.UnitY;
+            Vector3 maxSide1 = new Vector3(minNormal.Y, minNormal.Z, minNormal.X);
+            Vector3 maxSide2 = Vector3.Cross(minNormal, minSide1);
+
+            Vector3 max = (maxNormal - maxSide1 + maxSide2) * TAMANIO_CUBO / 2;
+
+            return new BoundingBox(new Matrix());
+            
+        }
+*/
