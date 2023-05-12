@@ -49,11 +49,13 @@ namespace TGC.MonoGame.TP
 
         private const float GRAVEDAD_VALUE = 25f;
 
-        private Vector3 SPHERE_INITIAL_POSITION = new Vector3(0.0f, 9.99f, 0.0f);
+        private Vector3 SPHERE_INITIAL_POSITION = new Vector3(50.0f, 9.99f, 0.0f);
 
         //CHECKPOINTS DEBE ESTAR ORDENADO ASCENDENTEMENTE
         //EL PRIMER VALOR DEBE SER LA POSICION INICIAL DE LA ESFERA
-        private Vector3[] CHECKPOINTS={new Vector3(0, 10, 0)};
+        private Vector3[] CHECKPOINTS={new Vector3(0, 9.99f, 0)};
+
+        private const float COORDENADA_Y_MAS_BAJA = 0f;
 
         private float CylinderYaw = 0.0f;
         private float PlatformHeight = 0f;
@@ -88,6 +90,8 @@ namespace TGC.MonoGame.TP
         private Model CurveTrackModel { get; set; }
         private Matrix TrackWorld { get; set; }
         private float SaltoBuffer { get; set;}
+
+        private float CaidaBuffer {get; set;}
         private bool EstaSubiendoEnSalto { get; set;}
         private Matrix[] GroundWorld { get; set; }
         private BoundingBox[] CollidersBoxes { get; set; }
@@ -284,7 +288,7 @@ namespace TGC.MonoGame.TP
             //Habría que ver el tema de la aceleración.
             //Esta línea sería la gravedad
             //SphereVelocity += Vector3.Down* SphereAcceleration * deltaTime;
-
+            
             SphereAcceleration = Vector3.Down * 100f;
 
             SphereCollider.Center -= SphereAcceleration * deltaTime;
@@ -300,7 +304,7 @@ namespace TGC.MonoGame.TP
             SpherePosition = SphereCollider.Center;
         
             SphereVelocity = new Vector3(0f, SphereVelocity.Y, 0f);
-
+            
             World = SphereRotationMatrix * Matrix.CreateTranslation(SpherePosition);
 
             UpdateCamera();
@@ -331,9 +335,10 @@ namespace TGC.MonoGame.TP
             }
 
             /*
-            AdministrarSalto(deltaTime)
+            AdministrarSalto(deltaTime);
             AdministrarCaida(deltaTime); //HABILITAR CUANDO FUNCIONE PelotaEstaEnElSuelo()
             */
+            
         }
 
         protected void AdministrarSalto(float deltaTime){
@@ -352,9 +357,10 @@ namespace TGC.MonoGame.TP
 
         protected void AdministrarCaida(float deltaTime){
             if (!PelotaEstaEnElSuelo()){
-                SaltoBuffer += GRAVEDAD_VALUE * deltaTime;
-                SpherePosition -= Vector3.Up* LINEAR_SPEED * SaltoBuffer * deltaTime;   
+                CaidaBuffer += GRAVEDAD_VALUE * deltaTime;
+                SpherePosition -= Vector3.Up* LINEAR_SPEED * CaidaBuffer * deltaTime;   
             }
+            else CaidaBuffer = 0;
         }
         protected bool PelotaEstaEnElSuelo(){
             //TODO
@@ -362,15 +368,7 @@ namespace TGC.MonoGame.TP
         }
 
         protected bool PelotaSeCayo(){
-            return false;
-            //SACAR EL RETURN FALSE CUANDO SE IMPLEMENTE NIVEL DEL SUELO
-            if (SpherePosition.Z < NivelDelSuelo(SpherePosition.X, SpherePosition.Y) - 2f) return true;
-            else return false;
-        }
-
-        protected float NivelDelSuelo(float xCoord, float yCoord){
-            //TODO
-            return 1000f;
+            return SpherePosition.Y < (COORDENADA_Y_MAS_BAJA - 5f);
         }
 
         protected void VolverAlUltimoCheckpoint(){
