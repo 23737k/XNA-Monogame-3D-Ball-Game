@@ -5,6 +5,7 @@ using Microsoft.Xna.Framework.Graphics;
 using Microsoft.Xna.Framework.Input;
 using TGC.MonoGame.TP.Cameras;
 using TGC.MonoGame.TP.Geometries;
+using TGC.MonoGame.TP.Collisions;
 //
 namespace TGC.MonoGame.TP
 {
@@ -81,14 +82,19 @@ namespace TGC.MonoGame.TP
         private Model InclinedTrackModel { get; set; }
         private Model CurveTrackModel { get; set; }
         private Matrix TrackWorld { get; set; }
-
         private float SaltoBuffer { get; set;}
         private bool EstaSubiendoEnSalto { get; set;}
         private bool EstaBajandoEnSalto { get; set;}
-        private Matrix[] StairsWorld { get; set; }
-
         private Matrix[] GroundWorld { get; set; }
-
+        private BoundingBox[] CollidersBoxes { get; set; }
+        private BoundingCylinder SphereCollider { get; set; }
+        private Vector3 SphereVelocity { get; set; }
+        private Vector3 SphereAcceleration { get; set; }
+        private bool OnGround { get; set; }
+        private Vector3 SphereFrontDirection { get; set; }
+        private Matrix SphereRotation { get; set; }
+        private Matrix SphereScale {get; set; }
+        private float EPSILON = 0.000001f;
         /// <summary>
         ///     Se llama una sola vez, al principio cuando se ejecuta el ejemplo.
         ///     Escribir aqui el codigo de inicializacion: el procesamiento que podemos pre calcular para nuestro juego.
@@ -118,56 +124,48 @@ namespace TGC.MonoGame.TP
             Projection =
                 Matrix.CreatePerspectiveFieldOfView(MathHelper.PiOver4, GraphicsDevice.Viewport.AspectRatio, 1, 250);
             Camera = new TargetCamera(GraphicsDevice.Viewport.AspectRatio, new Vector3(0, 20, 60), Vector3.Zero);
-           
-           //
-            StairsWorld = new Matrix[]
-            {
-                Matrix.CreateScale(20f, 20f, 15f) * Matrix.CreateTranslation(0f, 3f, 125f),
-                Matrix.CreateScale(20f, 20f, 15f) * Matrix.CreateTranslation(0f, 9f, 140f),
-                Matrix.CreateScale(0f, 20f, 15f) * Matrix.CreateTranslation(0f, 15f, 155f),
-                Matrix.CreateScale(0f, 20f, 40f) * Matrix.CreateTranslation(0f, 21f, 182.5f),
-                Matrix.CreateScale(15f, 20f, 40f) * Matrix.CreateTranslation(-42.5f, 27f, 182.5f),
-                Matrix.CreateScale(15f, 20f, 40f) * Matrix.CreateTranslation(-57.5f, 33f, 182.5f),
-                Matrix.CreateScale(15f, 20f, 40f) * Matrix.CreateTranslation(-72.5f, 39f, 182.5f),
-                Matrix.CreateScale(40f, 20f, 100f) * Matrix.CreateTranslation(-130f, 45f, 152.5f),
-            };
-            
+                      
             GroundWorld = new Matrix [] 
             {
-                Matrix.CreateScale(15,1,10) * Matrix.CreateTranslation(Vector3.Zero),
-                Matrix.CreateScale(15,1,4) * Matrix.CreateTranslation(new Vector3(150, 0f, 2f)),
-                Matrix.CreateScale(14,1,38) * Matrix.CreateTranslation(new Vector3(800f,100f,245f)),
-                Matrix.CreateScale(15,1,3) * Matrix.CreateTranslation(new Vector3(1235f,20f,415f)),
-                Matrix.CreateScale(15,1,8) * Matrix.CreateTranslation(new Vector3(1405,20f,435f)),
-                Matrix.CreateScale(30,1,8) * Matrix.CreateTranslation(new Vector3(1670f,20f,435f)),
-                Matrix.CreateScale(10,1,8) * Matrix.CreateTranslation(new Vector3(2230f,20f,435f)),
-                Matrix.CreateScale(35,1,8) * Matrix.CreateTranslation(new Vector3(2475f,20f,435f)),
-                Matrix.CreateScale(35,1,8) * Matrix.CreateTranslation(new Vector3(2855f,20f,435f)),
-                Matrix.CreateScale(8,1,40) * Matrix.CreateTranslation(new Vector3(3070f,20f,595f)),
-                Matrix.CreateScale(8,1,10) * Matrix.CreateTranslation(new Vector3(3070f,30,865f)),
-                Matrix.CreateScale(8,1,10) * Matrix.CreateTranslation(new Vector3(3070f,40,1005f)),
-                Matrix.CreateScale(8,1,10) * Matrix.CreateTranslation(new Vector3(3070f,55,1145f)),
-                Matrix.CreateScale(8,1,10) * Matrix.CreateTranslation(new Vector3(3070f,70,1285f)),
-                Matrix.CreateScale(8,1,10) * Matrix.CreateTranslation(new Vector3(3070f,85,1425f)),
-                Matrix.CreateScale(8,1,60) * Matrix.CreateTranslation(new Vector3(3070f,85,1825f)),
-                Matrix.CreateScale(8,1,20) * Matrix.CreateTranslation(new Vector3(3070f,85,2245)),
-                Matrix.CreateScale(60,1,12) * Matrix.CreateTranslation(new Vector3(2810,85,2405)),
-                Matrix.CreateScale(80,1,4) * Matrix.CreateTranslation(new Vector3(2110,85,2365)),
-                Matrix.CreateScale(80,1,4) * Matrix.CreateTranslation(new Vector3(2110,85,2445)),
-                Matrix.CreateScale(8,1,150) * Matrix.CreateTranslation(new Vector3(1720,0,3175)),
-                Matrix.CreateScale(8,1,100) * Matrix.CreateTranslation(new Vector3(1720,0,4455)),
-                Matrix.CreateScale(10,1,260) * Matrix.CreateTranslation(new Vector3(1720,0,7620)),
-                Matrix.CreateScale(10,1,15) * Matrix.CreateTranslation(new Vector3(1720,0,8995))
-
+                Matrix.CreateScale(15,1f,10) * Matrix.CreateTranslation(Vector3.Zero),
+                Matrix.CreateScale(15,1f,4) * Matrix.CreateTranslation(new Vector3(150, 0f, 2f)),
+                Matrix.CreateScale(14,1f,38) * Matrix.CreateTranslation(new Vector3(800f,100f,245f)),
+                Matrix.CreateScale(15,1f,3) * Matrix.CreateTranslation(new Vector3(1235f,20f,415f)),
+                Matrix.CreateScale(15,1f,8) * Matrix.CreateTranslation(new Vector3(1405,20f,435f)),
+                Matrix.CreateScale(30,1f,8) * Matrix.CreateTranslation(new Vector3(1670f,20f,435f)),
+                Matrix.CreateScale(10,1f,8) * Matrix.CreateTranslation(new Vector3(2230f,20f,435f)),
+                Matrix.CreateScale(35,1f,8) * Matrix.CreateTranslation(new Vector3(2475f,20f,435f)),
+                Matrix.CreateScale(35,1f,8) * Matrix.CreateTranslation(new Vector3(2855f,20f,435f)),
+                Matrix.CreateScale(8,1f,40) * Matrix.CreateTranslation(new Vector3(3070f,20f,595f)),
+                Matrix.CreateScale(8,1f,10) * Matrix.CreateTranslation(new Vector3(3070f,30,865f)),
+                Matrix.CreateScale(8,1f,10) * Matrix.CreateTranslation(new Vector3(3070f,40,1005f)),
+                Matrix.CreateScale(8,1f,10) * Matrix.CreateTranslation(new Vector3(3070f,55,1145f)),
+                Matrix.CreateScale(8,1f,10) * Matrix.CreateTranslation(new Vector3(3070f,70,1285f)),
+                Matrix.CreateScale(8,1f,10) * Matrix.CreateTranslation(new Vector3(3070f,85,1425f)),
+                Matrix.CreateScale(8,1f,60) * Matrix.CreateTranslation(new Vector3(3070f,85,1825f)),
+                Matrix.CreateScale(8,1f,20) * Matrix.CreateTranslation(new Vector3(3070f,85,2245)),
+                Matrix.CreateScale(60,1f,12) * Matrix.CreateTranslation(new Vector3(2810,85,2405)),
+                Matrix.CreateScale(80,1f,4) * Matrix.CreateTranslation(new Vector3(2110,85,2365)),
+                Matrix.CreateScale(80,1f,4) * Matrix.CreateTranslation(new Vector3(2110,85,2445)),
+                Matrix.CreateScale(8,1f,150) * Matrix.CreateTranslation(new Vector3(1720,0,3175)),
+                Matrix.CreateScale(8,10,100) * Matrix.CreateTranslation(new Vector3(1720,0,4455)),
+                Matrix.CreateScale(10,1f,260) * Matrix.CreateTranslation(new Vector3(1720,0,7620)),
+                Matrix.CreateScale(10,1f,15) * Matrix.CreateTranslation(new Vector3(1720,0,8995))
             };
-            
+
 
             // Esfera
             Sphere = new SpherePrimitive(GraphicsDevice, 10);
-            SpherePosition = new Vector3(0, 10, 0);
+            SpherePosition = new Vector3(0, 9.99f, 0);
+            SphereCollider = new BoundingCylinder(SpherePosition, 5f, 5f);
+            SphereVelocity = Vector3.Zero;
+            SphereAcceleration = Vector3.Down * 9.8f;
+            SphereFrontDirection =  Vector3.Backward;
+            SphereRotation = Matrix.Identity;
+            SphereScale = Matrix.CreateScale(0.3f);
 
             // Cubo
-            Box = new CubePrimitive(GraphicsDevice, TAMANIO_CUBO, Color.MonoGameOrange, Color.MonoGameOrange, Color.MonoGameOrange,
+            Box = new CubePrimitive(GraphicsDevice, 10f, Color.MonoGameOrange, Color.MonoGameOrange, Color.MonoGameOrange,
             Color.MonoGameOrange, Color.MonoGameOrange, Color.MonoGameOrange);
             ObstacleBox = new CubePrimitive(GraphicsDevice, TAMANIO_CUBO, Color.BlueViolet,Color.BlueViolet, Color.BlueViolet, Color.BlueViolet, Color.BlueViolet, Color.BlueViolet);
             //BoxPosition = Vector3.Zero;
@@ -181,9 +179,13 @@ namespace TGC.MonoGame.TP
             SmallCylinder = new CylinderPrimitive(GraphicsDevice, CYLINDER_HEIGHT *2, CYLINDER_DIAMETER/10, 18);    
             TrackWorld= Matrix.CreateRotationX(-MathHelper.PiOver2)*Matrix.CreateRotationY(-MathHelper.PiOver2)*Matrix.CreateTranslation(Vector3.Zero);
 
-            
+            //Create bounding boxes
+            CollidersBoxes = new BoundingBox[GroundWorld.Length];
 
+            for(int i = 0; i < GroundWorld.Length; i++)
+                CollidersBoxes[i] = BoundingVolumesExtensions.FromMatrix(GroundWorld[i]);
 
+            OnGround = true;
             UpdateCamera();
 
 
@@ -218,6 +220,11 @@ namespace TGC.MonoGame.TP
             //        meshPart.Effect = Effect;
             //    }
             //}
+            SpherePosition = new Vector3(10f, 10f, 10f);
+
+            SphereCollider.Center = SpherePosition;
+
+            World = SphereScale * Matrix.CreateTranslation(SpherePosition);
 
             base.LoadContent();
         }
@@ -257,11 +264,26 @@ namespace TGC.MonoGame.TP
             }
 
             AdministrarMovimientoDePelota(deltaTime);
+            AdministrarSalto(deltaTime);
 
             CylinderYaw += deltaTime * 1.1f;
             PlatformHeight = 70* MathF.Cos(4*Convert.ToSingle(gameTime.TotalGameTime.TotalSeconds))-60; 
             WallLength = 50* MathF.Cos(8*Convert.ToSingle(gameTime.TotalGameTime.TotalSeconds))-50; 
+
             SphereRotationMatrix = Matrix.CreateRotationY(Rotation);
+
+            //Habría que ver el tema de la aceleración.
+            //Esta línea sería la gravedad
+            //SphereVelocity -= Vector3.Down * SphereAcceleration;
+
+            SolveVerticalMovement(SphereVelocity);
+
+            SolveHorizontalMovementSliding(SphereVelocity);
+
+            //SpherePosition += SphereVelocity;
+            SpherePosition = SphereCollider.Center;
+        
+            SphereVelocity = new Vector3(0f, SphereVelocity.Y, 0f);
 
             World = SphereRotationMatrix * Matrix.CreateTranslation(SpherePosition);
 
@@ -273,12 +295,14 @@ namespace TGC.MonoGame.TP
         protected void AdministrarMovimientoDePelota(float deltaTime){
             if (Keyboard.GetState().IsKeyDown(Keys.W))
             {
-                SpherePosition += SphereRotationMatrix.Forward * LINEAR_SPEED;
+                SphereVelocity += SphereRotationMatrix.Forward * LINEAR_SPEED ;
+                //SpherePosition += SphereRotationMatrix.Forward * LINEAR_SPEED ;
             }
 
             if (Keyboard.GetState().IsKeyDown(Keys.S))
             {
-                SpherePosition -= SphereRotationMatrix.Forward * LINEAR_SPEED;
+                SphereVelocity -= SphereRotationMatrix.Forward * LINEAR_SPEED;
+                //SpherePosition -= SphereRotationMatrix.Forward * LINEAR_SPEED ;
             }
 
             if (Keyboard.GetState().IsKeyDown(Keys.A))
@@ -292,6 +316,127 @@ namespace TGC.MonoGame.TP
             }
 
             //AdministrarSalto(deltaTime); HABILITAR CUANDO FUNCIONE PelotaEstaEnElSuelo()
+        }
+
+        private void SolveVerticalMovement(Vector3 sphereVelocity)
+        {
+
+            SphereCollider.Center = SpherePosition;
+            OnGround = false;
+
+            var collided = false;
+            var foundIndex = -1;
+            for (var i = 0; i < CollidersBoxes.Length; i++)
+            {   
+                if(!SphereCollider.Intersects(CollidersBoxes[i]).Equals(BoxCylinderIntersection.Intersecting)){
+                    continue;
+                }
+                    
+                    
+                
+                //If we collided with something we do something
+                SphereVelocity = new Vector3(SphereVelocity.X, 10f, SphereVelocity.Z);
+
+                collided = true;
+                foundIndex = i;
+                break;
+            }
+
+            while(collided)
+            {
+                var collider = CollidersBoxes[foundIndex];
+                var colliderY = BoundingVolumesExtensions.GetCenter(collider).Y + 10f;
+                var sphereY = SphereCollider.Center.Y;
+                var extents = BoundingVolumesExtensions.GetExtents(collider);
+
+                float penetration;
+
+                //If we are on the top will push up and also 
+                //will set OnGround true
+                if (sphereY > colliderY) 
+                {
+                    penetration = colliderY + extents.Y - sphereY + SphereCollider.HalfHeight;
+                    OnGround = true;
+                }
+                else
+                    penetration = -sphereY -SphereCollider.HalfHeight + colliderY - extents.Y;
+                
+                SphereCollider.Center += Vector3.Up * penetration;
+                collided = false;
+
+                //Check for collisions again
+                for (var index = 0; index < CollidersBoxes.Length; index++)
+                {
+                    if (!SphereCollider.Intersects(CollidersBoxes[index]).Equals(BoxCylinderIntersection.Intersecting))
+                        continue;
+
+                    // Iterate until we don't collide with anything anymore
+                    collided = true;
+                    foundIndex = index;
+                    break;
+                }
+
+            }
+        }
+
+        private void SolveHorizontalMovementSliding(Vector3 scaledVelocity)
+        {
+            //Has horizontal movement
+            if (Vector3.Dot(scaledVelocity, new Vector3(20f, 10f, 20f)) == 0f)
+            return;
+
+            SphereCollider.Center += new Vector3(scaledVelocity.X, 0f, scaledVelocity.Z);
+
+            //Check intersection for every collider
+            for (int i = 0; i < CollidersBoxes.Length; i++) 
+            {
+                if(!SphereCollider.Intersects(CollidersBoxes[i]).Equals(BoxCylinderIntersection.Intersecting))
+                    continue;
+                
+                var collider = CollidersBoxes[i];
+                var colliderCenter = BoundingVolumesExtensions.GetCenter(collider);
+
+                bool stepClimbed = solveStepCollison(collider, i);
+
+                if(stepClimbed)
+                    return;
+
+                var sameLevelCenter = SphereCollider.Center;
+                sameLevelCenter.Y = colliderCenter.Y;
+
+                var closestPoint = BoundingVolumesExtensions.ClosestPoint(collider, sameLevelCenter);
+
+                var normalVector = sameLevelCenter - closestPoint;
+                var normalVectorLength = normalVector.Length();
+
+                var penetration = SphereCollider.Radius - normalVector.Length() + EPSILON;
+
+                SphereCollider.Center += (normalVector / normalVectorLength * penetration);
+            }
+        }
+
+        private bool solveStepCollison(BoundingBox collider, int colliderIndex)
+        {
+            var extents = BoundingVolumesExtensions.GetExtents(collider);
+            var colliderCenter = BoundingVolumesExtensions.GetCenter(collider);
+
+            if(extents.Y >= 10f)
+                return false;
+
+            var distanceToTop = MathF.Abs((SphereCollider.Center.Y - SphereCollider.HalfHeight) - (colliderCenter.Y + extents.Y));
+            if(distanceToTop >= 20f)
+                return false;
+
+            var pastPosition = SphereCollider.Center;
+            SphereCollider.Center += Vector3.Up * distanceToTop;
+            for(int i = 0; i < CollidersBoxes.Length; i++)
+                if(i != colliderIndex && SphereCollider.Intersects(CollidersBoxes[i]).Equals(BoxCylinderIntersection.Intersecting))
+                {
+                    SphereCollider.Center = pastPosition;
+                    return false;
+                }
+
+            return true;
         }
 
         protected void AdministrarSalto(float deltaTime){
@@ -330,8 +475,7 @@ namespace TGC.MonoGame.TP
         }
 
         protected bool PelotaEstaEnElSuelo(){
-            //TODO
-            return true;
+            return SpherePosition.Y < -10f;
         }
 
         /// <summary>
