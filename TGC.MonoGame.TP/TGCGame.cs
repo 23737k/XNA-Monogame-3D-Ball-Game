@@ -36,7 +36,6 @@ namespace TGC.MonoGame.TP
             // Hace que el mouse sea visible.
             IsMouseVisible = true;
         }
-
         private const float TAMANIO_CUBO = 10f;
         private const int CANTIDAD_CUBOS = 10;
         private const float LINEAR_SPEED= 10f;
@@ -95,6 +94,8 @@ namespace TGC.MonoGame.TP
         private Matrix SphereRotation { get; set; }
         private Matrix SphereScale {get; set; }
         private float EPSILON = 0.000001f;
+        private double time = 0.0f;
+
         /// <summary>
         ///     Se llama una sola vez, al principio cuando se ejecuta el ejemplo.
         ///     Escribir aqui el codigo de inicializacion: el procesamiento que podemos pre calcular para nuestro juego.
@@ -183,7 +184,7 @@ namespace TGC.MonoGame.TP
             CollidersBoxes = new BoundingBox[GroundWorld.Length];
 
             for(int i = 0; i < GroundWorld.Length; i++)
-                CollidersBoxes[i] = BoundingVolumesExtensions.FromMatrix(GroundWorld[i]);
+                CollidersBoxes[i] = BoundingVolumesExtensions.FromMatrix(GroundWorld[i] * Matrix.CreateTranslation(0f,10f, 0f));
 
             OnGround = true;
             UpdateCamera();
@@ -274,13 +275,20 @@ namespace TGC.MonoGame.TP
 
             //Habría que ver el tema de la aceleración.
             //Esta línea sería la gravedad
-            //SphereVelocity -= Vector3.Down * SphereAcceleration;
+            //SphereVelocity += Vector3.Down* SphereAcceleration * deltaTime;
+
+            SphereAcceleration = Vector3.Down * 100f;
+
+            SphereCollider.Center -= SphereAcceleration * deltaTime;
+
+            SphereVelocity += SphereAcceleration * deltaTime; 
 
             SolveVerticalMovement(SphereVelocity);
 
+            SphereVelocity = new Vector3(SphereVelocity.X, 0f, SphereVelocity.Z);
+
             SolveHorizontalMovementSliding(SphereVelocity);
 
-            //SpherePosition += SphereVelocity;
             SpherePosition = SphereCollider.Center;
         
             SphereVelocity = new Vector3(0f, SphereVelocity.Y, 0f);
@@ -295,14 +303,14 @@ namespace TGC.MonoGame.TP
         protected void AdministrarMovimientoDePelota(float deltaTime){
             if (Keyboard.GetState().IsKeyDown(Keys.W))
             {
-                SphereVelocity += SphereRotationMatrix.Forward * LINEAR_SPEED ;
-                //SpherePosition += SphereRotationMatrix.Forward * LINEAR_SPEED ;
+                //SphereVelocity += SphereRotationMatrix.Forward * LINEAR_SPEED ;
+                SphereCollider.Center += SphereRotationMatrix.Forward * LINEAR_SPEED ;
             }
 
             if (Keyboard.GetState().IsKeyDown(Keys.S))
             {
-                SphereVelocity -= SphereRotationMatrix.Forward * LINEAR_SPEED;
-                //SpherePosition -= SphereRotationMatrix.Forward * LINEAR_SPEED ;
+                //SphereVelocity -= SphereRotationMatrix.Forward * LINEAR_SPEED;
+                SphereCollider.Center -= SphereRotationMatrix.Forward * LINEAR_SPEED ;
             }
 
             if (Keyboard.GetState().IsKeyDown(Keys.A))
@@ -321,21 +329,20 @@ namespace TGC.MonoGame.TP
         private void SolveVerticalMovement(Vector3 sphereVelocity)
         {
 
-            SphereCollider.Center = SpherePosition;
             OnGround = false;
 
             var collided = false;
             var foundIndex = -1;
             for (var i = 0; i < CollidersBoxes.Length; i++)
             {   
-                if(!SphereCollider.Intersects(CollidersBoxes[i]).Equals(BoxCylinderIntersection.Intersecting)){
+                BoundingBox aCollider = CollidersBoxes[i];
+                bool didColilde = !SphereCollider.Intersects(aCollider).Equals(BoxCylinderIntersection.Intersecting);
+                if(!didColilde){
                     continue;
                 }
                     
-                    
-                
                 //If we collided with something we do something
-                SphereVelocity = new Vector3(SphereVelocity.X, 10f, SphereVelocity.Z);
+                SphereVelocity = new Vector3(SphereVelocity.X, 0f, SphereVelocity.Z);
 
                 collided = true;
                 foundIndex = i;
@@ -361,6 +368,7 @@ namespace TGC.MonoGame.TP
                 else
                     penetration = -sphereY -SphereCollider.HalfHeight + colliderY - extents.Y;
                 
+                //SphereCollider.Center += Vector3.Down * (SphereCollider.Center.Y - 10f) ;
                 SphereCollider.Center += Vector3.Up * penetration;
                 collided = false;
 
@@ -443,7 +451,8 @@ namespace TGC.MonoGame.TP
 
             if (Keyboard.GetState().IsKeyDown(Keys.Space))
             {
-                if (PelotaEstaEnElSuelo()){
+                SphereVelocity += Vector3.Up * LINEAR_SPEED * deltaTime;
+                if (OnGround){
                     SaltoBuffer = SALTO_BUFFER_VALUE;
                     EstaSubiendoEnSalto = true;
                     EstaBajandoEnSalto = false;
@@ -467,7 +476,7 @@ namespace TGC.MonoGame.TP
                 }
             }
 
-            if (EstaBajandoEnSalto && !PelotaEstaEnElSuelo()){
+            if (EstaBajandoEnSalto && OnGround){
                 SaltoBuffer += SALTO_BUFFER_DECREMENT_ALPHA * deltaTime;
                 SpherePosition -= Vector3.Up* LINEAR_SPEED * SaltoBuffer * deltaTime;
             }
@@ -497,7 +506,7 @@ namespace TGC.MonoGame.TP
 
 
             //Dibujo el suelo
-            for (int i = 0; i < 23; i++)
+            for (int i = 0; i < GroundWorld.Length; i++)
             {
                 // Get the World Matrix
                 var matrix = GroundWorld[i];
