@@ -256,7 +256,7 @@ namespace TGC.MonoGame.TP
                 Exit();
             }
 
-            AdministrarMovimientoDePelota(deltaTime);
+            MovementManager(deltaTime);
 
             CylinderYaw += deltaTime * 1.1f;
             PlatformHeight = 70* MathF.Cos(4*Convert.ToSingle(gameTime.TotalGameTime.TotalSeconds))-60; 
@@ -270,7 +270,7 @@ namespace TGC.MonoGame.TP
             base.Update(gameTime);
         }
 
-        protected void AdministrarMovimientoDePelota(float deltaTime){
+        protected void MovementManager(float deltaTime){
             if (Keyboard.GetState().IsKeyDown(Keys.W))
             {
                 SpherePosition += SphereRotationMatrix.Forward * LINEAR_SPEED;
@@ -291,10 +291,21 @@ namespace TGC.MonoGame.TP
                 Rotation -= ANGULAR_SPEED * deltaTime;
             }
 
+            if (Keyboard.GetState().IsKeyDown(Keys.Up))
+            {
+                SpherePosition += Vector3.Up* LINEAR_SPEED;
+            }
+             if (Keyboard.GetState().IsKeyDown(Keys.Down))
+            {
+                SpherePosition -= Vector3.Up* LINEAR_SPEED;
+            }
+
+
+
             //AdministrarSalto(deltaTime); HABILITAR CUANDO FUNCIONE PelotaEstaEnElSuelo()
         }
 
-        protected void AdministrarSalto(float deltaTime){
+        protected void JumpManager(float deltaTime){
 
             if (Keyboard.GetState().IsKeyDown(Keys.Space))
             {
