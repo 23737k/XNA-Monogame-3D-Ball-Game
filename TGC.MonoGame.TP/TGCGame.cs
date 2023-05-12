@@ -38,7 +38,7 @@ namespace TGC.MonoGame.TP
 
         private const float TAMANIO_CUBO = 10f;
         private const int CANTIDAD_CUBOS = 10;
-        private const float LINEAR_SPEED= 6f;
+        private const float LINEAR_SPEED= 10f;
         private const float ANGULAR_SPEED = 3f;
         private const float CAMERA_FOLLOW_RADIUS = 70f;
         private const float CAMERA_UP_DISTANCE = 30f;
@@ -322,150 +322,77 @@ namespace TGC.MonoGame.TP
             DrawGeometry(new CylinderPrimitive(GraphicsDevice, 10, 20, 18), new Vector3(2130,20,414.5f), Yaw, Pitch, Roll);
             //
 
-
             DrawRectangle(Box,10,1,8,new Vector3(2230f,20f,435f));
-            
 
             //Muro
             DrawRectangle(CyanBox,1,1,8,new Vector3(2565f,30f,435f));
             //
             DrawRectangle(Box,35,1,8,new Vector3(2475f,20f,435f));
             
-            /*
-            DrawRectangle(Box,35,1,8,new Vector3(2520,20f,394.5f));
-            DrawRectangle(Box,8,1,40,new Vector3(2670,20f,400f));
+            DrawRectangle(Box,35,1,8,new Vector3(2855f,20f,435f));
+        
+            DrawRectangle(Box,8,1,40,new Vector3(3070f,20f,595f));
+
+            //Muro alto 
+            DrawRectangle(CyanBox,4,4,1,new Vector3(3090f,45f,510f));
+            DrawRectangle(CyanBox,4,4,1,new Vector3(3050f,45f,590f));
+            DrawRectangle(CyanBox,4,4,1,new Vector3(3090f,45f,670f));
             //
-            //DrawWalls(48f,0f,0f, 575f,485f, 1340f,Roll, Yaw, 20f);
-            //DrawWalls(70f,0f,0f,575f,485f,2170f,Roll, Yaw, 20f);
+            DrawRectangle(Box,8,1,10,new Vector3(3070f,30,865f));
+            DrawRectangle(Box,8,1,10,new Vector3(3070f,40,1005f));
+            DrawRectangle(Box,8,1,10,new Vector3(3070f,55,1145f));
+            DrawRectangle(Box,8,1,10,new Vector3(3070f,70,1285f));
+            DrawRectangle(Box,8,1,10,new Vector3(3070f,85,1425f));
+            DrawRectangle(Box,8,1,60,new Vector3(3070f,85,1825f));
 
-            //Muro insaltable (existe esa palabra?)
-            DrawRectangle(CyanBox,4,4,1,new Vector3(2670,50f,405));
-            DrawRectangle(CyanBox,4,4,1,new Vector3(2610,50f,485));
-            DrawRectangle(CyanBox,4,4,1,new Vector3(2670,50f,565));
-
-            DrawRectangle(Box,8,1,10,new Vector3(2670,30,680));
-            DrawRectangle(Box,8,1,10,new Vector3(2670,40,800));
-            DrawRectangle(Box,8,1,10,new Vector3(2670,55,920));
-            DrawRectangle(Box,8,1,10,new Vector3(2670,70,1040));
-            DrawRectangle(Box,8,1,10,new Vector3(2670,85,1160));
-            DrawRectangle(Box,8,1,60,new Vector3(2670,85,1450));
             //cilindros que giran
-            DrawGeometry(new CylinderPrimitive(GraphicsDevice, 60, 10, 18),new Vector3(2700,100,1400), 3*CylinderYaw,Pitch,MathHelper.PiOver2);
-            DrawGeometry(new CylinderPrimitive(GraphicsDevice, 60, 10, 18),new Vector3(2650,100,1500), 3*CylinderYaw,Pitch,MathHelper.PiOver2);
-            DrawGeometry(new CylinderPrimitive(GraphicsDevice, 60, 10, 18),new Vector3(2700,100,1600), 3*CylinderYaw,Pitch,MathHelper.PiOver2);
-            DrawGeometry(new CylinderPrimitive(GraphicsDevice, 60, 10, 18),new Vector3(2650,100,1700), 3*CylinderYaw,Pitch,MathHelper.PiOver2);
-            DrawRectangle(Box,8,1,20,new Vector3(2670,85,1700));
-            //Pista dividida
-            DrawRectangle(Box,80,1,4,new Vector3(2300,85,1780));
-            DrawRectangle(Box,80,1,4,new Vector3(2300,85,1700));
-            DrawRectangle(Box,2,1,2,new Vector3(2000,42.5f*MathF.Cos(3*time)+42.5f,2510));
-            DrawRectangle(Box,8,1,150,new Vector3(1970,0,2510));
-            //paredes que se mueven
-            DrawRectangle(CyanBox,1, 5,4,new Vector3(40*MathF.Cos(5*time)+2010,10,3010));  
-            DrawRectangle(CyanBox, 1,5,4,new Vector3(-40*MathF.Cos(5*time)+2010,10,3110));
-            DrawRectangle(CyanBox,1, 5,4,new Vector3(40*MathF.Cos(5*time)+2010,10,3210));
-            DrawRectangle(CyanBox,1, 5,4,new Vector3(-40*MathF.Cos(5*time)+2010,10,3310));
-            DrawRectangle(CyanBox,1, 5,4,new Vector3(40*MathF.Cos(5*time)+2010,10,3410));
-            //muros
-            DrawRectangle(CyanBox,8,1,1,new Vector3(1970,10,3490));
-            DrawRectangle(CyanBox,8,1,1,new Vector3(1970,10,3610));
-
+            DrawGeometry(new CylinderPrimitive(GraphicsDevice, 60, 10, 18),new Vector3(3100,100,1775), 3*CylinderYaw,Pitch,MathHelper.PiOver2);
+            DrawGeometry(new CylinderPrimitive(GraphicsDevice, 60, 10, 18),new Vector3(3050,100,1820), 3*CylinderYaw,Pitch,MathHelper.PiOver2);
+            DrawGeometry(new CylinderPrimitive(GraphicsDevice, 60, 10, 18),new Vector3(3100,100,1870), 3*CylinderYaw,Pitch,MathHelper.PiOver2);
+            DrawGeometry(new CylinderPrimitive(GraphicsDevice, 60, 10, 18),new Vector3(3050,100,1920), 3*CylinderYaw,Pitch,MathHelper.PiOver2);
             //
-            DrawRectangle(Box,8,1,100,new Vector3(1970,0,4030));
+            DrawRectangle(Box,8,1,20,new Vector3(3070f,85,2245));
+            DrawRectangle(Box,60,1,12,new Vector3(2810,85,2405));
+           
+            //Pista dividida
+            DrawRectangle(Box,80,1,4,new Vector3(2110,85,2365));
+            DrawRectangle(Box,80,1,4,new Vector3(2110,85,2445));
+
+            DrawRectangle(Box,2,1,2,new Vector3(1720,42.5f*MathF.Cos(3*time)+42.5f,2405));
+            DrawRectangle(Box,8,1,150,new Vector3(1720,0,3175));
+
+            //paredes que se mueven
+            DrawRectangle(CyanBox,1, 5,4,new Vector3(40*MathF.Cos(5*time)+1720,40,2800));  
+            DrawRectangle(CyanBox, 1,5,4,new Vector3(-40*MathF.Cos(5*time)+1720,40,2900));
+            DrawRectangle(CyanBox,1, 5,4,new Vector3(40*MathF.Cos(5*time)+1720,40,3000));
+            DrawRectangle(CyanBox,1, 5,4,new Vector3(-40*MathF.Cos(5*time)+1720,40,3100));
+            DrawRectangle(CyanBox,1, 5,4,new Vector3(40*MathF.Cos(5*time)+1720,40,3200));
+            
+            //muros
+            DrawRectangle(CyanBox,8,1,1,new Vector3(1720,10,3320));
+            DrawRectangle(CyanBox,8,1,1,new Vector3(1720,10,3460));
+
+            DrawRectangle(Box,8,1,100,new Vector3(1720,0,4455));
             //muro insaltable
-            DrawRectangle(CyanBox,4,4,1,new Vector3(1970,10,3940));
-            //Muro insaltable (ya fue, asi le voy a decir)
-            DrawRectangle(CyanBox,4,4,1,new Vector3(2010,10,4080));
+            DrawRectangle(CyanBox,4,4,1,new Vector3(1700,25,3895));
+            //Muro insaltable 
+            DrawRectangle(CyanBox,4,4,1,new Vector3(1740,25,4020));
 
              //Pared que aplastan contra el suelo
-            DrawRectangle(ObstacleBox,8,1,8,new Vector3(1970,35*MathF.Cos(4*time)+30,4300));
-            DrawRectangle(ObstacleBox,8,1,8,new Vector3(1970,35*MathF.Cos(4*time+MathHelper.PiOver2)+30,4430));
-            DrawRectangle(ObstacleBox,8,1,8,new Vector3(1970,35*MathF.Cos(4*time+MathHelper.PiOver4)+30,4540));
+            DrawRectangle(ObstacleBox,8,1,8,new Vector3(1720,35*MathF.Cos(4*time)+45,4240));
+            DrawRectangle(ObstacleBox,8,1,8,new Vector3(1720,35*MathF.Cos(4*time+MathHelper.PiOver2)+45,4430));
+            DrawRectangle(ObstacleBox,8,1,8,new Vector3(1720,35*MathF.Cos(4*time+MathHelper.PiOver4)+45,4620));            
             //Muro 
-            DrawRectangle(CyanBox,8,1,1,new Vector3(1970,10,4700));
+            DrawRectangle(CyanBox,8,1,1,new Vector3(1720,10,4825));
+            
             //Plataformas que se mueven
-            DrawRectangle(CyanBox,4,1,8,new Vector3(1970,0,200*MathF.Cos(2*time)+5230));  
-            DrawRectangle(CyanBox,4,1,8,new Vector3(2020,0,200*MathF.Cos(2*time+MathHelper.Pi)+5600));
-            DrawRectangle(CyanBox,4,1,8,new Vector3(1970,0,200*MathF.Cos(2*time)+6010));
-            //
-            DrawRectangle(Box,10,1,40,new Vector3(1970,0,6320));
-            DrawRectangle(YellowBox,10,1,10,new Vector3(1970,0,6510));
-            DrawRectangle(Box,10,1,200,new Vector3(1970,0,6720));
-            
-            //Monedas
-            DrawCoin(35,10,4f);
-            DrawCoin(55,10,4f);
-            DrawCoin(75,10,4f);
-            DrawCoin(95,10,4f);
-            DrawCoin(275,10,4f);
-            DrawCoin(305,10,4f);
-            DrawCoin(38,10,4f);
-            //DrawCoin(380,10,60);
-            //DrawCoin(170.5f, 3f,53.5f);
-            // DrawCoin(180f, 3f,53.5f);
-            //DrawCoin(290f, 10f, 170f);
-            //DrawCoin(290f, 10, 190f);
-            DrawCoin(1970, 10, 6660);
-            DrawCoin(1970, 10, 6690);
-            DrawCoin(1970, 10, 6720);
-            DrawCoin(1970, 10, 6750);
-            DrawCoin(2000, 10, 6780);
-            DrawCoin(2000, 10, 6810);
-            DrawCoin(2000, 10, 6840);
-            DrawCoin(2000, 10, 6870);
-            DrawCoin(2030, 10, 6900);
-            DrawCoin(2030, 10, 6930);
-            DrawCoin(2030, 10, 6960);
-            DrawCoin(2030, 10, 6990);
-            DrawCoin(2030, 10, 7010);
-
-            DrawCoin(2000, 10, 7050);
-            DrawCoin(2000, 10, 7080);
-            DrawCoin(2000, 10, 7110);
-            DrawCoin(2000, 10, 7140);
-            DrawCoin(2000, 10, 7170);
-            DrawCoin(2000, 10, 7200);
-            DrawCoin(2000, 10, 7230);
-            DrawCoin(2000, 10, 7260);
-            DrawCoin(2000, 10, 7290);
-            DrawCoin(2000, 10, 7320);
-            DrawCoin(2000, 10, 7350);
-
-            DrawCoin(1970, 10, 7380);
-            DrawCoin(1970, 10, 7410);
-            DrawCoin(1970, 10, 7440);
-            DrawCoin(1970, 10, 7470);
-            DrawCoin(1970, 10, 7500);
-            DrawCoin(1970, 10, 7530);
-            DrawCoin(1970, 10, 7560);
-            DrawCoin(1970, 10, 7590);
-
-            
-
-
-
-            //Troncos que cuando la pelota llegue a cierto punto arrancan a rodar.
-            DrawGeometry(new TrunkPrimitive(GraphicsDevice, 70f,20f, 18),new Vector3(800f, 115f, 240f), Yaw, Pitch, MathHelper.PiOver2);
-            DrawGeometry(new TrunkPrimitive(GraphicsDevice, 70f,20f, 18),new Vector3(800f, 115f, 220f), Yaw, Pitch, MathHelper.PiOver2);
-            DrawGeometry(new TrunkPrimitive(GraphicsDevice, 70f,20f, 18),new Vector3(800f, 115f, 200f), Yaw, Pitch, MathHelper.PiOver2);
-            DrawGeometry(new TrunkPrimitive(GraphicsDevice, 70f,20f, 18),new Vector3(800f, 135f, 240f), Yaw, Pitch, MathHelper.PiOver2);
-            DrawGeometry(new TrunkPrimitive(GraphicsDevice, 70f,20f, 18),new Vector3(800f, 135f, 220f), Yaw, Pitch, MathHelper.PiOver2);
-            DrawGeometry(new TrunkPrimitive(GraphicsDevice, 70f,20f, 18),new Vector3(800f, 155f, 240f), Yaw, Pitch, MathHelper.PiOver2);
-            // En pista dividida
-            DrawGeometry(new TrunkPrimitive(GraphicsDevice, 40f,20f, 18),new Vector3(2000, 98, 1780), MathHelper.PiOver2, Pitch, MathHelper.PiOver2);
-            DrawGeometry(new TrunkPrimitive(GraphicsDevice, 40f,20f, 18),new Vector3(2030, 98, 1780), MathHelper.PiOver2, Pitch, MathHelper.PiOver2);
-            DrawGeometry(new TrunkPrimitive(GraphicsDevice, 40f,20f, 18),new Vector3(2060, 98, 1780), MathHelper.PiOver2, Pitch, MathHelper.PiOver2);
-            DrawGeometry(new TrunkPrimitive(GraphicsDevice, 40f,20f, 18),new Vector3(2090, 98, 1780), MathHelper.PiOver2, Pitch, MathHelper.PiOver2);
-            DrawGeometry(new TrunkPrimitive(GraphicsDevice, 40f,20f, 18),new Vector3(2000, 98, 1700), MathHelper.PiOver2, Pitch, MathHelper.PiOver2);
-            DrawGeometry(new TrunkPrimitive(GraphicsDevice, 40f,20f, 18),new Vector3(2030, 98, 1700), MathHelper.PiOver2, Pitch, MathHelper.PiOver2);
-            DrawGeometry(new TrunkPrimitive(GraphicsDevice, 40f,20f, 18),new Vector3(2060, 98, 1700), MathHelper.PiOver2, Pitch, MathHelper.PiOver2);
-            DrawGeometry(new TrunkPrimitive(GraphicsDevice, 40f,20f, 18),new Vector3(2090, 98, 1700), MathHelper.PiOver2, Pitch, MathHelper.PiOver2);
-
-
-
-            DrawChequeredFlag(10, 15);
-
-*/
+            DrawRectangle(CyanBox,4,1,8,new Vector3(1740,0,200*MathF.Cos(2*time)+5230));  
+            DrawRectangle(CyanBox,4,1,8,new Vector3(1690,0,200*MathF.Cos(2*time+MathHelper.Pi)+5600));
+            DrawRectangle(CyanBox,4,1,8,new Vector3(1740,0,200*MathF.Cos(2*time)+6010));
+        
+            DrawRectangle(Box,10,1,260,new Vector3(1720,0,7620));
+            //Meta
+            DrawRectangle(Box,10,1,15,new Vector3(1720,0,8995));
             
         }
 
@@ -485,22 +412,6 @@ namespace TGC.MonoGame.TP
              DrawGeometry(new CoinPrimitive(GraphicsDevice,1,10,40), new Vector3(x + TAMANIO_CUBO, y + TAMANIO_CUBO, z + TAMANIO_CUBO), CylinderYaw, Pitch, MathHelper.PiOver2);
         }
 
-
-        private void DrawWall(float wallLength, Vector3 position){
-            // Pared Derecha.
-            DrawGeometricPrimitive(Matrix.CreateScale(wallLength, 2f, 1f) * Matrix.CreateTranslation(position), WallBox);
-        }
-
-        private void DrawChequeredFlag(float rows, float columns){
-            for(var i = 0; i < rows; i++){
-                for(var j = 0; j <= columns; j++){
-                if((i%2==1 && j%2==1) || (i%2==0 && j%2==0))
-                    DrawGeometry(WhiteBox, new Vector3(1970 + i*TAMANIO_CUBO, 0f,8720 + j*TAMANIO_CUBO), Yaw, Pitch, Roll);
-                else
-                    DrawGeometry(BlackBox, new Vector3(1970 + i*TAMANIO_CUBO, 0f,8720 + j* TAMANIO_CUBO), Yaw, Pitch, Roll);
-                }
-            }
-        }
         private void DrawGeometricPrimitive(Matrix World, GeometricPrimitive geometricPrimitive){
             
             //Usa el VertexBuffer y el IndexBuffer generado por la clase GeometricPrimitive.
