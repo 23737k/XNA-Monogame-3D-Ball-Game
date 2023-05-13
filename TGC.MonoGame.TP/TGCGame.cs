@@ -38,7 +38,7 @@ namespace TGC.MonoGame.TP
             IsMouseVisible = true;
         }
 
-        private bool ShowGizmos { get; set; } = true;
+
         private const float TAMANIO_CUBO = 10f;
         private const float LINEAR_SPEED= 6f;
         private const float ANGULAR_SPEED = 3f;
@@ -95,7 +95,7 @@ namespace TGC.MonoGame.TP
         private Vector3[] BasicCylindersMeasures{get; set;}
         private Vector3[] BasicCylindersPositions{get; set;}
         private Vector3[] BasicCylindersRotation { get; set;}
-        private BoundingCylinder CollidersCylinders { get; set; }
+        private BoundingCylinder[] CollidersCylinders { get; set; }
         private BoundingBox[] CollidersBoxes { get; set; }
         private BoundingCylinder[] CollidersCylinder { get; set;}
         private BoundingCylinder SphereCollider { get; set; }
@@ -106,6 +106,10 @@ namespace TGC.MonoGame.TP
         private Matrix SphereScale {get; set; }
         private float time { get; set; } 
         private float EPSILON = 0.000001f;
+
+
+        private CubePrimitive LightBox { get; set; }
+        private Vector3 LightPosition { get; set; } = new Vector3 (0,2500,0);
 
         /// <summary>
         ///     Se llama una sola vez, al principio cuando se ejecuta el ejemplo.
@@ -281,8 +285,7 @@ namespace TGC.MonoGame.TP
                 new Vector3(3*CylinderYaw,0,MathHelper.PiOver2),
                 new Vector3(3*CylinderYaw,0,MathHelper.PiOver2),
             };
-            
-    
+                
             //Create bounding boxes
             int boxesLength = GroundWorld.Length + WallsWorld.Length + BasicCylindersPositions.Length;
             CollidersBoxes = new BoundingBox[boxesLength];
@@ -340,7 +343,20 @@ namespace TGC.MonoGame.TP
             // Aca es donde deberiamos cargar todos los contenido necesarios antes de iniciar el juego.
             SpriteBatch = new SpriteBatch(GraphicsDevice);
             InclinedTrackModel = Content.Load<Model>(ContentFolder3D + "rampa");        
-            Effect = Content.Load<Effect>(ContentFolderEffects + "BasicShader");
+
+            //Luz
+            LightBox = new CubePrimitive(GraphicsDevice, 1f, Color.White);
+            Effect = Content.Load<Effect>(ContentFolderEffects + "BlinnPhongTypes");
+            Effect.Parameters["lightPosition"].SetValue(LightPosition);
+            Effect.Parameters["ambientColor"]?.SetValue(new Vector3(1f, 1f, 1f));
+            Effect.Parameters["diffuseColor"]?.SetValue(new Vector3(1f, 1f, 1f));
+            Effect.Parameters["specularColor"]?.SetValue(new Vector3(1,1,1));
+
+            Effect.Parameters["KAmbient"]?.SetValue(0.1f);
+            Effect.Parameters["KDiffuse"]?.SetValue(0.7f);
+            Effect.Parameters["KSpecular"]?.SetValue(0.4f);
+            Effect.Parameters["shininess"]?.SetValue(4f);
+
             base.LoadContent();
         }
 
@@ -620,12 +636,14 @@ namespace TGC.MonoGame.TP
         {
             // Aca deberiamos poner toda la logia de renderizado del juego.
             GraphicsDevice.Clear(Color.Black);
-
             time += Convert.ToSingle(gameTime.TotalGameTime.TotalSeconds);
 
+            Effect.Parameters["eyePosition"]?.SetValue(Camera.Position);
+            Effect.Parameters["Tiling"]?.SetValue(Vector2.One);
+
             // Estos 3 parametros quedan fijos.
-            Effect.Parameters["View"].SetValue(Camera.View);
-            Effect.Parameters["Projection"].SetValue(Camera.Projection);
+           // Effect.Parameters["View"].SetValue(Camera.View);
+            //Effect.Parameters["Projection"].SetValue(Camera.Projection);
 
             //Dibujo el suelo
             for (int i = 0; i < GroundWorld.Length; i++)
@@ -662,20 +680,18 @@ namespace TGC.MonoGame.TP
             //Pared que aplastan contra el suelo
             DrawRectangle(ObstacleBox,80,10,80,new Vector3(1720,35*MathF.Cos(4*time)+45,4240));
             DrawRectangle(ObstacleBox,80,10,80,new Vector3(1720,35*MathF.Cos(4*time+MathHelper.PiOver2)+45,4430));
-            DrawRectangle(ObstacleBox,80,10,80,new Vector3(1720,35*MathF.Cos(4*time+MathHelper.PiOver4)+45,4620));            
-                    
+            DrawRectangle(ObstacleBox,80,10,80,new Vector3(1720,35*MathF.Cos(4*time+MathHelper.PiOver4)+45,4620));   
+
             base.Draw(gameTime);
         }
 
         private void DrawGeometry(GeometricPrimitive geometry, Vector3 position, float yaw, float pitch, float roll)
         {
-            DrawGeometricPrimitive(Matrix.CreateFromYawPitchRoll(yaw, pitch, roll) * Matrix.CreateTranslation(position), geometry);
+            var World = Matrix.CreateFromYawPitchRoll(yaw, pitch, roll) * Matrix.CreateTranslation(position);  
+            DrawGeometricPrimitive(World, geometry);
         }
 
-        ///<summary>
-        /// Dibuja una plataforma rectangular en el plano XZ (Horizontal)
-        ///</summary>
-        private void DrawRectangle   (CubePrimitive BoxType ,float length, float height, float width, Vector3 position){
+        private void DrawRectangle (CubePrimitive BoxType ,float length, float height, float width, Vector3 position){
             DrawGeometricPrimitive(Matrix.CreateScale(length,height, width) * Matrix.CreateTranslation(position.X, position.Y, position.Z ), BoxType);
         }
 
@@ -684,25 +700,12 @@ namespace TGC.MonoGame.TP
         }
 
         private void DrawGeometricPrimitive(Matrix World, GeometricPrimitive geometricPrimitive){
-            
-            //Usa el VertexBuffer y el IndexBuffer generado por la clase GeometricPrimitive.
-            //Pero no utilizamos el metodo Draw de dicha clase para no utilizar el shader BasicEffect.
-            //En cambio, dibujamos la primitiva mediante este metodo.
 
+            var viewProjection = Camera.View * Camera.Projection;
             Effect.Parameters["World"].SetValue(World);
-
-            GraphicsDevice.SetVertexBuffer(geometricPrimitive.VertexBuffer);
-
-            GraphicsDevice.Indices = geometricPrimitive.IndexBuffer;
-
-            foreach (var effectPass in Effect.CurrentTechnique.Passes)
-            {
-                effectPass.Apply();
-
-                var primitiveCount = geometricPrimitive.Indices.Count / 3;
-
-                GraphicsDevice.DrawIndexedPrimitives(PrimitiveType.TriangleList, 0, 0, primitiveCount);
-            }
+            Effect.Parameters["InverseTransposeWorld"]?.SetValue(Matrix.Invert(Matrix.Transpose(World)));
+            Effect.Parameters["WorldViewProjection"]?.SetValue(World * viewProjection);
+            geometricPrimitive.Draw(Effect);
         }
        /// <summary>
         ///     Libero los recursos que se cargaron en el juego.
