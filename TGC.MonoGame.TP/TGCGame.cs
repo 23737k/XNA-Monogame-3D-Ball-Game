@@ -57,7 +57,7 @@ namespace TGC.MonoGame.TP
 
         private const float SALTO_BUFFER_DECREMENT_ALPHA = 25f;
 
-        private const float GRAVITY = 350f;
+        private const float GRAVITY = 3f;
         private Vector3 SPHERE_INITIAL_POSITION = new Vector3(0.0f, 9.99f, 0.0f);
 
         //CHECKPOINTS DEBE ESTAR ORDENADO ASCENDENTEMENTE
@@ -165,7 +165,7 @@ namespace TGC.MonoGame.TP
                 Matrix.CreateScale(800,10f,40) * Matrix.CreateTranslation(new Vector3(2110,85,2365)),
                 Matrix.CreateScale(800,10f,40) * Matrix.CreateTranslation(new Vector3(2110,85,2445)),
                 Matrix.CreateScale(80,10f,1500) * Matrix.CreateTranslation(new Vector3(1720,0,3175)),
-                Matrix.CreateScale(80,100,1000) * Matrix.CreateTranslation(new Vector3(1720,0,4455)),
+                Matrix.CreateScale(80,10,1000) * Matrix.CreateTranslation(new Vector3(1720,0,4455)),
                 Matrix.CreateScale(100,10f,2600) * Matrix.CreateTranslation(new Vector3(1720,0,7620)),
                 Matrix.CreateScale(100,10f,150) * Matrix.CreateTranslation(new Vector3(1720,0,8995))
                 
@@ -182,13 +182,13 @@ namespace TGC.MonoGame.TP
             // Cubo
             Box = new CubePrimitive(GraphicsDevice, 1f, Color.MonoGameOrange, Color.MonoGameOrange, Color.MonoGameOrange,
             Color.MonoGameOrange, Color.MonoGameOrange, Color.MonoGameOrange);
-            ObstacleBox = new CubePrimitive(GraphicsDevice, TAMANIO_CUBO, Color.BlueViolet,Color.BlueViolet, Color.BlueViolet, Color.BlueViolet, Color.BlueViolet, Color.BlueViolet);
+            ObstacleBox = new CubePrimitive(GraphicsDevice, 1f, Color.BlueViolet,Color.BlueViolet, Color.BlueViolet, Color.BlueViolet, Color.BlueViolet, Color.BlueViolet);
             //BoxPosition = Vector3.Zero;
-            WallBox = new CubePrimitive(GraphicsDevice, TAMANIO_CUBO, Color.BlueViolet, Color.BlueViolet, Color.BlueViolet, Color.BlueViolet, Color.BlueViolet, Color.BlueViolet);
-            WhiteBox = new CubePrimitive(GraphicsDevice, TAMANIO_CUBO, Color.White, Color.White, Color.White, Color.White, Color.White, Color.White);
-            BlackBox = new CubePrimitive(GraphicsDevice, TAMANIO_CUBO, Color.Black, Color.Black, Color.Black, Color.Black, Color.Black, Color.Black);
-            CyanBox = new CubePrimitive(GraphicsDevice, TAMANIO_CUBO, Color.Cyan, Color.Cyan, Color.Cyan, Color.Cyan, Color.Cyan, Color.Cyan);
-            YellowBox = new CubePrimitive(GraphicsDevice, TAMANIO_CUBO, Color.YellowGreen, Color.YellowGreen, Color.YellowGreen, Color.YellowGreen, Color.YellowGreen, Color.YellowGreen);
+            WallBox = new CubePrimitive(GraphicsDevice, 1f, Color.BlueViolet, Color.BlueViolet, Color.BlueViolet, Color.BlueViolet, Color.BlueViolet, Color.BlueViolet);
+            WhiteBox = new CubePrimitive(GraphicsDevice, 1f, Color.White, Color.White, Color.White, Color.White, Color.White, Color.White);
+            BlackBox = new CubePrimitive(GraphicsDevice, 1f, Color.Black, Color.Black, Color.Black, Color.Black, Color.Black, Color.Black);
+            CyanBox = new CubePrimitive(GraphicsDevice, 1f, Color.Cyan, Color.Cyan, Color.Cyan, Color.Cyan, Color.Cyan, Color.Cyan);
+            YellowBox = new CubePrimitive(GraphicsDevice, 1f, Color.YellowGreen, Color.YellowGreen, Color.YellowGreen, Color.YellowGreen, Color.YellowGreen, Color.YellowGreen);
             //Cilindro
             Cylinder = new CylinderPrimitive(GraphicsDevice, CYLINDER_HEIGHT, CYLINDER_DIAMETER, 18);
             SmallCylinder = new CylinderPrimitive(GraphicsDevice, CYLINDER_HEIGHT *2, CYLINDER_DIAMETER/10, 18);    
@@ -418,11 +418,6 @@ namespace TGC.MonoGame.TP
                 var collider = CollidersBoxes[i];
                 var colliderCenter = BoundingVolumesExtensions.GetCenter(collider);
 
-                bool stepClimbed = solveStepCollison(collider, i);
-
-                if(stepClimbed)
-                    return;
-
                 var sameLevelCenter = SphereCollider.Center;
                 sameLevelCenter.Y = colliderCenter.Y;
 
@@ -437,29 +432,6 @@ namespace TGC.MonoGame.TP
             }
         }
 
-        private bool solveStepCollison(BoundingBox collider, int colliderIndex)
-        {
-            var extents = BoundingVolumesExtensions.GetExtents(collider);
-            var colliderCenter = BoundingVolumesExtensions.GetCenter(collider);
-
-            if(extents.Y >= 10f)
-                return false;
-
-            var distanceToTop = MathF.Abs((SphereCollider.Center.Y - SphereCollider.HalfHeight) - (colliderCenter.Y + extents.Y));
-            if(distanceToTop >= 20f)
-                return false;
-
-            var pastPosition = SphereCollider.Center;
-            SphereCollider.Center += Vector3.Up * distanceToTop;
-            for(int i = 0; i < CollidersBoxes.Length; i++)
-                if(i != colliderIndex && SphereCollider.Intersects(CollidersBoxes[i]).Equals(BoxCylinderIntersection.Intersecting))
-                {
-                    SphereCollider.Center = pastPosition;
-                    return false;
-                }
-
-            return true;
-        }
 
         protected void AdministrarSalto(float deltaTime){
 
@@ -535,25 +507,25 @@ namespace TGC.MonoGame.TP
             DrawGeometry(Sphere, SpherePosition,0,0,0);
 
 
-            DrawGeometry(Cylinder, new Vector3(30f * TAMANIO_CUBO , 0f, 4.5f ), CylinderYaw, 0,0);
-            DrawGeometry(Cylinder, new Vector3(40f * TAMANIO_CUBO, 0f, 4.5f ), -CylinderYaw, 0,0);
-            DrawGeometry(Cylinder, new Vector3(50f * TAMANIO_CUBO, 0f, 4.5f ), CylinderYaw, 0,0);
+            DrawGeometry(Cylinder, new Vector3(300 , 0f, 4.5f ), CylinderYaw, 0,0);
+            DrawGeometry(Cylinder, new Vector3(400, 0f, 4.5f ), -CylinderYaw, 0,0);
+            DrawGeometry(Cylinder, new Vector3(500, 0f, 4.5f ), CylinderYaw, 0,0);
 
-            DrawGeometry(SmallCylinder, new Vector3(30f * TAMANIO_CUBO, TAMANIO_CUBO, 4.5f ),0,0,0);
-            DrawGeometry(SmallCylinder, new Vector3(40f * TAMANIO_CUBO, TAMANIO_CUBO, 4.5f ), 0,0,0);
-            DrawGeometry(SmallCylinder, new Vector3(50f * TAMANIO_CUBO, TAMANIO_CUBO, 4.5f ), 0,0,0);
+            DrawGeometry(SmallCylinder, new Vector3(300, 10, 4.5f ),0,0,0);
+            DrawGeometry(SmallCylinder, new Vector3(400, 10, 4.5f ), 0,0,0);
+            DrawGeometry(SmallCylinder, new Vector3(500, 10, 4.5f ), 0,0,0);
 
-            DrawRectangle(Box,5,1,5,new Vector3(600f,70*MathF.Cos(3*time)-60,4.5f));
-            DrawRectangle(Box,5,1,5,new Vector3(700f,-70*MathF.Cos(3*time)+60,4.5f));
+            DrawRectangle(Box,50,10,50,new Vector3(600f,70*MathF.Cos(3*time)-60,4.5f));
+            DrawRectangle(Box,50,10,50,new Vector3(700f,-70*MathF.Cos(3*time)+60,4.5f));
 
             InclinedTrackModel.Draw(Matrix.CreateScale(1.5f) * TrackWorld* Matrix.CreateTranslation(864.1f,100f,415f) ,Camera.View, Camera.Projection);
 
             //Muro
-            DrawRectangle(CyanBox,1,1,3,new Vector3(1360f,30f,410f));
+            DrawRectangle(CyanBox,10,10,30,new Vector3(1360f,30f,410f));
             //
            
             //Muro
-            DrawRectangle(CyanBox,1,1,8,new Vector3(1565f,30f,435f));
+            DrawRectangle(CyanBox,10,10,80,new Vector3(1565f,30f,435f));
             //
 
             //Islas
@@ -568,12 +540,12 @@ namespace TGC.MonoGame.TP
 
 
             //Muro
-            DrawRectangle(CyanBox,1,1,8,new Vector3(2565f,30f,435f));
+            DrawRectangle(CyanBox,10,10,80,new Vector3(2565f,30f,435f));
             //
             //Muro alto 
-            DrawRectangle(CyanBox,4,4,1,new Vector3(3090f,45f,510f));
-            DrawRectangle(CyanBox,4,4,1,new Vector3(3050f,45f,590f));
-            DrawRectangle(CyanBox,4,4,1,new Vector3(3090f,45f,670f));
+            DrawRectangle(CyanBox,40,40,10,new Vector3(3090f,45f,510f));
+            DrawRectangle(CyanBox,40,40,10,new Vector3(3050f,45f,590f));
+            DrawRectangle(CyanBox,40,40,10,new Vector3(3090f,45f,670f));
             //
 
             //cilindros que giran
@@ -583,35 +555,35 @@ namespace TGC.MonoGame.TP
             DrawGeometry(new CylinderPrimitive(GraphicsDevice, 60, 10, 18),new Vector3(3050,100,1920), 3*CylinderYaw,0,MathHelper.PiOver2);
             //
 
-            DrawRectangle(Box,2,1,2,new Vector3(1720,42.5f*MathF.Cos(3*time)+42.5f,2405));
+            DrawRectangle(Box,20,10,20,new Vector3(1720,42.5f*MathF.Cos(3*time)+42.5f,2405));
 
             //paredes que se mueven
-            DrawRectangle(CyanBox,1, 5,4,new Vector3(40*MathF.Cos(5*time)+1720,40,2800));  
-            DrawRectangle(CyanBox, 1,5,4,new Vector3(-40*MathF.Cos(5*time)+1720,40,2900));
-            DrawRectangle(CyanBox,1, 5,4,new Vector3(40*MathF.Cos(5*time)+1720,40,3000));
-            DrawRectangle(CyanBox,1, 5,4,new Vector3(-40*MathF.Cos(5*time)+1720,40,3100));
-            DrawRectangle(CyanBox,1, 5,4,new Vector3(40*MathF.Cos(5*time)+1720,40,3200));
+            DrawRectangle(CyanBox,10, 50,40,new Vector3(40*MathF.Cos(5*time)+1720,40,2800));  
+            DrawRectangle(CyanBox, 10,50,40,new Vector3(-40*MathF.Cos(5*time)+1720,40,2900));
+            DrawRectangle(CyanBox,10, 50,40,new Vector3(40*MathF.Cos(5*time)+1720,40,3000));
+            DrawRectangle(CyanBox,10, 50,40,new Vector3(-40*MathF.Cos(5*time)+1720,40,3100));
+            DrawRectangle(CyanBox,10, 50,40,new Vector3(40*MathF.Cos(5*time)+1720,40,3200));
             
             //muros
-            DrawRectangle(CyanBox,8,1,1,new Vector3(1720,10,3320));
-            DrawRectangle(CyanBox,8,1,1,new Vector3(1720,10,3460));
+            DrawRectangle(CyanBox,80,10,10,new Vector3(1720,10,3320));
+            DrawRectangle(CyanBox,80,10,10,new Vector3(1720,10,3460));
 
             //muro insaltable
-            DrawRectangle(CyanBox,4,4,1,new Vector3(1700,25,3895));
+            DrawRectangle(CyanBox,40,40,10,new Vector3(1700,25,3895));
             //Muro insaltable 
-            DrawRectangle(CyanBox,4,4,1,new Vector3(1740,25,4020));
+            DrawRectangle(CyanBox,40,40,10,new Vector3(1740,25,4020));
 
              //Pared que aplastan contra el suelo
-            DrawRectangle(ObstacleBox,8,1,8,new Vector3(1720,35*MathF.Cos(4*time)+45,4240));
-            DrawRectangle(ObstacleBox,8,1,8,new Vector3(1720,35*MathF.Cos(4*time+MathHelper.PiOver2)+45,4430));
-            DrawRectangle(ObstacleBox,8,1,8,new Vector3(1720,35*MathF.Cos(4*time+MathHelper.PiOver4)+45,4620));            
+            DrawRectangle(ObstacleBox,80,10,80,new Vector3(1720,35*MathF.Cos(4*time)+45,4240));
+            DrawRectangle(ObstacleBox,80,10,80,new Vector3(1720,35*MathF.Cos(4*time+MathHelper.PiOver2)+45,4430));
+            DrawRectangle(ObstacleBox,80,10,80,new Vector3(1720,35*MathF.Cos(4*time+MathHelper.PiOver4)+45,4620));            
             //Muro 
-            DrawRectangle(CyanBox,8,1,1,new Vector3(1720,10,4825));
+            DrawRectangle(CyanBox,80,10,10,new Vector3(1720,10,4825));
             
             //Plataformas que se mueven
-            DrawRectangle(CyanBox,4,1,8,new Vector3(1740,0,200*MathF.Cos(2*time)+5230));  
-            DrawRectangle(CyanBox,4,1,8,new Vector3(1690,0,200*MathF.Cos(2*time+MathHelper.Pi)+5600));
-            DrawRectangle(CyanBox,4,1,8,new Vector3(1740,0,200*MathF.Cos(2*time)+6010));
+            DrawRectangle(CyanBox,40,10,80,new Vector3(1740,0,200*MathF.Cos(2*time)+5230));  
+            DrawRectangle(CyanBox,40,10,80,new Vector3(1690,0,200*MathF.Cos(2*time+MathHelper.Pi)+5600));
+            DrawRectangle(CyanBox,40,10,80,new Vector3(1740,0,200*MathF.Cos(2*time)+6010));
             base.Draw(gameTime);
         }
 
@@ -628,7 +600,7 @@ namespace TGC.MonoGame.TP
         }
 
         private void DrawCoin(float x, float y, float z){
-             DrawGeometry(new CoinPrimitive(GraphicsDevice,1,10,40), new Vector3(x + TAMANIO_CUBO, y + TAMANIO_CUBO, z + TAMANIO_CUBO), CylinderYaw, 0, MathHelper.PiOver2);
+             DrawGeometry(new CoinPrimitive(GraphicsDevice,1,10,40), new Vector3(x + 1f, y + 1f, z + 1f), 1f, 0, MathHelper.PiOver2);
         }
 
         private void DrawGeometricPrimitive(Matrix World, GeometricPrimitive geometricPrimitive){
