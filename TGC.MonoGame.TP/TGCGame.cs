@@ -47,7 +47,7 @@ namespace TGC.MonoGame.TP
         private const float CYLINDER_HEIGHT = 10F;
         private const float CYLINDER_DIAMETER = 10f * TAMANIO_CUBO;
 
-        private const float SALTO_BUFFER_VALUE = 20f;
+        private const float SALTO_BUFFER_VALUE = 40f;
 
         private const float SALTO_BUFFER_DECREMENT_ALPHA = 25f;
 
@@ -412,6 +412,7 @@ namespace TGC.MonoGame.TP
             var scaledVelocity= SphereVelocity * deltaTime;
 
             MovementManager(deltaTime);
+            
             SolveVerticalMovement(scaledVelocity);
 
             scaledVelocity = new Vector3(scaledVelocity.X, 0f, scaledVelocity.Z);
@@ -428,12 +429,12 @@ namespace TGC.MonoGame.TP
         }     
 
         protected void MovementManager(float deltaTime){
-            if (Keyboard.GetState().IsKeyDown(Keys.W) /*&& PelotaEstaEnElSuelo()*/ && !PelotaSeCayo())
+            if (Keyboard.GetState().IsKeyDown(Keys.W) && !PelotaSeCayo())
             {
                 SphereCollider.Center += SphereRotationMatrix.Forward * LINEAR_SPEED ;
             }
 
-            if (Keyboard.GetState().IsKeyDown(Keys.S) /*&& PelotaEstaEnElSuelo()*/ && !PelotaSeCayo())
+            if (Keyboard.GetState().IsKeyDown(Keys.S) && !PelotaSeCayo())
             {
                 SphereCollider.Center -= SphereRotationMatrix.Forward * LINEAR_SPEED ;
             }
@@ -589,15 +590,7 @@ namespace TGC.MonoGame.TP
         }
 
         protected bool PelotaEstaEnElSuelo(){
-            // Chequea si colisiona con el suelo
-            
-            for (var i = 0; i < GroundWorld.Length; i++)
-            {   
-                BoundingBox aCollider = CollidersBoxes[i];
-                if (SphereCollider.Intersects(aCollider).Equals(BoxCylinderIntersection.Intersecting)) return true;
-            }
-            
-            return false;
+            return OnGround;
         }
 
         protected bool PelotaSeCayo(){
