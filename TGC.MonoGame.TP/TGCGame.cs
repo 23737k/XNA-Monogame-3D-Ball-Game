@@ -623,10 +623,16 @@ namespace TGC.MonoGame.TP
             //más cercano y menor a la coordenada X de la posición actual de la esfera
 
             //Supone que CHECKPOINT esta en orden ascendente
+            bool found = false;
+
             for(int i = 0; i < CHECKPOINTS.Length; i++){
-                if (CHECKPOINTS[i].X <= SpherePosition.X) 
-                SphereCollider.Center = CHECKPOINTS[i];
+                if (CHECKPOINTS[i].X <= SpherePosition.X){
+                    SphereCollider.Center = CHECKPOINTS[i];
+                    found = true;
+                }
             }
+            //Si se cae atras del primer checkpoint
+            if (!found) SphereCollider.Center = CHECKPOINTS[0];
         }
         /// <summary>
         ///     Se llama cada vez que hay que refrescar la pantalla.
