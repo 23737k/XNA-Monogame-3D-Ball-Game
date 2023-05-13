@@ -47,7 +47,7 @@ namespace TGC.MonoGame.TP
         private const float CYLINDER_HEIGHT = 10F;
         private const float CYLINDER_DIAMETER = 10f * TAMANIO_CUBO;
 
-        private const float SALTO_BUFFER_VALUE = 20f;
+        private const float SALTO_BUFFER_VALUE = 40f;
 
         private const float SALTO_BUFFER_DECREMENT_ALPHA = 25f;
 
@@ -87,7 +87,6 @@ namespace TGC.MonoGame.TP
         private Model InclinedTrackModel { get; set; }
         private Matrix TrackWorld { get; set; }
         private float SaltoBuffer { get; set;}
-        private float CaidaBuffer {get; set;}
         private bool EstaSubiendoEnSalto { get; set;}
         private bool EstaBajandoEnSalto { get; set;}
         private Matrix[] GroundWorld { get; set; }
@@ -132,7 +131,7 @@ namespace TGC.MonoGame.TP
             
             // Esfera
             Sphere = new SpherePrimitive(GraphicsDevice, 10);
-            SpherePosition = SPHERE_INITIAL_POSITION;;
+            SpherePosition = SPHERE_INITIAL_POSITION;
             SphereCollider = new BoundingCylinder(SpherePosition, 2f, 5f);
             SphereVelocity = Vector3.Zero;
             SphereAcceleration = Vector3.Down * GRAVITY;
@@ -289,9 +288,10 @@ namespace TGC.MonoGame.TP
             //Create bounding boxes
             int boxesLength = GroundWorld.Length + WallsWorld.Length + BasicCylindersPositions.Length;
             CollidersBoxes = new BoundingBox[boxesLength];
-            
             //CollidersCylinders = new BoundingCylinder[5];
 
+            //GUARDA CON NO CAMBIAR EL ORDEN DE GUARDADO EN LOS COLLIDERS BOXES
+            //SE TIENE QUE GUARDAR PRIMERO LOS DEL SUELO PARA NO ROMPER PelotaEstaEnElSuelo()
             for(int i = 0; i < GroundWorld.Length; i++)
                 CollidersBoxes[i] =  BoundingVolumesExtensions.FromMatrix(GroundWorld[i]);
 
@@ -394,12 +394,9 @@ namespace TGC.MonoGame.TP
                 Exit();
             }
 
-             if (PelotaSeCayo()){
+            if (PelotaSeCayo()){
                 VolverAlUltimoCheckpoint();
             }
-
-            MovementManager(deltaTime);
-            AdministrarSalto(deltaTime);
 
             CylinderYaw += deltaTime * 1.1f;
             PlatformHeight = 70* MathF.Cos(4*Convert.ToSingle(gameTime.TotalGameTime.TotalSeconds))-60; 
@@ -409,36 +406,36 @@ namespace TGC.MonoGame.TP
 
             //Habría que ver el tema de la aceleración.
             //Esta línea sería la gravedad
-
+            
             SphereVelocity += SphereAcceleration * deltaTime;
 
             var scaledVelocity= SphereVelocity * deltaTime;
 
+            MovementManager(deltaTime);
+            
             SolveVerticalMovement(scaledVelocity);
 
             scaledVelocity = new Vector3(scaledVelocity.X, 0f, scaledVelocity.Z);
 
             //SolveHorizontalMovementSliding(SphereVelocity);
-
+            
             SpherePosition = SphereCollider.Center;
         
             SphereVelocity = new Vector3(0f, SphereVelocity.Y, 0f);
-
+            
             World = SphereRotationMatrix * Matrix.CreateTranslation(SpherePosition);
             UpdateCamera();
             base.Update(gameTime);
         }     
 
         protected void MovementManager(float deltaTime){
-            if (Keyboard.GetState().IsKeyDown(Keys.W)) //&& PelotaEstaEnElSuelo() && !PelotaSeCayo()
+            if (Keyboard.GetState().IsKeyDown(Keys.W) && !PelotaSeCayo())
             {
-                //SphereVelocity += SphereRotationMatrix.Forward * LINEAR_SPEED ;
                 SphereCollider.Center += SphereRotationMatrix.Forward * LINEAR_SPEED ;
             }
 
-            if (Keyboard.GetState().IsKeyDown(Keys.S)) //&& PelotaEstaEnElSuelo() && !PelotaSeCayo()
+            if (Keyboard.GetState().IsKeyDown(Keys.S) && !PelotaSeCayo())
             {
-                //SphereVelocity -= SphereRotationMatrix.Forward * LINEAR_SPEED;
                 SphereCollider.Center -= SphereRotationMatrix.Forward * LINEAR_SPEED ;
             }
 
@@ -463,10 +460,7 @@ namespace TGC.MonoGame.TP
                 SphereCollider.Center -= Vector3.Up* LINEAR_SPEED;
             }
 
-
-
-            AdministrarSalto(deltaTime); //HABILITAR CUANDO FUNCIONE PelotaEstaEnElSuelo()
-            AdministrarCaida(deltaTime); //HABILITAR CUANDO FUNCIONE PelotaEstaEnElSuelo()
+            AdministrarSalto(deltaTime);
         }
 
         private void SolveVerticalMovement(Vector3 scaledVelocity)
@@ -588,30 +582,15 @@ namespace TGC.MonoGame.TP
                 if (PelotaEstaEnElSuelo()) SaltoBuffer = SALTO_BUFFER_VALUE;
             }
         
-            SpherePosition += Vector3.Up* LINEAR_SPEED * SaltoBuffer * deltaTime;
+            SphereCollider.Center += Vector3.Up* LINEAR_SPEED * SaltoBuffer * deltaTime;
 
             if (SaltoBuffer > 0) SaltoBuffer -= GRAVITY * deltaTime;
             else if (SaltoBuffer < 0) SaltoBuffer = 0;
             
         }
 
-        protected void AdministrarCaida(float deltaTime){
-            if (!PelotaEstaEnElSuelo()){
-                CaidaBuffer += GRAVITY * deltaTime;
-                SpherePosition -= Vector3.Up* LINEAR_SPEED * CaidaBuffer * deltaTime;   
-            }
-            else CaidaBuffer = 0;
-        }
         protected bool PelotaEstaEnElSuelo(){
-            // Chequea si colisiona con el suelo
-            
-            for (var i = 0; i < CollidersBoxes.Length; i++)
-            {   
-                BoundingBox aCollider = CollidersBoxes[i];
-                if (SphereCollider.Intersects(aCollider).Equals(BoxCylinderIntersection.Intersecting)) return true;
-            }
-            
-            return false;
+            return OnGround;
         }
 
         protected bool PelotaSeCayo(){
@@ -623,10 +602,16 @@ namespace TGC.MonoGame.TP
             //más cercano y menor a la coordenada X de la posición actual de la esfera
 
             //Supone que CHECKPOINT esta en orden ascendente
+            bool found = false;
+
             for(int i = 0; i < CHECKPOINTS.Length; i++){
-                if (CHECKPOINTS[i].X <= SpherePosition.X) 
-                SphereCollider.Center = CHECKPOINTS[i];
+                if (CHECKPOINTS[i].X <= SpherePosition.X){
+                    SphereCollider.Center = CHECKPOINTS[i];
+                    found = true;
+                }
             }
+            //Si se cae atras del primer checkpoint
+            if (!found) SphereCollider.Center = CHECKPOINTS[0];
         }
         /// <summary>
         ///     Se llama cada vez que hay que refrescar la pantalla.
