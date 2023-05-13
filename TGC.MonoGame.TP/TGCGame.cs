@@ -91,13 +91,20 @@ namespace TGC.MonoGame.TP
         private bool EstaSubiendoEnSalto { get; set;}
         private bool EstaBajandoEnSalto { get; set;}
         private Matrix[] GroundWorld { get; set; }
+        private Matrix[] WallsWorld { get; set; }
+        private Vector3[] BasicCylindersMeasures{get; set;}
+        private Vector3[] BasicCylindersPositions{get; set;}
+        private Vector3[] BasicCylindersRotation { get; set;}
+        private BoundingCylinder CollidersCylinders { get; set; }
         private BoundingBox[] CollidersBoxes { get; set; }
+        private BoundingCylinder[] CollidersCylinder { get; set;}
         private BoundingCylinder SphereCollider { get; set; }
         private Vector3 SphereVelocity { get; set; }
         private Vector3 SphereAcceleration { get; set; }
         private bool OnGround { get; set; }
         private Vector3 SphereFrontDirection { get; set; }
         private Matrix SphereScale {get; set; }
+        private float time { get; set; } 
         private float EPSILON = 0.000001f;
 
         /// <summary>
@@ -122,7 +129,7 @@ namespace TGC.MonoGame.TP
             // Esfera
             Sphere = new SpherePrimitive(GraphicsDevice, 10);
             SpherePosition = SPHERE_INITIAL_POSITION;;
-            SphereCollider = new BoundingCylinder(SpherePosition, 5f, 5f);
+            SphereCollider = new BoundingCylinder(SpherePosition, 2f, 5f);
             SphereVelocity = Vector3.Zero;
             SphereAcceleration = Vector3.Down * GRAVITY;
             SphereFrontDirection =  Vector3.Backward;
@@ -135,6 +142,7 @@ namespace TGC.MonoGame.TP
             Projection =
                 Matrix.CreatePerspectiveFieldOfView(MathHelper.PiOver4, GraphicsDevice.Viewport.AspectRatio, 1, 250);
             Camera = new TargetCamera(GraphicsDevice.Viewport.AspectRatio, new Vector3(0, 20, 60), Vector3.Zero);
+            time = 0.0f;
 
             GroundWorld = new Matrix [] 
             {
@@ -161,18 +169,147 @@ namespace TGC.MonoGame.TP
                 Matrix.CreateScale(80,10f,1500) * Matrix.CreateTranslation(new Vector3(1720,0,3175)),
                 Matrix.CreateScale(80,10,1000) * Matrix.CreateTranslation(new Vector3(1720,0,4455)),
                 Matrix.CreateScale(100,10f,2600) * Matrix.CreateTranslation(new Vector3(1720,0,7620)),
-                Matrix.CreateScale(100,10f,150) * Matrix.CreateTranslation(new Vector3(1720,0,8995))
-                
+                Matrix.CreateScale(100,10f,150) * Matrix.CreateTranslation(new Vector3(1720,0,8995)),
+                //Habría que ver que se muevan
+                Matrix.CreateScale(50,10,50) * Matrix.CreateTranslation(new Vector3(600f,70*MathF.Cos(3*time)-60,4.5f)),
+                Matrix.CreateScale(50,10,50) * Matrix.CreateTranslation(new Vector3(700f,-70*MathF.Cos(3*time)+60,4.5f))
             };
 
+            WallsWorld = new Matrix[]
+            {
+                Matrix.CreateScale(10,10f,30) * Matrix.CreateTranslation(new Vector3(1360f,30f,410f)),
+                Matrix.CreateScale(10,10f,30f) * Matrix.CreateTranslation(new Vector3(1565f,30f,435f)),
+                Matrix.CreateScale(10,10f, 80f) * Matrix.CreateTranslation(new Vector3(2565f,30f,435f)),
+                //Muro alto
+                Matrix.CreateScale(40, 40f,10f) * Matrix.CreateTranslation(new Vector3(3090f,45f,510f)),
+                Matrix.CreateScale(40, 40f,10f) * Matrix.CreateTranslation(new Vector3(3090f,45f,670f)),
+                Matrix.CreateScale(40, 40f,10f) * Matrix.CreateTranslation(new Vector3(3090f,45f,590f)),
+                //Paredes que se mueven
+                Matrix.CreateScale(10, 50f,40f) * Matrix.CreateTranslation(new Vector3(40*MathF.Cos(5*time)+1720,40,2800)),
+                Matrix.CreateScale(10, 50f,40f) * Matrix.CreateTranslation(new Vector3(-40*MathF.Cos(5*time)+1720,40,2900)),
+                Matrix.CreateScale(10,50,40) * Matrix.CreateTranslation(new Vector3(40*MathF.Cos(5*time)+1720,40,3000)),
+                Matrix.CreateScale(10,50,40) * Matrix.CreateTranslation(new Vector3(-40*MathF.Cos(5*time)+1720,40,3100)),
+                Matrix.CreateScale(10,50,40) * Matrix.CreateTranslation(new Vector3(40*MathF.Cos(5*time)+1720,40,3200)),
 
+                //muros
+                Matrix.CreateScale(80,10,10) * Matrix.CreateTranslation(new Vector3(1720, 10, 3320)),
+                Matrix.CreateScale(80,10,10) * Matrix.CreateTranslation(new Vector3(1720, 10, 3460)),
+                Matrix.CreateScale(40,40,10) * Matrix.CreateTranslation(new Vector3(1700,25,3895)),
+                Matrix.CreateScale(40,40,10) * Matrix.CreateTranslation(new Vector3(1740, 25, 4020)),
+                Matrix.CreateScale(80,10,10) * Matrix.CreateTranslation(new Vector3(1720, 10, 7825)),
 
+                //Plataformas que se mueven
+                //Se tendrían que mover con time
+                Matrix.CreateScale(40,10,80) * Matrix.CreateTranslation(new Vector3(1740,0,200*MathF.Cos(2*time)+5230)),
+                Matrix.CreateScale(40,10,80) * Matrix.CreateTranslation(new Vector3(1690,0,200*MathF.Cos(2*time+MathHelper.Pi)+5600)),
+                Matrix.CreateScale(40,10,80) * Matrix.CreateTranslation(new Vector3(1740,0,200*MathF.Cos(2*time)+6010)),
+
+            };
+
+            
+            BasicCylindersMeasures = new Vector3[]
+            {
+                new Vector3(10f,80f,60f),
+                new Vector3(10f,80f,60f),
+                new Vector3(10f,80f,60f),
+                new Vector3(30, 10, 60),
+                new Vector3(30, 10, 60),
+                new Vector3(30, 10, 60),
+
+                //Islas
+                new Vector3(10,20,18),
+                new Vector3(10,20,18),
+                new Vector3(10,20,18),
+                new Vector3(10,20,18),
+                new Vector3(10,20,18),
+                new Vector3(10,20,18),
+                new Vector3(10,20,18),
+
+                //Cilindros que giran
+                new Vector3(60, 10, 18),
+                new Vector3(60, 10, 18),
+                new Vector3(60, 10, 18),
+                new Vector3(60, 10, 18),
+            };
+
+            BasicCylindersPositions = new Vector3[]
+            {
+                new Vector3(300,0f,4.5f),
+                new Vector3(400, 0f,4.5f),
+                new Vector3(500, 0, 4.5f),
+                new Vector3(400, 10, 4.5f ),
+                new Vector3(500, 10, 4.5f ),
+                new Vector3(300, 10, 4.5f ),
+
+                //Islas
+                new Vector3(1850,20,404),
+                new Vector3(1890,20,434.5f),
+                new Vector3(1930,20,454.5f),
+                new Vector3(1980,20,454.5f),
+                new Vector3(2030,20,434.5f),
+                new Vector3(2080,20,404.5f),
+                new Vector3(2130,20,414.5f),
+
+                //Cilindros que Giran  
+                new Vector3(3100,100,1775),
+                new Vector3(3050,100,1820),
+                new Vector3(3100,100,1870),
+                new Vector3(3050,100,1920),
+            };
+
+            BasicCylindersRotation = new Vector3[]
+            {
+                new Vector3(CylinderYaw, 0.0f, 0.0f),
+                new Vector3(-CylinderYaw, 0.0f, 0.0f),
+                new Vector3(CylinderYaw, 0.0f, 0.0f),
+                new Vector3(0,0,0),
+                new Vector3(0,0,0),
+                new Vector3(0,0,0),
+
+                //Islas
+                new Vector3(0,0,0),
+                new Vector3(0,0,0),
+                new Vector3(0,0,0),
+                new Vector3(0,0,0),
+                new Vector3(0,0,0),
+                new Vector3(0,0,0),
+                new Vector3(0,0,0),
+
+                //Cilindros Que Giran
+                new Vector3(3*CylinderYaw,0,MathHelper.PiOver2),
+                new Vector3(3*CylinderYaw,0,MathHelper.PiOver2),
+                new Vector3(3*CylinderYaw,0,MathHelper.PiOver2),
+                new Vector3(3*CylinderYaw,0,MathHelper.PiOver2),
+            };
+            
+    
             //Create bounding boxes
-            CollidersBoxes = new BoundingBox[GroundWorld.Length];
+            int boxesLength = GroundWorld.Length + WallsWorld.Length + BasicCylindersPositions.Length;
+            CollidersBoxes = new BoundingBox[boxesLength];
+            
+            //CollidersCylinders = new BoundingCylinder[5];
 
             for(int i = 0; i < GroundWorld.Length; i++)
                 CollidersBoxes[i] =  BoundingVolumesExtensions.FromMatrix(GroundWorld[i]);
 
+            for(int i = GroundWorld.Length; i< boxesLength - BasicCylindersPositions.Length; i++)
+                CollidersBoxes[i] = BoundingVolumesExtensions.FromMatrix(WallsWorld[i - GroundWorld.Length]);
+
+            int previousLength = boxesLength - BasicCylindersPositions.Length;
+            for(int i = previousLength; i < boxesLength; i++)
+            {   
+                int cylinderPosition = i - previousLength;
+                float scaleY = 10f;
+
+                if(cylinderPosition < 3)
+                    scaleY = 0f;
+            
+                Matrix cylinderMatrix = 
+                    Matrix.CreateScale(BasicCylindersMeasures[cylinderPosition].X*2, scaleY, BasicCylindersMeasures[cylinderPosition].X*2) 
+                    * Matrix.CreateTranslation(BasicCylindersPositions[cylinderPosition]);
+
+                CollidersBoxes[i] = BoundingVolumesExtensions.FromMatrix(cylinderMatrix);
+            }
             // Cubo
             Box = new CubePrimitive(GraphicsDevice, 1f, Color.MonoGameOrange, Color.MonoGameOrange, Color.MonoGameOrange,
             Color.MonoGameOrange, Color.MonoGameOrange, Color.MonoGameOrange);
@@ -484,7 +621,7 @@ namespace TGC.MonoGame.TP
             // Aca deberiamos poner toda la logia de renderizado del juego.
             GraphicsDevice.Clear(Color.Black);
 
-            var time= Convert.ToSingle(gameTime.TotalGameTime.TotalSeconds);
+            time += Convert.ToSingle(gameTime.TotalGameTime.TotalSeconds);
 
             // Estos 3 parametros quedan fijos.
             Effect.Parameters["View"].SetValue(Camera.View);
@@ -498,87 +635,35 @@ namespace TGC.MonoGame.TP
                 DrawGeometricPrimitive(matrix,Box);
             }
 
+            for (int i = 0; i < WallsWorld.Length; i++)
+            {
+                var matrix = WallsWorld[i];
+                DrawGeometricPrimitive(matrix, CyanBox);
+            }
+
+            //Dibujo los cilindros
+            for (int i = 0; i < BasicCylindersPositions.Length; i++)
+            {
+                DrawGeometry(
+                    new CylinderPrimitive(GraphicsDevice, BasicCylindersMeasures[i].X, BasicCylindersMeasures[i].Y, 32 ),
+                    BasicCylindersPositions[i], BasicCylindersRotation[i].X, BasicCylindersRotation[i].Y, BasicCylindersRotation[i].Z);
+            }
 
             DrawGeometry(Sphere, SpherePosition,0,0,0);
 
-
-            DrawGeometry(Cylinder, new Vector3(300 , 0f, 4.5f ), CylinderYaw, 0,0);
-            DrawGeometry(Cylinder, new Vector3(400, 0f, 4.5f ), -CylinderYaw, 0,0);
-            DrawGeometry(Cylinder, new Vector3(500, 0f, 4.5f ), CylinderYaw, 0,0);
-
-            DrawGeometry(SmallCylinder, new Vector3(300, 10, 4.5f ),0,0,0);
-            DrawGeometry(SmallCylinder, new Vector3(400, 10, 4.5f ), 0,0,0);
-            DrawGeometry(SmallCylinder, new Vector3(500, 10, 4.5f ), 0,0,0);
-
-            DrawRectangle(Box,50,10,50,new Vector3(600f,70*MathF.Cos(3*time)-60,4.5f));
-            DrawRectangle(Box,50,10,50,new Vector3(700f,-70*MathF.Cos(3*time)+60,4.5f));
-
             InclinedTrackModel.Draw(Matrix.CreateScale(1.5f) * TrackWorld* Matrix.CreateTranslation(864.1f,100f,415f) ,Camera.View, Camera.Projection);
 
-            //Muro
-            DrawRectangle(CyanBox,10,10,30,new Vector3(1360f,30f,410f));
-            //
-           
-            //Muro
-            DrawRectangle(CyanBox,10,10,80,new Vector3(1565f,30f,435f));
-            //
-
-            //Islas
-            DrawGeometry(new CylinderPrimitive(GraphicsDevice, 10, 20, 18), new Vector3(1850,20,404), 0,0,0);
-            DrawGeometry(new CylinderPrimitive(GraphicsDevice, 10, 20, 18), new Vector3(1890,20,434.5f),0,0,0);
-            DrawGeometry(new CylinderPrimitive(GraphicsDevice, 10, 20, 18), new Vector3(1930,20,454.5f),0,0,0);
-            DrawGeometry(new CylinderPrimitive(GraphicsDevice, 10, 20, 18), new Vector3(1980,20,454.5f),0,0,0);
-            DrawGeometry(new CylinderPrimitive(GraphicsDevice, 10, 20, 18), new Vector3(2030,20,434.5f),0,0,0);
-            DrawGeometry(new CylinderPrimitive(GraphicsDevice, 10, 20, 18), new Vector3(2080,20,404.5f), 0,0,0);
-            DrawGeometry(new CylinderPrimitive(GraphicsDevice, 10, 20, 18), new Vector3(2130,20,414.5f), 0,0,0);
-            //
-
-
-            //Muro
-            DrawRectangle(CyanBox,10,10,80,new Vector3(2565f,30f,435f));
-            //
-            //Muro alto 
-            DrawRectangle(CyanBox,40,40,10,new Vector3(3090f,45f,510f));
-            DrawRectangle(CyanBox,40,40,10,new Vector3(3050f,45f,590f));
-            DrawRectangle(CyanBox,40,40,10,new Vector3(3090f,45f,670f));
-            //
-
             //cilindros que giran
-            DrawGeometry(new CylinderPrimitive(GraphicsDevice, 60, 10, 18),new Vector3(3100,100,1775), 3*CylinderYaw,0,MathHelper.PiOver2);
-            DrawGeometry(new CylinderPrimitive(GraphicsDevice, 60, 10, 18),new Vector3(3050,100,1820), 3*CylinderYaw,0,MathHelper.PiOver2);
-            DrawGeometry(new CylinderPrimitive(GraphicsDevice, 60, 10, 18),new Vector3(3100,100,1870), 3*CylinderYaw,0,MathHelper.PiOver2);
-            DrawGeometry(new CylinderPrimitive(GraphicsDevice, 60, 10, 18),new Vector3(3050,100,1920), 3*CylinderYaw,0,MathHelper.PiOver2);
+            //DrawGeometry(new CylinderPrimitive(GraphicsDevice, 60, 10, 18),new Vector3(3100,100,1775), 3*CylinderYaw,0,MathHelper.PiOver2);
             //
 
             DrawRectangle(Box,20,10,20,new Vector3(1720,42.5f*MathF.Cos(3*time)+42.5f,2405));
 
-            //paredes que se mueven
-            DrawRectangle(CyanBox,10, 50,40,new Vector3(40*MathF.Cos(5*time)+1720,40,2800));  
-            DrawRectangle(CyanBox, 10,50,40,new Vector3(-40*MathF.Cos(5*time)+1720,40,2900));
-            DrawRectangle(CyanBox,10, 50,40,new Vector3(40*MathF.Cos(5*time)+1720,40,3000));
-            DrawRectangle(CyanBox,10, 50,40,new Vector3(-40*MathF.Cos(5*time)+1720,40,3100));
-            DrawRectangle(CyanBox,10, 50,40,new Vector3(40*MathF.Cos(5*time)+1720,40,3200));
-            
-            //muros
-            DrawRectangle(CyanBox,80,10,10,new Vector3(1720,10,3320));
-            DrawRectangle(CyanBox,80,10,10,new Vector3(1720,10,3460));
-
-            //muro insaltable
-            DrawRectangle(CyanBox,40,40,10,new Vector3(1700,25,3895));
-            //Muro insaltable 
-            DrawRectangle(CyanBox,40,40,10,new Vector3(1740,25,4020));
-
-             //Pared que aplastan contra el suelo
+            //Pared que aplastan contra el suelo
             DrawRectangle(ObstacleBox,80,10,80,new Vector3(1720,35*MathF.Cos(4*time)+45,4240));
             DrawRectangle(ObstacleBox,80,10,80,new Vector3(1720,35*MathF.Cos(4*time+MathHelper.PiOver2)+45,4430));
             DrawRectangle(ObstacleBox,80,10,80,new Vector3(1720,35*MathF.Cos(4*time+MathHelper.PiOver4)+45,4620));            
-            //Muro 
-            DrawRectangle(CyanBox,80,10,10,new Vector3(1720,10,4825));
-            
-            //Plataformas que se mueven
-            DrawRectangle(CyanBox,40,10,80,new Vector3(1740,0,200*MathF.Cos(2*time)+5230));  
-            DrawRectangle(CyanBox,40,10,80,new Vector3(1690,0,200*MathF.Cos(2*time+MathHelper.Pi)+5600));
-            DrawRectangle(CyanBox,40,10,80,new Vector3(1740,0,200*MathF.Cos(2*time)+6010));
+                    
             base.Draw(gameTime);
         }
 
