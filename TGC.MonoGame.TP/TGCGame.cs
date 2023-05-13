@@ -1,16 +1,10 @@
 ﻿using System;
-using BepuPhysics.Collidables;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
 using Microsoft.Xna.Framework.Input;
 using TGC.MonoGame.TP.Cameras;
 using TGC.MonoGame.TP.Geometries;
 using TGC.MonoGame.TP.Collisions;
-
-using System.Collections.Generic;
-using System.Diagnostics;
-using System.Linq;
-using System.Text;
 
 
 //
@@ -46,7 +40,7 @@ namespace TGC.MonoGame.TP
 
         private bool ShowGizmos { get; set; } = true;
         private const float TAMANIO_CUBO = 10f;
-        private const float LINEAR_SPEED= 10f;
+        private const float LINEAR_SPEED= 6f;
         private const float ANGULAR_SPEED = 3f;
         private const float CAMERA_FOLLOW_RADIUS = 70f;
         private const float CAMERA_UP_DISTANCE = 30f;
@@ -57,8 +51,8 @@ namespace TGC.MonoGame.TP
 
         private const float SALTO_BUFFER_DECREMENT_ALPHA = 25f;
 
-        private const float GRAVITY = 3f;
-        private Vector3 SPHERE_INITIAL_POSITION = new Vector3(0.0f, 9.99f, 0.0f);
+        private const float GRAVITY = 200f;
+        private Vector3 SPHERE_INITIAL_POSITION = new Vector3(1235f,30f,415f);
 
         //CHECKPOINTS DEBE ESTAR ORDENADO ASCENDENTEMENTE
         //EL PRIMER VALOR DEBE SER LA POSICION INICIAL DE LA ESFERA
@@ -468,7 +462,7 @@ namespace TGC.MonoGame.TP
         }
 
         protected bool PelotaSeCayo(){
-            return SpherePosition.Y < (COORDENADA_Y_MAS_BAJA - 5f);
+            return SpherePosition.Y < (COORDENADA_Y_MAS_BAJA - 50f);
         }
 
         protected void VolverAlUltimoCheckpoint(){
@@ -477,7 +471,8 @@ namespace TGC.MonoGame.TP
 
             //Supone que CHECKPOINT esta en orden ascendente
             for(int i = 0; i < CHECKPOINTS.Length; i++){
-                if (CHECKPOINTS[i].X <= SpherePosition.X) SpherePosition = CHECKPOINTS[i];
+                if (CHECKPOINTS[i].X <= SpherePosition.X) 
+                SphereCollider.Center = CHECKPOINTS[i];
             }
         }
         /// <summary>
