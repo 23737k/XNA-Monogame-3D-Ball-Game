@@ -397,22 +397,10 @@ namespace TGC.MonoGame.TP
 
             ModificarParametrosObjetosMoviles(deltaTime, totalTime); 
 
-            SphereRotationMatrix = Matrix.CreateRotationY(Rotation);
-
-            SphereVelocity += SphereAcceleration * deltaTime;
-
             MovementManager(deltaTime);
-            
-            SolveVerticalMovement(SphereVelocity * deltaTime);
-
-            //SolveHorizontalMovementSliding(SphereVelocity);
-            
-            SpherePosition = SphereCollider.Center;
-            
-            World = SphereRotationMatrix * Matrix.CreateTranslation(SpherePosition);
 
             UpdateCamera();
-            
+
             base.Update(gameTime);
         }     
 
@@ -424,6 +412,9 @@ namespace TGC.MonoGame.TP
         }
 
         protected void MovementManager(float deltaTime){
+
+            SphereRotationMatrix = Matrix.CreateRotationY(Rotation);
+
             if (Keyboard.GetState().IsKeyDown(Keys.W) && !PelotaSeCayo())
             {
                 SphereCollider.Center += SphereRotationMatrix.Forward * LINEAR_SPEED ;
@@ -456,11 +447,23 @@ namespace TGC.MonoGame.TP
             }
 
             AdministrarSalto(deltaTime);
+
+            SolveVerticalMovement(deltaTime);
+
+            //SolveHorizontalMovementSliding(SphereVelocity);
+
+            SpherePosition = SphereCollider.Center;
+
+            World = SphereRotationMatrix * Matrix.CreateTranslation(SpherePosition);
         }
 
-        private void SolveVerticalMovement(Vector3 scaledVelocity)
+        private void SolveVerticalMovement(float deltaTime)
         {
-            SphereCollider.Center += Vector3.Up * scaledVelocity.Y;
+            
+            SphereVelocity += SphereAcceleration * deltaTime; //la aceleracion es la gravedad
+
+            SphereCollider.Center += Vector3.Up * (SphereVelocity * deltaTime).Y;
+
             OnGround = false;
 
             var collided = false;
