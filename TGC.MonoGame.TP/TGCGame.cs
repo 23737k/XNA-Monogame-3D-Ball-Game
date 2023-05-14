@@ -87,8 +87,6 @@ namespace TGC.MonoGame.TP
         private Model InclinedTrackModel { get; set; }
         private Matrix TrackWorld { get; set; }
         private float SaltoBuffer { get; set;}
-        private bool EstaSubiendoEnSalto { get; set;}
-        private bool EstaBajandoEnSalto { get; set;}
         private Matrix[] GroundWorld { get; set; }
         private Matrix[] WallsWorld { get; set; }
         private Vector3[] BasicCylindersMeasures{get; set;}
@@ -127,7 +125,6 @@ namespace TGC.MonoGame.TP
             // Seria hasta aca.
 
             OnGround = false;
-
             
             // Esfera
             Sphere = new SpherePrimitive(GraphicsDevice, 10);
@@ -290,8 +287,6 @@ namespace TGC.MonoGame.TP
             CollidersBoxes = new BoundingBox[boxesLength];
             //CollidersCylinders = new BoundingCylinder[5];
 
-            //GUARDA CON NO CAMBIAR EL ORDEN DE GUARDADO EN LOS COLLIDERS BOXES
-            //SE TIENE QUE GUARDAR PRIMERO LOS DEL SUELO PARA NO ROMPER PelotaEstaEnElSuelo()
             for(int i = 0; i < GroundWorld.Length; i++)
                 CollidersBoxes[i] =  BoundingVolumesExtensions.FromMatrix(GroundWorld[i]);
 
@@ -313,6 +308,7 @@ namespace TGC.MonoGame.TP
 
                 CollidersBoxes[i] = BoundingVolumesExtensions.FromMatrix(cylinderMatrix);
             }
+
             // Cubo
             Box = new CubePrimitive(GraphicsDevice, 1f, Color.MonoGameOrange, Color.MonoGameOrange, Color.MonoGameOrange,
             Color.MonoGameOrange, Color.MonoGameOrange, Color.MonoGameOrange);
@@ -384,8 +380,9 @@ namespace TGC.MonoGame.TP
 
         protected override void Update(GameTime gameTime)
         {
-
+    
             var deltaTime= Convert.ToSingle(gameTime.ElapsedGameTime.TotalSeconds);
+            var totalTime = Convert.ToSingle(gameTime.TotalGameTime.TotalSeconds);
 
             // Capturar Input teclado
             if (Keyboard.GetState().IsKeyDown(Keys.Escape))
@@ -398,35 +395,33 @@ namespace TGC.MonoGame.TP
                 VolverAlUltimoCheckpoint();
             }
 
-            CylinderYaw += deltaTime * 1.1f;
-            PlatformHeight = 70* MathF.Cos(4*Convert.ToSingle(gameTime.TotalGameTime.TotalSeconds))-60; 
-            WallLength = 50* MathF.Cos(8*Convert.ToSingle(gameTime.TotalGameTime.TotalSeconds))-50; 
+            ModificarParametrosObjetosMoviles(deltaTime, totalTime); 
 
             SphereRotationMatrix = Matrix.CreateRotationY(Rotation);
 
-            //Habría que ver el tema de la aceleración.
-            //Esta línea sería la gravedad
-            
             SphereVelocity += SphereAcceleration * deltaTime;
-
-            var scaledVelocity= SphereVelocity * deltaTime;
 
             MovementManager(deltaTime);
             
-            SolveVerticalMovement(scaledVelocity);
-
-            scaledVelocity = new Vector3(scaledVelocity.X, 0f, scaledVelocity.Z);
+            SolveVerticalMovement(SphereVelocity * deltaTime);
 
             //SolveHorizontalMovementSliding(SphereVelocity);
             
             SpherePosition = SphereCollider.Center;
-        
-            SphereVelocity = new Vector3(0f, SphereVelocity.Y, 0f);
             
             World = SphereRotationMatrix * Matrix.CreateTranslation(SpherePosition);
+
             UpdateCamera();
+            
             base.Update(gameTime);
         }     
+
+        protected void ModificarParametrosObjetosMoviles(float deltaTime, float totalTime){
+           
+            CylinderYaw += deltaTime * 1.1f;
+            PlatformHeight = 70* MathF.Cos(4*totalTime)-60; 
+            WallLength = 50* MathF.Cos(8*totalTime)-50;
+        }
 
         protected void MovementManager(float deltaTime){
             if (Keyboard.GetState().IsKeyDown(Keys.W) && !PelotaSeCayo())
@@ -485,25 +480,7 @@ namespace TGC.MonoGame.TP
                 break;
             }
 
-
-            /*
-            for (var i = 0; i < CollidersBoxes.Length; i++)
-            {   
-                BoundingBox aCollider = CollidersBoxes[i];
-                bool didColilde = !SphereCollider.Intersects(aCollider).Equals(BoxCylinderIntersection.Intersecting);
-                if(!didColilde){
-                    continue;
-                }
-                    
-                //If we collided with something we do something
-                SphereVelocity = new Vector3(SphereVelocity.X, 0f, SphereVelocity.Z);
-
-                collided = true;
-                foundIndex = i;
-                break;
-            }
-            */
-           while (collided)
+            while (collided)
             {
                 var collider = CollidersBoxes[foundIndex];
                 var colliderY = BoundingVolumesExtensions.GetCenter(collider).Y;
