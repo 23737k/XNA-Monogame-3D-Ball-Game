@@ -347,6 +347,7 @@ namespace TGC.MonoGame.TP.Collisions
           
             // We check if there is intersection in UVW space
             var distanceY = MathF.Abs(uvwCyilinderCenter.Y - _center.Y);
+            var distanceRadius = Vector3.Distance(uvwCyilinderCenter, _center);
 
             // If the sphere is way too high or too low there is no intersection
             if (distanceY > _halfHeight + cylinder._halfHeight)
@@ -363,6 +364,9 @@ namespace TGC.MonoGame.TP.Collisions
 
             // If the sphere's center is inside the Y coordinates of the cylinder, there is an intersection
             if (distanceY < _halfHeight) 
+                return true;
+
+            if(distanceRadius == addedRadius)
                 return true;
 
             // Check if the closest point to the center of the sphere belongs to the cylinder

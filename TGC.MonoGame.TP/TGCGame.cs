@@ -124,7 +124,8 @@ namespace TGC.MonoGame.TP
             
             // Esfera
             Sphere = new SpherePrimitive(GraphicsDevice, 10);
-            SpherePosition = SPHERE_INITIAL_POSITION;
+            //Cambiar A SPHERE_INITIAL_POSITION
+            SpherePosition = new Vector3(2540f,30f,435f);
             SphereCollider = new BoundingCylinder(SpherePosition, 2f, 5f);
             SphereVelocity = Vector3.Zero;
             SphereAcceleration = Vector3.Down * GRAVITY;
@@ -288,7 +289,7 @@ namespace TGC.MonoGame.TP
             for(int i = 0; i < GroundWorld.Length; i++)
                 CollidersBoxes[i] =  BoundingVolumesExtensions.FromMatrix(GroundWorld[i]);
 
-            for(int i = GroundWorld.Length; i< boxesLength - BasicCylindersPositions.Length; i++)
+            for(int i = GroundWorld.Length; i< boxesLength; i++)
                 CollidersBoxes[i] = BoundingVolumesExtensions.FromMatrix(WallsWorld[i - GroundWorld.Length]);
 
             for (int i = 0; i < BasicCylindersPositions.Length; i++)
@@ -439,8 +440,11 @@ namespace TGC.MonoGame.TP
             SolveVerticalCylinderMovement(deltaTime);
 
             SolveHorizontalBoxesCollisions(deltaTime);
+            SolveHorizontalCylinderPosition(deltaTime);
 
             SpherePosition = SphereCollider.Center;
+
+            //SphereVelocity = new Vector3(0f, SphereVelocity.Y, 0f);
 
             World = SphereRotationMatrix * Matrix.CreateTranslation(SpherePosition);
         }
@@ -478,84 +482,24 @@ namespace TGC.MonoGame.TP
                 var cylinderY = SphereCollider.Center.Y;
                 var extents = BoundingVolumesExtensions.GetExtents(collider);
 
-                Vector3[] colliderVertex = collider.GetCorners();
-
-                var sphereXFoward = SphereCollider.Center.X + SphereCollider.Radius;
-                var sphereXBackWard = SphereCollider.Center.X - SphereCollider.Radius;
-                var sphereZFoward = SphereCollider.Center.Z + SphereCollider.Radius;
-                var sphereZBackWard = SphereCollider.Center.Z - SphereCollider.Radius;
-
-                bool collidingHorizontally = false;
-                bool collidingXF = false;
-                bool collidingXB = false;
-                bool collidingZF = false;
-                bool collidingZB = false;
-
-                for (var i = 0; i < colliderVertex.Length; i++)
-                {
-                    Vector3 colliderCorner = colliderVertex[i];
-                    bool collidingXFoward = sphereXFoward == colliderCorner.X;
-                    bool collidingXBackward = sphereXBackWard == colliderCorner.X;
-                    bool collidingZFoward = sphereZFoward == colliderCorner.Z;
-                    bool collidingZBackward = sphereZBackWard == colliderCorner.Z;
-
-                    if (collidingXFoward)
-                        collidingHorizontally = true; collidingXF = true;
-                    
-                    if (collidingXBackward)
-                        collidingHorizontally = true; collidingXB = true;
-                    
-                    if (collidingZFoward)
-                        collidingHorizontally = true; collidingZF = true;
-
-                    if (collidingZBackward)
-                        collidingHorizontally = true; collidingZB = true;
-                }
-
-                for (var i = 0; i < colliderVertex.Length; i++)
-                {
-                    Vector3 colliderCorner = colliderVertex[i];
-
-
-                }
-        
+                float penetration = 0.001f;
                 // If we are on top of the collider, push up
                 // Also, set the OnGround flag to true
-                if (cylinderY > colliderY)
+            if  (cylinderY - SphereCollider.HalfHeight > colliderY)
                 {
-                    var penetration = colliderY + extents.Y - cylinderY + SphereCollider.HalfHeight;
+                    penetration = colliderY + extents.Y - cylinderY + SphereCollider.HalfHeight;
                     OnGround = true;
-                    SphereCollider.Center += Vector3.Up * penetration;
                 }
-                
-                //Check if we are Colliding Horizontally
-                if(collidingHorizontally)
-                {   
-                    Vector3 penetration;
 
-                    if (collidingXF)
-                        penetration = Vector3.Left * SphereCollider.Radius;
-
-                    if (collidingXB)
-                        penetration = Vector3.Right * SphereCollider.Radius;
-
-                    if (collidingZB)    
-                        penetration = Vector3. Forward * SphereCollider.Radius;
-
-                    else
-                        penetration = Vector3.Backward * SphereCollider.Radius;
-
-                    SphereCollider.Center += penetration;
-                    
+            if  (cylinderY < collider.Min.Y )
+                {
+                    penetration = -cylinderY - SphereCollider.HalfHeight + colliderY - extents.Y;
                 }
                 // If we are on bottom of the collider, push down
-                else 
-                {
-                    var penetration = -cylinderY - SphereCollider.HalfHeight + colliderY - extents.Y;
-                    //SphereCollider.Center += Vector3.Up * penetration;
-                }
-                    
+                
 
+                
+                SphereCollider.Center += Vector3.Up * penetration;
                 // Move our Cylinder so we are not colliding anymore
                 //SphereCollider.Center += Vector3.Up * penetration;
                 collided = false;
@@ -610,15 +554,19 @@ namespace TGC.MonoGame.TP
 
                 // If we are on top of the collider, push up
                 // Also, set the OnGround flag to true
-                if (cylinderY > colliderY)
+                if (cylinderY > collider.HalfHeight + colliderY)
                 {
-                    penetration = (colliderY + cylinderY) / 80;
+                    penetration = (colliderY + cylinderY) * 2;
                     OnGround = true;
                 }
 
+                if(cylinderY + SphereCollider.HalfHeight < colliderY - collider.HalfHeight)
+                {
+                    penetration = -cylinderY;
+                }
                 // If we are on bottom of the collider, push down
                 else
-                    penetration = -cylinderY;
+                    penetration = 0.00001f;
 
                 // Move our Cylinder so we are not colliding anymore
                 SphereCollider.Center += Vector3.Up * penetration;
@@ -640,35 +588,65 @@ namespace TGC.MonoGame.TP
         private void SolveHorizontalBoxesCollisions(float deltaTime)
         {
             
-            SphereVelocity += SphereAcceleration * deltaTime; //la aceleracion es la gravedad
-            SphereCollider.Center += Vector3.Up * (SphereVelocity * deltaTime).Y;
+            Vector3 scaledVelocity = new Vector3(SphereVelocity.Z, 0f, SphereVelocity.Y);
+            
+            if(Vector3.Dot(scaledVelocity, new Vector3(1f,0f, 1f)) == 0f)
+                return;
+
+            SphereCollider.Center += new Vector3(scaledVelocity.X, 0f, scaledVelocity.Y);
 
             //Check intersection for every collider
             for (int i = 0; i < CollidersBoxes.Length; i++) 
             {
-                if(!SphereCollider.Intersects(CollidersBoxes[i]).Equals(BoxCylinderIntersection.Intersecting))
+                if(!SphereCollider.Intersects(CollidersBoxes[i]).Equals(true))
                     continue;
-                
-                var collider = CollidersBoxes[i];
-                Vector3[] colliderCorners = collider.GetCorners();
-                
-                /*
+
+                var collider = CollidersBoxes[i];               
                 var colliderCenter = BoundingVolumesExtensions.GetCenter(collider);
 
                 var sameLevelCenter = SphereCollider.Center;
-                sameLevelCenter.Y = colliderCenter.Y;
+                sameLevelCenter.Y = colliderCenter.Y + 5f;
 
-                var closestPoint = SphereCollider.ClosestPoint(colliderCenter);
+                var closestPoint = BoundingVolumesExtensions.ClosestPoint(collider, sameLevelCenter);
 
-                var normalVector = sameLevelCenter - closestPoint;
+                var normalVector = sameLevelCenter- closestPoint;
                 var normalVectorLength = normalVector.Length();
 
                 var penetration = SphereCollider.Radius - normalVector.Length();
 
-                SphereCollider.Center += (normalVector / normalVectorLength * penetration);*/
+                SphereCollider.Center += (-normalVector / normalVectorLength) * penetration;
             }
         }
 
+        private void SolveHorizontalCylinderPosition(float deltaTime)
+        {
+            Vector3 scaledVelocity = new Vector3(SphereVelocity.X, 0f, SphereVelocity.Z);
+
+            if(Vector3.Dot(scaledVelocity, new Vector3(1f,0f, 1f)) == 0f)
+                return;
+
+            SphereCollider.Center += new Vector3(scaledVelocity.X, 0f, scaledVelocity.Y);
+
+            for (int i = 0; i < CollidersCylinders.Length; i++)
+            {   
+                var collider = CollidersCylinders[i];
+                Vector3 closestPoint = collider.ClosestPoint(SphereCollider.Center);
+
+                if(!collider.Contains(closestPoint).Equals(ContainmentType.Contains))
+                    continue;
+                
+                    var sameLevelCenter = SphereCollider.Center;
+                    sameLevelCenter.Y = collider.Center.Y;
+
+                    var normalVector = sameLevelCenter - closestPoint;
+                    var normalVectorLength = normalVector.Length();
+
+                    var penetration = SphereCollider.Radius - normalVector.Length();
+
+                    SphereCollider.Center += (normalVector / normalVectorLength * penetration) * MathF.PI / 4;
+                
+            }
+        }
 
         protected void AdministrarSalto(float deltaTime){
 
