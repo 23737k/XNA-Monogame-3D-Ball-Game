@@ -265,7 +265,7 @@ namespace TGC.MonoGame.TP.Collisions
         /// </summary>
         /// <param name="point">The point from which to find the closest position.</param>
         /// <returns>A position in the cylinder that is the closest to <paramref name="point"/></returns>
-        private Vector3 ClosestPoint(Vector3 point)
+        public Vector3 ClosestPoint(Vector3 point)
         {
             // Transform the point to cylindrical UVW coordinates
             var uvwPoint = Vector3.Transform(point, _inverseRotation);
@@ -338,6 +338,44 @@ namespace TGC.MonoGame.TP.Collisions
             centerToCenter += _center;
 
             return (centerToCenter - uvwSphereCenter).LengthSquared() <= (sphereRadius * sphereRadius);
+        }
+
+        public bool IntersectsAnotherCylinder(BoundingCylinder cylinder)
+        {
+            // Transform the sphere center to cylindrical UVW coordinates
+            var uvwCyilinderCenter = cylinder.Center;
+          
+            // We check if there is intersection in UVW space
+            var distanceY = MathF.Abs(uvwCyilinderCenter.Y - _center.Y);
+            var distanceRadius = Vector3.Distance(uvwCyilinderCenter, _center);
+
+            // If the sphere is way too high or too low there is no intersection
+            if (distanceY > _halfHeight + cylinder._halfHeight)
+                return false;
+
+            var centerToCenter = uvwCyilinderCenter - _center;
+            centerToCenter.Y = 0;
+
+            var addedRadius = _radius + cylinder._radius;
+
+            // If the sphere is too far in the XZ plane there is no intersection
+            if (centerToCenter.LengthSquared() > (addedRadius * addedRadius)) 
+                return false;
+
+            // If the sphere's center is inside the Y coordinates of the cylinder, there is an intersection
+            if (distanceY < _halfHeight) 
+                return true;
+
+            if(distanceRadius == addedRadius)
+                return true;
+
+            // Check if the closest point to the center of the sphere belongs to the cylinder
+            centerToCenter.Normalize();
+            centerToCenter *= _radius;
+            centerToCenter.Y = _halfHeight * MathF.Sign(uvwCyilinderCenter.Y - _center.Y);
+            centerToCenter += _center;
+
+            return (centerToCenter - uvwCyilinderCenter).LengthSquared() <= (cylinder.Radius * cylinder.Radius);
         }
 
 
