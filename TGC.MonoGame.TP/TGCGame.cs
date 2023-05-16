@@ -47,7 +47,7 @@ namespace TGC.MonoGame.TP
         private const float CYLINDER_HEIGHT = 10F;
         private const float CYLINDER_DIAMETER = 10f * TAMANIO_CUBO;
 
-        private const float SALTO_BUFFER_VALUE = 100;
+        private const float SALTO_BUFFER_VALUE = 100f;
 
         private const float SALTO_BUFFER_DECREMENT_ALPHA = 25f;
 
@@ -144,6 +144,8 @@ namespace TGC.MonoGame.TP
             GroundWorld = new Matrix [] 
             {
                 Matrix.CreateScale(150, 10, 100) * Matrix.CreateTranslation(Vector3.Zero),
+                Matrix.CreateScale(500,100,500) * Matrix.CreateTranslation(600f,-60,4.5f),
+                Matrix.CreateScale(500,100,500) * Matrix.CreateTranslation(700f,60,4.5f),
                 Matrix.CreateScale(150,10f,40) * Matrix.CreateTranslation(new Vector3(150, 0f, 2f)),
                 Matrix.CreateScale(140,10f,380) * Matrix.CreateTranslation(new Vector3(800f,100f,245f)),
                 Matrix.CreateScale(150,10f,30) * Matrix.CreateTranslation(new Vector3(1235f,20f,415f)),
@@ -167,9 +169,7 @@ namespace TGC.MonoGame.TP
                 Matrix.CreateScale(80,10,1000) * Matrix.CreateTranslation(new Vector3(1720,0,4455)),
                 Matrix.CreateScale(100,10f,2600) * Matrix.CreateTranslation(new Vector3(1720,0,7620)),
                 Matrix.CreateScale(100,10f,150) * Matrix.CreateTranslation(new Vector3(1720,0,8995)),
-                //Habría que ver que se muevan
-                Matrix.CreateScale(50,10,50) * Matrix.CreateTranslation(new Vector3(600f,70*MathF.Cos(3*time)-60,4.5f)),
-                Matrix.CreateScale(50,10,50) * Matrix.CreateTranslation(new Vector3(700f,-70*MathF.Cos(3*time)+60,4.5f))
+        
             };
 
             WallsWorld = new Matrix[]
@@ -336,10 +336,10 @@ namespace TGC.MonoGame.TP
             Effect.Parameters["diffuseColor"]?.SetValue(new Vector3(1f, 1f, 1f));
             Effect.Parameters["specularColor"]?.SetValue(new Vector3(1,1,1));
 
-            Effect.Parameters["KAmbient"]?.SetValue(0.1f);
+            Effect.Parameters["KAmbient"]?.SetValue(0.3f);
             Effect.Parameters["KDiffuse"]?.SetValue(0.7f);
             Effect.Parameters["KSpecular"]?.SetValue(0.4f);
-            Effect.Parameters["shininess"]?.SetValue(4f);
+            Effect.Parameters["shininess"]?.SetValue(10f);
 
             base.LoadContent();
         }
@@ -393,10 +393,11 @@ namespace TGC.MonoGame.TP
         }     
 
         protected void ModificarParametrosObjetosMoviles(float deltaTime, float totalTime){
-           
-            CylinderYaw += deltaTime * 1.1f;
-            PlatformHeight = 70* MathF.Cos(4*totalTime)-60; 
-            WallLength = 50* MathF.Cos(8*totalTime)-50;
+            GroundWorld[1] = Matrix.CreateScale(50,10,50) * Matrix.CreateTranslation(600f,+ 70*MathF.Cos(3*totalTime)-60,4.5f);
+            CollidersBoxes[1] = BoundingVolumesExtensions.FromMatrix(GroundWorld[1]);
+            GroundWorld[2] = Matrix.CreateScale(50,10,50)* Matrix.CreateTranslation(700f, 60-70*MathF.Cos(3*totalTime),4.5f);
+            CollidersBoxes[2] = BoundingVolumesExtensions.FromMatrix(GroundWorld[2]);
+            
         }
 
         protected void MovementManager(float deltaTime){
