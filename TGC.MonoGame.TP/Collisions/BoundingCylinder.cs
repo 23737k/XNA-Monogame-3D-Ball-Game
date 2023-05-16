@@ -340,23 +340,24 @@ namespace TGC.MonoGame.TP.Collisions
             return (centerToCenter - uvwSphereCenter).LengthSquared() <= (sphereRadius * sphereRadius);
         }
 
-        public bool IntersectsAnotherCylinder(BoundingCylinder cylinder)
+        public bool Intersects(BoundingCylinder cylinder)
         {
             // Transform the sphere center to cylindrical UVW coordinates
-            var uvwCyilinderCenter = cylinder.Center;
+            var uvwSphereCenter = Vector3.Transform(cylinder.Center, _inverseRotation);
           
             // We check if there is intersection in UVW space
-            var distanceY = MathF.Abs(uvwCyilinderCenter.Y - _center.Y);
-            var distanceRadius = Vector3.Distance(uvwCyilinderCenter, _center);
+
+            var sphereRadius = cylinder.Radius;
+            var distanceY = MathF.Abs(uvwSphereCenter.Y - _center.Y);
 
             // If the sphere is way too high or too low there is no intersection
-            if (distanceY > _halfHeight + cylinder._halfHeight)
+            if (distanceY > _halfHeight + sphereRadius)
                 return false;
 
-            var centerToCenter = uvwCyilinderCenter - _center;
+            var centerToCenter = uvwSphereCenter - _center;
             centerToCenter.Y = 0;
 
-            var addedRadius = _radius + cylinder._radius;
+            var addedRadius = _radius + sphereRadius;
 
             // If the sphere is too far in the XZ plane there is no intersection
             if (centerToCenter.LengthSquared() > (addedRadius * addedRadius)) 
@@ -366,18 +367,14 @@ namespace TGC.MonoGame.TP.Collisions
             if (distanceY < _halfHeight) 
                 return true;
 
-            if(distanceRadius == addedRadius)
-                return true;
-
             // Check if the closest point to the center of the sphere belongs to the cylinder
             centerToCenter.Normalize();
             centerToCenter *= _radius;
-            centerToCenter.Y = _halfHeight * MathF.Sign(uvwCyilinderCenter.Y - _center.Y);
+            centerToCenter.Y = _halfHeight * MathF.Sign(uvwSphereCenter.Y - _center.Y);
             centerToCenter += _center;
 
-            return (centerToCenter - uvwCyilinderCenter).LengthSquared() <= (cylinder.Radius * cylinder.Radius);
+            return (centerToCenter - uvwSphereCenter).LengthSquared() <= (sphereRadius * sphereRadius);
         }
-
 
         /// <summary>
         ///   Check if this <see cref="BoundingCylinder"/> intersects a Line Segment.

@@ -94,6 +94,8 @@ namespace TGC.MonoGame.TP
         private Vector3[] BasicCylindersRotation { get; set;}
         private BoundingCylinder[] CollidersCylinders { get; set; }
         private BoundingBox[] CollidersBoxes { get; set; }
+        private BoundingBox[] PowerUpBoxes{ get; set; }
+        private Matrix[] PowerUpsWorld { get; set;}
         private BoundingCylinder SphereCollider { get; set; }
         private Vector3 SphereVelocity { get; set; }
         private Vector3 SphereAcceleration { get; set; }
@@ -103,6 +105,17 @@ namespace TGC.MonoGame.TP
         private float time { get; set; } 
         private CubePrimitive LightBox { get; set; }
         private Vector3 LightPosition { get; set; } = new Vector3 (0,2500,0);
+        private Matrix[] CylindersWorldAsBoxes { get; set; } 
+        private SkyBox SkyBox { get; set; }
+        private Matrix SkyBoxView { get; set; }
+        private Matrix SkyBoxProjection { get; set; }
+        private Matrix SkyBoxWorld = Matrix.Identity;
+        private float SkyBoxAngel = 0.0f;
+        private float SkyBoxDistance = 50;
+        private Vector3 ViewVector { get; set; }
+        private Vector3 CameraPosition { get; set; }
+        
+
 
         /// <summary>
         ///     Se llama una sola vez, al principio cuando se ejecuta el ejemplo.
@@ -124,8 +137,7 @@ namespace TGC.MonoGame.TP
             
             // Esfera
             Sphere = new SpherePrimitive(GraphicsDevice, 10);
-            //Cambiar A SPHERE_INITIAL_POSITION
-            SpherePosition = new Vector3(2540f,30f,435f);
+            SpherePosition = SPHERE_INITIAL_POSITION;
             SphereCollider = new BoundingCylinder(SpherePosition, 2f, 5f);
             SphereVelocity = Vector3.Zero;
             SphereAcceleration = Vector3.Down * GRAVITY;
@@ -153,7 +165,7 @@ namespace TGC.MonoGame.TP
                 Matrix.CreateScale(300,10f,80) * Matrix.CreateTranslation(new Vector3(1670f,20f,435f)),
                 Matrix.CreateScale(100,10f,80) * Matrix.CreateTranslation(new Vector3(2230f,20f,435f)),
                 Matrix.CreateScale(350,10f,80) * Matrix.CreateTranslation(new Vector3(2475f,20f,435f)),
-                Matrix.CreateScale(350,10f,80) * Matrix.CreateTranslation(new Vector3(2855f,20f,435f)),
+                Matrix.CreateScale(310,10f,80) * Matrix.CreateTranslation(new Vector3(2895f,20f,435f)),
                 Matrix.CreateScale(80,10f,400) * Matrix.CreateTranslation(new Vector3(3070f,20f,595f)),
                 Matrix.CreateScale(80,10f,100) * Matrix.CreateTranslation(new Vector3(3070f,30,865f)),
                 Matrix.CreateScale(80,10f,100) * Matrix.CreateTranslation(new Vector3(3070f,40,1005f)),
@@ -172,6 +184,11 @@ namespace TGC.MonoGame.TP
         
             };
 
+            PowerUpsWorld = new Matrix[]
+            {
+                Matrix.CreateScale(40, 10f, 80) * Matrix.CreateTranslation(new Vector3(2720,20f,435f))
+            };
+
             WallsWorld = new Matrix[]
             {
                 Matrix.CreateScale(10,10f,30) * Matrix.CreateTranslation(new Vector3(1360f,30f,410f)),
@@ -179,8 +196,8 @@ namespace TGC.MonoGame.TP
                 Matrix.CreateScale(10,10f, 80f) * Matrix.CreateTranslation(new Vector3(2565f,30f,435f)),
                 //Muro alto
                 Matrix.CreateScale(40, 40f,10f) * Matrix.CreateTranslation(new Vector3(3090f,45f,510f)),
-                Matrix.CreateScale(40, 40f,10f) * Matrix.CreateTranslation(new Vector3(3090f,45f,670f)),
-                Matrix.CreateScale(40, 40f,10f) * Matrix.CreateTranslation(new Vector3(3090f,45f,590f)),
+                Matrix.CreateScale(40, 40f,10f) * Matrix.CreateTranslation(new Vector3(3080f,45f,670f)),
+                Matrix.CreateScale(40, 40f,10f) * Matrix.CreateTranslation(new Vector3(3060f,45f,590f)),
                 //Paredes que se mueven
                 Matrix.CreateScale(10, 50f,40f) * Matrix.CreateTranslation(new Vector3(40*MathF.Cos(5*time)+1720,40,2800)),
                 Matrix.CreateScale(10, 50f,40f) * Matrix.CreateTranslation(new Vector3(-40*MathF.Cos(5*time)+1720,40,2900)),
@@ -280,17 +297,38 @@ namespace TGC.MonoGame.TP
                 new Vector3(0,0,0),
                 new Vector3(0,0,0),
             };
+
+            CylindersWorldAsBoxes = new Matrix [BasicCylindersPositions.Length];
+
+            for (int i = 0; i < BasicCylindersPositions.Length; i++)
+            {
+                CylindersWorldAsBoxes[i] = 
+                   Matrix.CreateScale(BasicCylindersMeasures[i].Y, BasicCylindersMeasures[i].X, BasicCylindersMeasures[i].Y)
+                    * Matrix.CreateTranslation(BasicCylindersPositions[i]); 
+            }
                 
             //Create bounding boxes
-            int boxesLength = GroundWorld.Length + WallsWorld.Length;
+            int boxesLength = GroundWorld.Length + WallsWorld.Length + PowerUpsWorld.Length + CylindersWorldAsBoxes.Length;
+            var lengthBeforeCylinders = GroundWorld.Length + WallsWorld.Length + PowerUpsWorld.Length;
             CollidersBoxes = new BoundingBox[boxesLength];
             CollidersCylinders = new BoundingCylinder[BasicCylindersPositions.Length];
 
             for(int i = 0; i < GroundWorld.Length; i++)
                 CollidersBoxes[i] =  BoundingVolumesExtensions.FromMatrix(GroundWorld[i]);
 
-            for(int i = GroundWorld.Length; i< boxesLength; i++)
+            for(int i = GroundWorld.Length; i< lengthBeforeCylinders - PowerUpsWorld.Length; i++)
                 CollidersBoxes[i] = BoundingVolumesExtensions.FromMatrix(WallsWorld[i - GroundWorld.Length]);
+
+            for(int i = lengthBeforeCylinders - PowerUpsWorld.Length; i < lengthBeforeCylinders; i++)
+                CollidersBoxes[i] = BoundingVolumesExtensions.FromMatrix(PowerUpsWorld[i - lengthBeforeCylinders + PowerUpsWorld.Length]);
+
+            for(int i = lengthBeforeCylinders; i < boxesLength; i++)
+                CollidersBoxes[i] = BoundingVolumesExtensions.FromMatrix(CylindersWorldAsBoxes[i + CylindersWorldAsBoxes.Length - boxesLength]);
+
+            PowerUpBoxes = new BoundingBox[PowerUpsWorld.Length]; 
+
+            for(int i = 0; i< PowerUpsWorld.Length; i++)
+                PowerUpBoxes[i] = BoundingVolumesExtensions.FromMatrix(PowerUpsWorld[i]);
 
             for (int i = 0; i < BasicCylindersPositions.Length; i++)
             {
@@ -312,7 +350,12 @@ namespace TGC.MonoGame.TP
             Cylinder = new CylinderPrimitive(GraphicsDevice, CYLINDER_HEIGHT, CYLINDER_DIAMETER, 18);
             SmallCylinder = new CylinderPrimitive(GraphicsDevice, CYLINDER_HEIGHT *2, CYLINDER_DIAMETER/10, 18);    
             TrackWorld= Matrix.CreateRotationX(-MathHelper.PiOver2)*Matrix.CreateRotationY(-MathHelper.PiOver2)*Matrix.CreateTranslation(Vector3.Zero);
-            
+
+            //SkyBox 
+            SkyBoxView = Matrix.CreateLookAt(new Vector3(20,0,0), Vector3.Zero, Vector3.UnitY);
+            SkyBoxProjection = 
+                Matrix.CreatePerspectiveFieldOfView(MathHelper.PiOver4, 800f / 600f, 0.1f, 100f);
+
             UpdateCamera();
             base.Initialize();
         }
@@ -327,6 +370,15 @@ namespace TGC.MonoGame.TP
             // Aca es donde deberiamos cargar todos los contenido necesarios antes de iniciar el juego.
             SpriteBatch = new SpriteBatch(GraphicsDevice);
             InclinedTrackModel = Content.Load<Model>(ContentFolder3D + "rampa");        
+
+            //SkyBox
+            var skyBox = Content.Load<Model>(ContentFolder3D + "skybox/cube");
+            var skyBoxTexture = Content.Load<TextureCube>(ContentFolderTextures + "skybox");
+            var skyBoxEffect = Content.Load<Effect>(ContentFolderEffects + "skyBox");
+            
+            SkyBox = new SkyBox(skyBox, skyBoxTexture, skyBoxEffect, 300);
+
+
 
             //Luz
             LightBox = new CubePrimitive(GraphicsDevice, 1f, Color.White);
@@ -368,6 +420,8 @@ namespace TGC.MonoGame.TP
 
         protected override void Update(GameTime gameTime)
         {
+            CameraPosition = 20 * new Vector3((float)Math.Sin(SkyBoxAngel), 0, (float)Math.Cos(SkyBoxAngel));
+            SkyBoxView = Matrix.CreateLookAt(CameraPosition, new Vector3(0, 0, 0), Vector3.UnitY);
     
             var deltaTime= Convert.ToSingle(gameTime.ElapsedGameTime.TotalSeconds);
             var totalTime = Convert.ToSingle(gameTime.TotalGameTime.TotalSeconds);
@@ -425,20 +479,20 @@ namespace TGC.MonoGame.TP
                 SphereRotationMatrix = Matrix.CreateRotationY(Rotation);
                 SphereFrontDirection = Vector3.Transform(Vector3.Backward, SphereRotationMatrix);
             }
+
             AdministrarSalto(deltaTime);
 
             SphereVelocity += SphereAcceleration * deltaTime;
 
             var scaledVelocity= SphereVelocity * deltaTime;
 
-          
-
             SolveVerticalBoxesMovement(scaledVelocity);
-            //SolveVerticalCylinderMovement(deltaTime);
+            //SolveVerticalCylinderMovement(scaledVelocity);
+
             scaledVelocity = new Vector3(scaledVelocity.X, 0f, scaledVelocity.Z);
 
             SolveHorizontalBoxesCollisions(scaledVelocity);
-            //SolveHorizontalCylinderPosition(deltaTime);
+            //SolveHorizontalCylinderPosition(scaledVelocity);
             
             SpherePosition = SphereCollider.Center;
             SphereVelocity = new Vector3(0f, SphereVelocity.Y, 0f);
@@ -498,9 +552,10 @@ namespace TGC.MonoGame.TP
                     penetration = -cylinderY - SphereCollider.HalfHeight + colliderY - extents.Y;
 
                 // Move our Cylinder so we are not colliding anymore
+                SolvePowerUps(collider);
                 SphereCollider.Center += Vector3.Up * penetration;
                 collided = false;
-
+                
                 // Check for collisions again
                 for (var index = 0; index < CollidersBoxes.Length; index++)
                 {
@@ -558,11 +613,10 @@ namespace TGC.MonoGame.TP
             }
         }
 
-    /*
+    
 
-        private void SolveHorizontalCylinderPosition(Vector3 deltaTime)
+        private void SolveHorizontalCylinderPosition(Vector3 scaledVelocity)
         {
-            Vector3 scaledVelocity = new Vector3(SphereVelocity.X, 0f, SphereVelocity.Z);
 
             if(Vector3.Dot(scaledVelocity, new Vector3(1f,0f, 1f)) == 0f)
                 return;
@@ -571,12 +625,12 @@ namespace TGC.MonoGame.TP
 
             for (int i = 0; i < CollidersCylinders.Length; i++)
             {   
-                var collider = CollidersCylinders[i];
-                Vector3 closestPoint = collider.ClosestPoint(SphereCollider.Center);
-
-                if(!collider.Contains(closestPoint).Equals(ContainmentType.Contains))
+                if(!SphereCollider.Intersects(CollidersCylinders[i]).Equals(true))
                     continue;
-                
+
+                    var collider = CollidersCylinders[i];
+                    var closestPoint = collider.ClosestPoint(SphereCollider.Center);
+
                     var sameLevelCenter = SphereCollider.Center;
                     sameLevelCenter.Y = collider.Center.Y;
 
@@ -585,18 +639,31 @@ namespace TGC.MonoGame.TP
 
                     var penetration = SphereCollider.Radius - normalVector.Length();
 
-                    SphereCollider.Center += (normalVector / normalVectorLength * penetration) * MathF.PI / 4;
+                    SphereCollider.Center += (normalVector / normalVectorLength * penetration);
                 
             }
         }
-        */
-         /*
+        
+        private void SolvePowerUps(BoundingBox boxCollider)
+        {       
+            bool isApowerUp = false;
+
+            for(int i = 0; i < PowerUpsWorld.Length; i++){
+                if(PowerUpBoxes[i] == boxCollider)
+                    {
+                        isApowerUp = true;
+                        break;
+                    }
+            }
+
+            if(isApowerUp)
+                SphereVelocity -= SphereFrontDirection * LINEAR_SPEED * 5; 
+        }
+
         private void SolveVerticalCylinderMovement(Vector3 scaledVelocity)
         {
             
-            SphereVelocity += SphereAcceleration * deltaTime; //la aceleracion es la gravedad
-
-            SphereCollider.Center += Vector3.Up * (SphereVelocity * deltaTime).Y;
+            SphereCollider.Center += Vector3.Up * scaledVelocity.Y;
 
             OnGround = false;
 
@@ -604,7 +671,7 @@ namespace TGC.MonoGame.TP
             var foundIndex = -1;
             for (var index = 0; index < CollidersCylinders.Length; index++)
             {   
-                if (!SphereCollider.IntersectsAnotherCylinder(CollidersCylinders[index]).Equals(true))
+                if (!SphereCollider.Intersects(CollidersCylinders[index]).Equals(true))
                     continue;
                 
                 // If we collided with something, set our velocity in Y to zero to reset acceleration
@@ -648,7 +715,7 @@ namespace TGC.MonoGame.TP
                 // Check for collisions again
                 for (var index = 0; index < CollidersCylinders.Length; index++)
                 {
-                if (!SphereCollider.IntersectsAnotherCylinder(CollidersCylinders[index]).Equals(true))
+                if (!SphereCollider.Intersects(CollidersCylinders[index]).Equals(true))
                         continue;
                     // Iterate until we don't collide with anything anymore
                     collided = true;
@@ -657,7 +724,7 @@ namespace TGC.MonoGame.TP
                 }
             }
         }
-        */
+        
 
         protected void AdministrarSalto(float deltaTime){
 
@@ -702,6 +769,9 @@ namespace TGC.MonoGame.TP
         {
             // Aca deberiamos poner toda la logia de renderizado del juego.
             GraphicsDevice.Clear(Color.Black);
+
+            SkyBox.Draw(SkyBoxView, SkyBoxProjection, CameraPosition);
+
             time += Convert.ToSingle(gameTime.TotalGameTime.TotalSeconds);
 
             Effect.Parameters["eyePosition"]?.SetValue(Camera.Position);
@@ -723,6 +793,12 @@ namespace TGC.MonoGame.TP
             {
                 var matrix = WallsWorld[i];
                 DrawGeometricPrimitive(matrix, CyanBox);
+            }
+
+            for (int i = 0; i < PowerUpsWorld.Length; i++)
+            {
+                var matrix = PowerUpsWorld[i];
+                DrawGeometricPrimitive(matrix, YellowBox);
             }
 
             //Dibujo los cilindros
