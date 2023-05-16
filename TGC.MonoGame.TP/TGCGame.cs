@@ -57,11 +57,7 @@ namespace TGC.MonoGame.TP
         //CHECKPOINTS DEBE ESTAR ORDENADO ASCENDENTEMENTE
         //EL PRIMER VALOR DEBE SER LA POSICION INICIAL DE LA ESFERA
         private Vector3[] CHECKPOINTS={new Vector3(0, 9.99f, 0)};
-        private const float COORDENADA_Y_MAS_BAJA = 0f;
-
-        private float CylinderYaw = 0.0f;
-        private float PlatformHeight = 0f;
-        private float WallLength = 0f;
+        private const float COORDENADA_Y_MAS_BAJA = -80f;
         private GraphicsDeviceManager Graphics { get; }
         private SpriteBatch SpriteBatch { get; set; }
         private Effect Effect { get; set; }
@@ -114,8 +110,8 @@ namespace TGC.MonoGame.TP
         private float SkyBoxDistance = 50;
         private Vector3 ViewVector { get; set; }
         private Vector3 CameraPosition { get; set; }
-        
-
+        private float DeltaX {get; set;} = 0;
+        private MouseState prevMouseState = Mouse.GetState();
 
         /// <summary>
         ///     Se llama una sola vez, al principio cuando se ejecuta el ejemplo.
@@ -398,6 +394,7 @@ namespace TGC.MonoGame.TP
 
         private void UpdateCamera()
         {
+
             var sphereBackDirection = -Vector3.Transform(Vector3.Forward, SphereRotationMatrix);
         
             var orbitalPosition = sphereBackDirection * CAMERA_FOLLOW_RADIUS;
@@ -426,6 +423,8 @@ namespace TGC.MonoGame.TP
             var deltaTime= Convert.ToSingle(gameTime.ElapsedGameTime.TotalSeconds);
             var totalTime = Convert.ToSingle(gameTime.TotalGameTime.TotalSeconds);
 
+            ModificarParametrosObjetosMoviles(deltaTime, totalTime); 
+
             // Capturar Input teclado
             if (Keyboard.GetState().IsKeyDown(Keys.Escape))
             {
@@ -437,7 +436,6 @@ namespace TGC.MonoGame.TP
                 VolverAlUltimoCheckpoint();
             }
 
-            ModificarParametrosObjetosMoviles(deltaTime, totalTime); 
 
             MovementManager(deltaTime);
 
@@ -465,21 +463,14 @@ namespace TGC.MonoGame.TP
             {
                 SphereVelocity += SphereFrontDirection * LINEAR_SPEED;
             }
+            
+            var mouseState = Mouse.GetState();
+            var DeltaX = mouseState.X;
 
-            if (Keyboard.GetState().IsKeyDown(Keys.A))
-            {
-                Rotation += ANGULAR_SPEED * deltaTime;
-                SphereRotationMatrix = Matrix.CreateRotationY(Rotation);
-                SphereFrontDirection = Vector3.Transform(Vector3.Backward, SphereRotationMatrix);
-            }
-
-            if (Keyboard.GetState().IsKeyDown(Keys.D))
-            {
-                Rotation -= ANGULAR_SPEED * deltaTime;
-                SphereRotationMatrix = Matrix.CreateRotationY(Rotation);
-                SphereFrontDirection = Vector3.Transform(Vector3.Backward, SphereRotationMatrix);
-            }
-
+            Rotation = - DeltaX * 0.005f;
+            SphereRotationMatrix = Matrix.CreateRotationY(Rotation);
+            SphereFrontDirection = Vector3.Transform(Vector3.Backward, SphereRotationMatrix);
+           
             AdministrarSalto(deltaTime);
 
             SphereVelocity += SphereAcceleration * deltaTime;
