@@ -496,7 +496,7 @@ namespace TGC.MonoGame.TP.Collisions
             var differenceInY = MathF.Abs(closestPoint.Y - _center.Y);
 
             // If the absolute of the distance is greater than half the height, we are not intersecting
-            if (differenceInY > _halfHeight)
+            if (differenceInY + 0.0001f> _halfHeight)
                 return BoxCylinderIntersection.None;
             
             var radiusSquared = _radius * _radius;

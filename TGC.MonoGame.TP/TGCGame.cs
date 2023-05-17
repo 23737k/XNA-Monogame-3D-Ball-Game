@@ -47,16 +47,16 @@ namespace TGC.MonoGame.TP
         private const float CYLINDER_HEIGHT = 10F;
         private const float CYLINDER_DIAMETER = 10f * TAMANIO_CUBO;
 
-        private const float SALTO_BUFFER_VALUE = 100f;
+        private const float SALTO_BUFFER_VALUE = 200;
 
         private const float SALTO_BUFFER_DECREMENT_ALPHA = 25f;
 
-        private const float GRAVITY = 200f;
-        private Vector3 SPHERE_INITIAL_POSITION = new Vector3(1235f,30f,415f);
+        private const float GRAVITY = 350;
+        private Vector3 SPHERE_INITIAL_POSITION = new Vector3(0f,10.001f,0);
 
         //CHECKPOINTS DEBE ESTAR ORDENADO ASCENDENTEMENTE
         //EL PRIMER VALOR DEBE SER LA POSICION INICIAL DE LA ESFERA
-        private Vector3[] CHECKPOINTS={new Vector3(0, 9.99f, 0)};
+        private Vector3[] CHECKPOINTS={new Vector3(0, 10.001f, 0)};
         private const float COORDENADA_Y_MAS_BAJA = -80f;
         private GraphicsDeviceManager Graphics { get; }
         private SpriteBatch SpriteBatch { get; set; }
@@ -81,6 +81,7 @@ namespace TGC.MonoGame.TP
         private TargetCamera Camera { get; set; }
 
         private Model InclinedTrackModel { get; set; }
+        private OrientedBoundingBox InclinedTrackBox { get; set; }
         private Matrix TrackWorld { get; set; }
         private float SaltoBuffer { get; set;}
         private Matrix[] GroundWorld { get; set; }
@@ -110,8 +111,6 @@ namespace TGC.MonoGame.TP
         private float SkyBoxDistance = 50;
         private Vector3 ViewVector { get; set; }
         private Vector3 CameraPosition { get; set; }
-        private float DeltaX {get; set;} = 0;
-        private MouseState prevMouseState = Mouse.GetState();
 
         /// <summary>
         ///     Se llama una sola vez, al principio cuando se ejecuta el ejemplo.
@@ -133,7 +132,7 @@ namespace TGC.MonoGame.TP
             
             // Esfera
             Sphere = new SpherePrimitive(GraphicsDevice, 10);
-            SpherePosition = SPHERE_INITIAL_POSITION;
+            SpherePosition = new Vector3(1405,30f,435f);
             SphereCollider = new BoundingCylinder(SpherePosition, 2f, 5f);
             SphereVelocity = Vector3.Zero;
             SphereAcceleration = Vector3.Down * GRAVITY;
@@ -152,10 +151,12 @@ namespace TGC.MonoGame.TP
             GroundWorld = new Matrix [] 
             {
                 Matrix.CreateScale(150, 10, 100) * Matrix.CreateTranslation(Vector3.Zero),
-                Matrix.CreateScale(500,100,500) * Matrix.CreateTranslation(600f,-60,4.5f),
-                Matrix.CreateScale(500,100,500) * Matrix.CreateTranslation(700f,60,4.5f),
+                Matrix.CreateScale(50,10,50) * Matrix.CreateTranslation(600f,-60,4.5f),
+                Matrix.CreateScale(50,10,50) * Matrix.CreateTranslation(700f,60,4.5f),
                 Matrix.CreateScale(150,10f,40) * Matrix.CreateTranslation(new Vector3(150, 0f, 2f)),
                 Matrix.CreateScale(140,10f,380) * Matrix.CreateTranslation(new Vector3(800f,100f,245f)),
+                Matrix.CreateScale(50,10f,50) * Matrix.CreateTranslation(new Vector3(950,60,415f)),
+                Matrix.CreateScale(50,10f,50) * Matrix.CreateTranslation(new Vector3(1090,20,415f)),
                 Matrix.CreateScale(150,10f,30) * Matrix.CreateTranslation(new Vector3(1235f,20f,415f)),
                 Matrix.CreateScale(150,10f,80) * Matrix.CreateTranslation(new Vector3(1405,20f,435f)),
                 Matrix.CreateScale(300,10f,80) * Matrix.CreateTranslation(new Vector3(1670f,20f,435f)),
@@ -304,9 +305,13 @@ namespace TGC.MonoGame.TP
             }
                 
             //Create bounding boxes
+
             int boxesLength = GroundWorld.Length + WallsWorld.Length + PowerUpsWorld.Length + CylindersWorldAsBoxes.Length;
+
             var lengthBeforeCylinders = GroundWorld.Length + WallsWorld.Length + PowerUpsWorld.Length;
+
             CollidersBoxes = new BoundingBox[boxesLength];
+
             CollidersCylinders = new BoundingCylinder[BasicCylindersPositions.Length];
 
             for(int i = 0; i < GroundWorld.Length; i++)
@@ -329,7 +334,7 @@ namespace TGC.MonoGame.TP
             for (int i = 0; i < BasicCylindersPositions.Length; i++)
             {
                 CollidersCylinders[i] = new BoundingCylinder(BasicCylindersPositions[i],BasicCylindersMeasures[i].Y/2, BasicCylindersMeasures[i].X/2);
-            }
+            }        
 
 
             // Cubo
@@ -345,7 +350,7 @@ namespace TGC.MonoGame.TP
             //Cilindro
             Cylinder = new CylinderPrimitive(GraphicsDevice, CYLINDER_HEIGHT, CYLINDER_DIAMETER, 18);
             SmallCylinder = new CylinderPrimitive(GraphicsDevice, CYLINDER_HEIGHT *2, CYLINDER_DIAMETER/10, 18);    
-            TrackWorld= Matrix.CreateRotationX(-MathHelper.PiOver2)*Matrix.CreateRotationY(-MathHelper.PiOver2)*Matrix.CreateTranslation(Vector3.Zero);
+            TrackWorld= Matrix.CreateTranslation(Vector3.Zero);
 
             //SkyBox 
             SkyBoxView = Matrix.CreateLookAt(new Vector3(20,0,0), Vector3.Zero, Vector3.UnitY);
@@ -365,7 +370,15 @@ namespace TGC.MonoGame.TP
         {
             // Aca es donde deberiamos cargar todos los contenido necesarios antes de iniciar el juego.
             SpriteBatch = new SpriteBatch(GraphicsDevice);
-            InclinedTrackModel = Content.Load<Model>(ContentFolder3D + "rampa");        
+            InclinedTrackModel = Content.Load<Model>(ContentFolder3D + "rampa");  
+            var temporaryCubeAABB = BoundingVolumesExtensions.CreateAABBFrom(InclinedTrackModel);
+            temporaryCubeAABB = BoundingVolumesExtensions.Scale(temporaryCubeAABB, 1.5f);
+            // Create an Oriented Bounding Box from the AABB
+            InclinedTrackBox = OrientedBoundingBox.FromAABB(temporaryCubeAABB);
+            // Move the center
+            InclinedTrackBox.Center = (TrackWorld* Matrix.CreateTranslation(864.1f,100f,415f)).Translation;
+            // Then set its orientation!
+            InclinedTrackBox.Orientation =Matrix.CreateRotationX(-MathHelper.PiOver2)*Matrix.CreateRotationY(-MathHelper.PiOver2);    
 
             //SkyBox
             var skyBox = Content.Load<Model>(ContentFolder3D + "skybox/cube");
@@ -544,7 +557,7 @@ namespace TGC.MonoGame.TP
 
                 // Move our Cylinder so we are not colliding anymore
                 SolvePowerUps(collider);
-                SphereCollider.Center += Vector3.Up * penetration;
+                SphereCollider.Center = new Vector3(SphereCollider.Center.X, SphereCollider.Center.Y + (Vector3.Up.Y * penetration), SphereCollider.Center.Z);
                 collided = false;
                 
                 // Check for collisions again
@@ -559,6 +572,8 @@ namespace TGC.MonoGame.TP
                     break;
                 }
             }
+
+
         }
         
 
@@ -802,7 +817,7 @@ namespace TGC.MonoGame.TP
 
             DrawGeometry(Sphere, SpherePosition,0,0,0);
 
-            InclinedTrackModel.Draw(Matrix.CreateScale(1.5f) * TrackWorld* Matrix.CreateTranslation(864.1f,100f,415f) ,Camera.View, Camera.Projection);
+            //InclinedTrackModel.Draw(Matrix.CreateScale(1.5f) * Matrix.CreateRotationX(-MathHelper.PiOver2)*Matrix.CreateRotationY(-MathHelper.PiOver2)*TrackWorld* Matrix.CreateTranslation(864.1f,100f,415f) ,Camera.View, Camera.Projection);
 
             //cilindros que giran
             //DrawGeometry(new CylinderPrimitive(GraphicsDevice, 60, 10, 18),new Vector3(3100,100,1775), 3*CylinderYaw,0,MathHelper.PiOver2);
