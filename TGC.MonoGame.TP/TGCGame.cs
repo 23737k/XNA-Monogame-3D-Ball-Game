@@ -9,7 +9,6 @@ using Microsoft.Xna.Framework.Graphics;
 using Microsoft.Xna.Framework.Input;
 using TGC.MonoGame.TP.Cameras;
 using TGC.MonoGame.TP.Geometries;
-using TGC.MonoGame.TP.Geometries.Textures;
 using TGC.MonoGame.TP.Physics.Bepu;
 using NumericVector3 = System.Numerics.Vector3;
 
@@ -38,10 +37,10 @@ using NumericVector3 = System.Numerics.Vector3;
             IsMouseVisible = true;
         }
         private GraphicsDeviceManager Graphics { get; }
-        private QuadPrimitive Floor { get; set; }
         private Matrix FloorWorld { get; set; }
-        private BoxPrimitive Box { get; set; }
+        private CubePrimitive Box { get; set; }
 
+        private CubePrimitive Floor { get; set; }
         /// <summary>
         ///     We'll randomize the size of bullets.
         /// </summary>
@@ -53,8 +52,7 @@ using NumericVector3 = System.Numerics.Vector3;
         private List<Matrix> BoxesWorld { get; set; }
         private List<Matrix> SpheresWorld { get; set; }
         private bool CanShoot { get; set; }
-
-        private Effect TilingEffect { get; set; }
+        private BasicEffect Effect { get; set; }
 
         /// <summary>
         ///     Gets the buffer pool used by the demo's simulation.
@@ -89,20 +87,18 @@ using NumericVector3 = System.Numerics.Vector3;
         /// <inheritdoc />
         protected override void LoadContent()
         {
-            Random = new Random(5);
-
-            SpriteFont = Content.Load<SpriteFont>(ContentFolderSpriteFonts + "CascadiaCode/CascadiaCodePL");
-            
+            Random = new Random(5);            
             //The buffer pool is a source of raw memory blobs for the engine to use.
             BufferPool = new BufferPool();
-
             Radii = new List<float>();
-            Camera = new SimpleCamera(GraphicsDevice.Viewport.AspectRatio, new Vector3(40, 60, 150), 55, 0.4f);
+            var size = GraphicsDevice.Viewport.Bounds.Size;
+            size.X /= 2;
+            size.Y /= 2;
+            Camera = new FreeCamera(GraphicsDevice.Viewport.AspectRatio, new Vector3(0, 40, 200), size);
 
-            var boxTexture = Content.Load<Texture2D>(ContentFolderTextures + "wood/caja-madera-3");
-            Box = new BoxPrimitive(GraphicsDevice, Vector3.One * 10, boxTexture);
+            Box = new CubePrimitive(GraphicsDevice,10f,Color.Red);
 
-            Sphere = new SpherePrimitive(GraphicsDevice);
+            Sphere = new SpherePrimitive(GraphicsDevice,1f,18);
 
             SphereHandles = new List<BodyHandle>();
             BoxHandles = new List<BodyHandle>();
@@ -121,14 +117,9 @@ using NumericVector3 = System.Numerics.Vector3;
                 new SolveDescription(8, 1));
 
             // Creates a floor
-            var floorTexture = Content.Load<Texture2D>(ContentFolderTextures + "floor/adoquin-2");
-            Floor = new QuadPrimitive(GraphicsDevice);
+            Floor = new CubePrimitive(GraphicsDevice,1f,Color.Orange);
 
-            TilingEffect = Content.Load<Effect>(ContentFolderEffects + "TextureTiling");
-            TilingEffect.Parameters["Texture"].SetValue(floorTexture);
-            TilingEffect.Parameters["Tiling"].SetValue(Vector2.One * 50f);
-
-            FloorWorld = Matrix.CreateScale(400f) * Matrix.CreateTranslation(new Vector3(75,0, -150));
+            FloorWorld = Matrix.CreateScale(2000, 1, 2000) * Matrix.CreateTranslation(new Vector3(0, -0.5f, 0));
             Simulation.Statics.Add(new StaticDescription(new NumericVector3(0, -0.5f, 0),
                 Simulation.Shapes.Add(new Box(2000, 1, 2000))));
 
@@ -237,10 +228,7 @@ using NumericVector3 = System.Numerics.Vector3;
         protected override void Draw(GameTime gameTime)
         {
             GraphicsDevice.Clear(Color.Black);
-            GraphicsDevice.DepthStencilState = DepthStencilState.Default;
-
-            TilingEffect.Parameters["WorldViewProjection"].SetValue(FloorWorld * Camera.View * Camera.Projection);
-            Floor.Draw(TilingEffect);
+            Floor.Draw(FloorWorld,Camera.View,Camera.Projection);
             BoxesWorld.ForEach(boxWorld => Box.Draw(boxWorld, Camera.View, Camera.Projection));
             SpheresWorld.ForEach(sphereWorld => Sphere.Draw(sphereWorld, Camera.View, Camera.Projection));
             
