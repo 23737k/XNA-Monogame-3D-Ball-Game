@@ -53,7 +53,7 @@ public struct PoseIntegratorCallbacks : IPoseIntegratorCallbacks
     /// </summary>
     public readonly bool IntegrateVelocityForKinematics => false;
 
-    public PoseIntegratorCallbacks(Vector3 gravity, float linearDamping = .03f, float angularDamping = .03f) : this()
+    public PoseIntegratorCallbacks(Vector3 gravity, float linearDamping =0.99f, float angularDamping = .99f) : this()
     {
         Gravity = gravity;
         LinearDamping = linearDamping;
