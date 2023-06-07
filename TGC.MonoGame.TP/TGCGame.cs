@@ -143,7 +143,7 @@ namespace TGC.MonoGame.TP
         
             // Esfera
             Sphere = new SpherePrimitive(GraphicsDevice);
-            SpherePosition = new Vector3(1405,60f,435f);
+            SpherePosition = new Vector3(3100,94,1700);
             SphereWorld = Matrix.CreateTranslation(SpherePosition);
             //SphereCollider = new BoundingSphere(SpherePosition, 5f);
             SphereVelocity = Vector3.Zero;
@@ -249,10 +249,10 @@ namespace TGC.MonoGame.TP
                 new Vector3(10,20,18),
 
                 //Cilindros que giran
-                new Vector3(60, 10, 18),
-                new Vector3(60, 10, 18),
-                new Vector3(60, 10, 18),
-                new Vector3(60, 10, 18),
+                new Vector3(80, 10, 18),
+                new Vector3(80, 10, 18),
+                new Vector3(80, 10, 18),
+                new Vector3(80, 10, 18),
             };
 
             BasicCylindersPositions = new Vector3[]
@@ -274,10 +274,10 @@ namespace TGC.MonoGame.TP
                 new Vector3(2130,20,414.5f),
 
                 //Cilindros que Giran  
-                new Vector3(3100,95,1775),
-                new Vector3(3050,95,1820),
-                new Vector3(3100,95,1870),
-                new Vector3(3050,95,1920),
+                new Vector3(3100,94,1775),
+                new Vector3(3050,94,1820),
+                new Vector3(3100,94,1870),
+                new Vector3(3050,94,1920),
             };
 
             BasicCylindersRotation = new Vector3[]
@@ -454,7 +454,7 @@ namespace TGC.MonoGame.TP
                
                 Simulation.Bodies.GetBodyReference(boxBodyHandle).Pose.Orientation=  System.Numerics.Quaternion.CreateFromYawPitchRoll(BasicCylindersRotation[i].X,
                 BasicCylindersRotation[i].Y, BasicCylindersRotation[i].Z);
-                Simulation.Bodies.GetBodyReference(boxBodyHandle).Velocity.Angular = new NumericVector3(0,2f,0);
+                Simulation.Bodies.GetBodyReference(boxBodyHandle).Velocity.Angular = new NumericVector3(0,3f,0);
                 MobileObstacles.Add(boxBodyHandle);
             }
 
@@ -541,11 +541,7 @@ namespace TGC.MonoGame.TP
             {
                 CylindersWorldAsBoxes[i] = Matrix.CreateRotationZ(BasicCylindersRotation[i].Z)  * Matrix.CreateRotationY(totalTime)
                                             * Matrix.CreateTranslation(BasicCylindersPositions[i]);
-                var bodyRef= Simulation.Bodies.GetBodyReference(MobileObstacles[i]);
-                //bodyRef.Pose.Orientation = System.Numerics.Quaternion.CreateFromYawPitchRoll(0, BasicCylindersRotation[i].Z, totalTime);
-                //bodyRef.Velocity.Angular= new NumericVector3(0,totalTime,0);
-                
-                
+                var bodyRef= Simulation.Bodies.GetBodyReference(MobileObstacles[i]);          
             }
 
 
