@@ -121,6 +121,8 @@ namespace TGC.MonoGame.TP
         private SimpleThreadDispatcher ThreadDispatcher { get; set; }
         private Sphere BepuSphere { get; set; }
 
+        private List<BodyHandle> MobileObstacles { get; set; }
+
         /// <summary>
         ///     Se llama una sola vez, al principio cuando se ejecuta el ejemplo.
         ///     Escribir aqui el codigo de inicializacion: el procesamiento que podemos pre calcular para nuestro juego.
@@ -313,6 +315,8 @@ namespace TGC.MonoGame.TP
                    Matrix.CreateFromYawPitchRoll(BasicCylindersRotation[i].X, BasicCylindersRotation[i].Y,BasicCylindersRotation[i].Z) 
                    * Matrix.CreateTranslation(BasicCylindersPositions[i]); 
             }
+
+            MobileObstacles = new List<BodyHandle>();
                 
             //Create bounding boxes
 /*
@@ -443,18 +447,15 @@ namespace TGC.MonoGame.TP
 
 
 
-            for(int i = 0; i<CylindersWorldAsBoxes.Length; i++){
-                
+            for(int i = 0; i<CylindersWorldAsBoxes.Length; i++){      
                 var boxBodyHandle = Simulation.Bodies.Add(BodyDescription.CreateKinematic(new RigidPose(ToNumericVector3(
                 CylindersWorldAsBoxes[i].Translation)), 
                 new CollidableDescription(Simulation.Shapes.Add(new Cylinder(BasicCylindersMeasures[i].Y/2, BasicCylindersMeasures[i].X)), 0.1f, ContinuousDetection.Continuous(1e-4f, 1e-4f)), new BodyActivityDescription(-0.1f)));
-
-                Simulation.Bodies.GetBodyReference(boxBodyHandle).Activity.SleepThreshold = -1;
+               
                 Simulation.Bodies.GetBodyReference(boxBodyHandle).Pose.Orientation=  System.Numerics.Quaternion.CreateFromYawPitchRoll(BasicCylindersRotation[i].X,
                 BasicCylindersRotation[i].Y, BasicCylindersRotation[i].Z);
-                //var entityRotator = new EntityRotator();
-                //Simulation.Bodies.GetBodyReference(boxBodyHandle).;
-
+                Simulation.Bodies.GetBodyReference(boxBodyHandle).Velocity.Angular = new NumericVector3(0,2f,0);
+                MobileObstacles.Add(boxBodyHandle);
             }
 
             var position = ToNumericVector3(SpherePosition);
@@ -462,9 +463,11 @@ namespace TGC.MonoGame.TP
                     new BodyVelocity(ToNumericVector3(SphereVelocity)),
                     600f, Simulation.Shapes, BepuSphere);
             bodyDescription.Collidable.Continuity = ContinuousDetection.Continuous(1e-4f, 1e-4f);
+            bodyDescription.Activity.SleepThreshold=-1;
             var bodyHandle = Simulation.Bodies.Add(bodyDescription);
             SphereHandle = bodyHandle;
             SphereHandle = Simulation.Bodies.Add(bodyDescription);
+
 
             base.LoadContent();
         }
@@ -489,10 +492,9 @@ namespace TGC.MonoGame.TP
         protected override void Update(GameTime gameTime)
         {
 
-            
-
             var deltaTime= Convert.ToSingle(gameTime.ElapsedGameTime.TotalSeconds);
             var totalTime = Convert.ToSingle(gameTime.TotalGameTime.TotalSeconds);
+
 
             MovementManager(deltaTime);
 
@@ -501,7 +503,7 @@ namespace TGC.MonoGame.TP
 
             Simulation.Timestep(1 / 60f, ThreadDispatcher);
 
-            //ModificarParametrosObjetosMoviles(deltaTime, totalTime); 
+            ModificarParametrosObjetosMoviles(deltaTime, totalTime); 
 
             // Capturar Input teclado
             if (Keyboard.GetState().IsKeyDown(Keys.Escape))
@@ -535,10 +537,23 @@ namespace TGC.MonoGame.TP
         }     
 
         protected void ModificarParametrosObjetosMoviles(float deltaTime, float totalTime){
-            GroundWorld[1] = Matrix.CreateScale(50,10,50) * Matrix.CreateTranslation(600f,+ 70*MathF.Cos(3*totalTime)-60,4.5f);
+            for(int i = 0 ; i<CylindersWorldAsBoxes.Length;i++)
+            {
+                CylindersWorldAsBoxes[i] = Matrix.CreateRotationZ(BasicCylindersRotation[i].Z)  * Matrix.CreateRotationY(totalTime)
+                                            * Matrix.CreateTranslation(BasicCylindersPositions[i]);
+                var bodyRef= Simulation.Bodies.GetBodyReference(MobileObstacles[i]);
+                //bodyRef.Pose.Orientation = System.Numerics.Quaternion.CreateFromYawPitchRoll(0, BasicCylindersRotation[i].Z, totalTime);
+                //bodyRef.Velocity.Angular= new NumericVector3(0,totalTime,0);
+                
+                
+            }
+
+
+            /*GroundWorld[1] = Matrix.CreateScale(50,10,50) * Matrix.CreateTranslation(600f,+ 70*MathF.Cos(3*totalTime)-60,4.5f);
             CollidersBoxes[1] = BoundingVolumesExtensions.FromMatrix(GroundWorld[1]);
             GroundWorld[2] = Matrix.CreateScale(50,10,50)* Matrix.CreateTranslation(700f, 60-70*MathF.Cos(3*totalTime),4.5f);
             CollidersBoxes[2] = BoundingVolumesExtensions.FromMatrix(GroundWorld[2]);
+            */
             
         }
         protected void MovementManager(float deltaTime){
@@ -864,9 +879,13 @@ namespace TGC.MonoGame.TP
             //Dibujo los cilindros
             for (int i = 0; i < CylindersWorldAsBoxes.Length; i++)
             {
+                var position = Simulation.Bodies.GetBodyReference(MobileObstacles[i]).Pose.Position;
+                var rotation = Simulation.Bodies.GetBodyReference(MobileObstacles[i]).Pose.Orientation;
+                Matrix world = Matrix.CreateFromQuaternion(rotation) * Matrix.CreateTranslation(position);
+
                 DrawGeometry(
-                    new CylinderPrimitive(GraphicsDevice, BasicCylindersMeasures[i].X, BasicCylindersMeasures[i].Y, 32 ),
-                    CylindersWorldAsBoxes[i]);
+                    new CylinderPrimitive(GraphicsDevice, BasicCylindersMeasures[i].X, BasicCylindersMeasures[i].Y, 32 ),world
+                    );
             }
 
             DrawGeometry(Sphere, SphereWorld);
