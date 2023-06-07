@@ -67,7 +67,6 @@ namespace TGC.MonoGame.TP
         private SpriteBatch SpriteBatch { get; set; }
         private Effect Effect { get; set; }
         private float Rotation { get; set; }
-        private Matrix World { get; set; }
         private Matrix View { get; set; }
         private Matrix Projection { get; set; }
         private SpherePrimitive Sphere { get; set; }
@@ -81,21 +80,12 @@ namespace TGC.MonoGame.TP
         private CubePrimitive YellowBox { get; set; }
         private CylinderPrimitive Cylinder { get; set; }
         private CylinderPrimitive SmallCylinder { get; set; }
-        private Vector3 BoxPosition { get; set; }
         private Vector3 SpherePosition { get; set; }
         private TargetCamera Camera { get; set; }
 
-        private Model InclinedTrackModel { get; set; }
-        private OrientedBoundingBox InclinedTrackBox { get; set; }
-        private Matrix TrackWorld { get; set; }
-        private float SaltoBuffer { get; set;}
         private Matrix[] GroundWorld { get; set; }
         private Matrix[] WallsWorld { get; set; }
         private Vector3[] BasicCylindersMeasures{get; set;}
-        private Vector3[] BasicCylindersPositions{get; set;}
-        private Vector3[] BasicCylindersRotation { get; set;}
-        private BoundingCylinder[] CollidersCylinders { get; set; }
-        private BoundingBox[] CollidersBoxes { get; set; }
         private BoundingBox[] PowerUpBoxes{ get; set; }
         private Matrix[] PowerUpsWorld { get; set;}
         private BoundingSphere SphereCollider;
@@ -106,8 +96,7 @@ namespace TGC.MonoGame.TP
         private float time { get; set; } 
         private CubePrimitive LightBox { get; set; }
         private Vector3 LightPosition { get; set; } = new Vector3 (0,2500,0);
-        private Matrix[] CylindersWorldAsBoxes { get; set; } 
-        private Matrix[] CylinderWorld {get;set;}
+        private Matrix[] CylinderWorld { get; set; } 
         private SkyBox SkyBox { get; set; }
         private Matrix SkyBoxView { get; set; }
         private Matrix SkyBoxProjection { get; set; }
@@ -145,24 +134,20 @@ namespace TGC.MonoGame.TP
             Sphere = new SpherePrimitive(GraphicsDevice);
             SpherePosition = new Vector3(3100,94,1700);
             SphereWorld = Matrix.CreateTranslation(SpherePosition);
-            //SphereCollider = new BoundingSphere(SpherePosition, 5f);
             SphereVelocity = Vector3.Zero;
-            //SphereAcceleration = Vector3.Down * GRAVITY;
             SphereFrontDirection =  Vector3.Backward;
             SphereScale = Matrix.CreateScale(0.3f);
 
-            // Configuramos nuestras matrices de la escena.
-            Rotation=0;
             SphereRotationMatrix = Matrix.CreateRotationY(Rotation);
             View = Matrix.CreateLookAt(Vector3.UnitZ * 150, Vector3.Zero, Vector3.Up);
             Projection =
                 Matrix.CreatePerspectiveFieldOfView(MathHelper.PiOver4, GraphicsDevice.Viewport.AspectRatio, 1, 250);
             Camera = new TargetCamera(GraphicsDevice.Viewport.AspectRatio, new Vector3(0, 20, 60), Vector3.Zero);
-            time = 0.0f;
 
             GroundWorld = new Matrix [] 
             {
                 Matrix.CreateScale(150, 10, 100) * Matrix.CreateTranslation(Vector3.Zero),
+                //plataformas moviles
                 Matrix.CreateScale(50,10,50) * Matrix.CreateTranslation(600f,-60,4.5f),
                 Matrix.CreateScale(50,10,50) * Matrix.CreateTranslation(700f,60,4.5f),
                 Matrix.CreateScale(150,10f,40) * Matrix.CreateTranslation(new Vector3(150, 0f, 2f)),
@@ -228,8 +213,7 @@ namespace TGC.MonoGame.TP
                 Matrix.CreateScale(40,10,80) * Matrix.CreateTranslation(new Vector3(1740,0,200*MathF.Cos(2*time)+6010)),
 
             };
-
-            
+         
             BasicCylindersMeasures = new Vector3[]
             {
                 new Vector3(10f,80f,60f),
@@ -255,101 +239,31 @@ namespace TGC.MonoGame.TP
                 new Vector3(80, 10, 18),
             };
 
-            BasicCylindersPositions = new Vector3[]
-            {
-                new Vector3(300,0f,4.5f),
-                new Vector3(400, 0f,4.5f),
-                new Vector3(500, 0, 4.5f),
-                new Vector3(400, 10, 4.5f ),
-                new Vector3(500, 10, 4.5f ),
-                new Vector3(300, 10, 4.5f ),
+            CylinderWorld = new Matrix[]{
+                Matrix.CreateTranslation(new Vector3(300,0f,4.5f)),
+                Matrix.CreateTranslation(new Vector3(400, 0f,4.5f)),
+                Matrix.CreateTranslation(new Vector3(500, 0, 4.5f)),
+                Matrix.CreateTranslation(new Vector3(400, 10, 4.5f )),
+                Matrix.CreateTranslation(new Vector3(500, 10, 4.5f )),
+                Matrix.CreateTranslation(new Vector3(300, 10, 4.5f )),
 
                 //Islas
-                new Vector3(1850,20,404),
-                new Vector3(1890,20,434.5f),
-                new Vector3(1930,20,454.5f),
-                new Vector3(1980,20,454.5f),
-                new Vector3(2030,20,434.5f),
-                new Vector3(2080,20,404.5f),
-                new Vector3(2130,20,414.5f),
+                Matrix.CreateTranslation(new Vector3(1850,20,404)),
+                Matrix.CreateTranslation(new Vector3(1890,20,434.5f)),
+                Matrix.CreateTranslation(new Vector3(1930,20,454.5f)),
+                Matrix.CreateTranslation(new Vector3(1980,20,454.5f)),
+                Matrix.CreateTranslation(new Vector3(2030,20,434.5f)),
+                Matrix.CreateTranslation(new Vector3(2080,20,404.5f)),
+                Matrix.CreateTranslation(new Vector3(2130,20,414.5f)),
 
                 //Cilindros que Giran  
-                new Vector3(3100,94,1775),
-                new Vector3(3050,94,1820),
-                new Vector3(3100,94,1870),
-                new Vector3(3050,94,1920),
+                Matrix.CreateFromYawPitchRoll(0,0,-MathHelper.PiOver2) * Matrix.CreateTranslation(new Vector3(3100,94,1775)),
+                Matrix.CreateFromYawPitchRoll(0,0,-MathHelper.PiOver2) * Matrix.CreateTranslation(new Vector3(3050,94,1820)),
+                Matrix.CreateFromYawPitchRoll(0,0,-MathHelper.PiOver2) * Matrix.CreateTranslation(new Vector3(3100,94,1870)),
+                Matrix.CreateFromYawPitchRoll(0,0,-MathHelper.PiOver2) * Matrix.CreateTranslation(new Vector3(3050,94,1920))
             };
-
-            BasicCylindersRotation = new Vector3[]
-            {
-                //Los cambio a cero para probar
-                new Vector3(0, 0.0f, 0.0f),
-                new Vector3(0, 0.0f, 0.0f),
-                new Vector3(0, 0.0f, 0.0f),
-                new Vector3(0,0,0),
-                new Vector3(0,0,0),
-                new Vector3(0,0,0),
-
-                //Islas
-                new Vector3(0,0,0),
-                new Vector3(0,0,0),
-                new Vector3(0,0,0),
-                new Vector3(0,0,0),
-                new Vector3(0,0,0),
-                new Vector3(0,0,0),
-                new Vector3(0,0,0),
-
-                //Cilindros Que Giran
-                //Los cambio a cero para probar..
-                new Vector3(0,0,-MathHelper.PiOver2),
-                new Vector3(0,0,-MathHelper.PiOver2),
-                new Vector3(0,0,-MathHelper.PiOver2),
-                new Vector3(0,0,-MathHelper.PiOver2),
-            };
-
-            CylindersWorldAsBoxes = new Matrix [BasicCylindersPositions.Length];
-
-            for (int i = 0; i < BasicCylindersPositions.Length; i++)
-            {
-                CylindersWorldAsBoxes[i] = 
-                   Matrix.CreateFromYawPitchRoll(BasicCylindersRotation[i].X, BasicCylindersRotation[i].Y,BasicCylindersRotation[i].Z) 
-                   * Matrix.CreateTranslation(BasicCylindersPositions[i]); 
-            }
 
             MobileObstacles = new List<BodyHandle>();
-                
-            //Create bounding boxes
-/*
-            int boxesLength = GroundWorld.Length + WallsWorld.Length + PowerUpsWorld.Length + CylindersWorldAsBoxes.Length;
-
-            var lengthBeforeCylinders = GroundWorld.Length + WallsWorld.Length + PowerUpsWorld.Length;
-
-            CollidersBoxes = new BoundingBox[boxesLength];
-
-            CollidersCylinders = new BoundingCylinder[BasicCylindersPositions.Length];
-
-            for(int i = 0; i < GroundWorld.Length; i++)
-                CollidersBoxes[i] =  BoundingVolumesExtensions.FromMatrix(GroundWorld[i]);
-
-            for(int i = GroundWorld.Length; i< lengthBeforeCylinders - PowerUpsWorld.Length; i++)
-                CollidersBoxes[i] = BoundingVolumesExtensions.FromMatrix(WallsWorld[i - GroundWorld.Length]);
-
-            for(int i = lengthBeforeCylinders - PowerUpsWorld.Length; i < lengthBeforeCylinders; i++)
-                CollidersBoxes[i] = BoundingVolumesExtensions.FromMatrix(PowerUpsWorld[i - lengthBeforeCylinders + PowerUpsWorld.Length]);
-
-            for(int i = lengthBeforeCylinders; i < boxesLength; i++)
-                CollidersBoxes[i] = BoundingVolumesExtensions.FromMatrix(CylindersWorldAsBoxes[i + CylindersWorldAsBoxes.Length - boxesLength]);
-
-            PowerUpBoxes = new BoundingBox[PowerUpsWorld.Length]; 
-
-            for(int i = 0; i< PowerUpsWorld.Length; i++)
-                PowerUpBoxes[i] = BoundingVolumesExtensions.FromMatrix(PowerUpsWorld[i]);
-
-            for (int i = 0; i < BasicCylindersPositions.Length; i++)
-            {
-                CollidersCylinders[i] = new BoundingCylinder(BasicCylindersPositions[i],BasicCylindersMeasures[i].Y/2, BasicCylindersMeasures[i].X/2);
-            }        
-*/
 
             // Cubo
             Box = new CubePrimitive(GraphicsDevice, 1f, Color.MonoGameOrange, Color.MonoGameOrange, Color.MonoGameOrange,
@@ -364,7 +278,6 @@ namespace TGC.MonoGame.TP
             //Cilindro
             Cylinder = new CylinderPrimitive(GraphicsDevice, CYLINDER_HEIGHT, CYLINDER_DIAMETER, 18);
             SmallCylinder = new CylinderPrimitive(GraphicsDevice, CYLINDER_HEIGHT *2, CYLINDER_DIAMETER/10, 18);    
-            TrackWorld= Matrix.CreateTranslation(Vector3.Zero);
 
             //SkyBox 
             SkyBoxView = Matrix.CreateLookAt(new Vector3(20,0,0), Vector3.Zero, Vector3.UnitY);
@@ -384,16 +297,11 @@ namespace TGC.MonoGame.TP
         {
             // Aca es donde deberiamos cargar todos los contenido necesarios antes de iniciar el juego.
             SpriteBatch = new SpriteBatch(GraphicsDevice);
-            InclinedTrackModel = Content.Load<Model>(ContentFolder3D + "rampa");  
-            var temporaryCubeAABB = BoundingVolumesExtensions.CreateAABBFrom(InclinedTrackModel);
-            temporaryCubeAABB = BoundingVolumesExtensions.Scale(temporaryCubeAABB, 1.5f);
-            // Create an Oriented Bounding Box from the AABB
-            InclinedTrackBox = OrientedBoundingBox.FromAABB(temporaryCubeAABB);
-            // Move the center
+           /*
             InclinedTrackBox.Center = (TrackWorld* Matrix.CreateTranslation(864.1f,100f,415f)).Translation;
             // Then set its orientation!
             InclinedTrackBox.Orientation =Matrix.CreateRotationX(-MathHelper.PiOver2)*Matrix.CreateRotationY(-MathHelper.PiOver2);    
-
+*/
             //SkyBox
             var skyBox = Content.Load<Model>(ContentFolder3D + "skybox/cube");
             var skyBoxTexture = Content.Load<TextureCube>(ContentFolderTextures + "skybox");
@@ -447,13 +355,12 @@ namespace TGC.MonoGame.TP
 
 
 
-            for(int i = 0; i<CylindersWorldAsBoxes.Length; i++){      
-                var boxBodyHandle = Simulation.Bodies.Add(BodyDescription.CreateKinematic(new RigidPose(ToNumericVector3(
-                CylindersWorldAsBoxes[i].Translation)), 
+            for(int i = 0; i<CylinderWorld.Length; i++){    
+                CylinderWorld[i].Decompose(out var scale, out Quaternion rotation, out var pos); 
+                var boxBodyHandle = Simulation.Bodies.Add(BodyDescription.
+                                CreateKinematic(new RigidPose(ToNumericVector3(pos),
+                                ToSysNumQuaternion(rotation)), 
                 new CollidableDescription(Simulation.Shapes.Add(new Cylinder(BasicCylindersMeasures[i].Y/2, BasicCylindersMeasures[i].X)), 0.1f, ContinuousDetection.Continuous(1e-4f, 1e-4f)), new BodyActivityDescription(-0.1f)));
-               
-                Simulation.Bodies.GetBodyReference(boxBodyHandle).Pose.Orientation=  System.Numerics.Quaternion.CreateFromYawPitchRoll(BasicCylindersRotation[i].X,
-                BasicCylindersRotation[i].Y, BasicCylindersRotation[i].Z);
                 Simulation.Bodies.GetBodyReference(boxBodyHandle).Velocity.Angular = new NumericVector3(0,3f,0);
                 MobileObstacles.Add(boxBodyHandle);
             }
@@ -474,7 +381,6 @@ namespace TGC.MonoGame.TP
 
         private void UpdateCamera()
         {
-
             var sphereBackDirection = -Vector3.Transform(Vector3.Forward, SphereRotationMatrix);
         
             var orbitalPosition = sphereBackDirection * CAMERA_FOLLOW_RADIUS;
@@ -491,7 +397,6 @@ namespace TGC.MonoGame.TP
 
         protected override void Update(GameTime gameTime)
         {
-
             var deltaTime= Convert.ToSingle(gameTime.ElapsedGameTime.TotalSeconds);
             var totalTime = Convert.ToSingle(gameTime.TotalGameTime.TotalSeconds);
 
@@ -500,6 +405,7 @@ namespace TGC.MonoGame.TP
 
             BodyReference body = Simulation.Bodies.GetBodyReference(SphereHandle);
             body.ApplyLinearImpulse(ToNumericVector3(SphereVelocity));
+            //body.ApplyAngularImpulse(ToNumericVector3(SphereVelocity));
 
             Simulation.Timestep(1 / 60f, ThreadDispatcher);
 
@@ -529,7 +435,6 @@ namespace TGC.MonoGame.TP
             var bodyRef = Simulation.Bodies.GetBodyReference(SphereHandle);
 
             SphereVelocity = new Vector3(0f,bodyRef.Velocity.Linear.Y,0f);
-            //bodyRef.Velocity= ToNumericVector3(SphereVelocity);
            
             UpdateCamera();
 
@@ -537,11 +442,9 @@ namespace TGC.MonoGame.TP
         }     
 
         protected void ModificarParametrosObjetosMoviles(float deltaTime, float totalTime){
-            for(int i = 0 ; i<CylindersWorldAsBoxes.Length;i++)
+            for(int i = 0 ; i<GroundWorld.Length;i++)
             {
-                CylindersWorldAsBoxes[i] = Matrix.CreateRotationZ(BasicCylindersRotation[i].Z)  * Matrix.CreateRotationY(totalTime)
-                                            * Matrix.CreateTranslation(BasicCylindersPositions[i]);
-                var bodyRef= Simulation.Bodies.GetBodyReference(MobileObstacles[i]);          
+                //var bodyRef= Simulation.Bodies.GetBodyReference(MobileObstacles[i]);          
             }
 
 
@@ -873,7 +776,7 @@ namespace TGC.MonoGame.TP
             }
 
             //Dibujo los cilindros
-            for (int i = 0; i < CylindersWorldAsBoxes.Length; i++)
+            for (int i = 0; i < CylinderWorld.Length; i++)
             {
                 var position = Simulation.Bodies.GetBodyReference(MobileObstacles[i]).Pose.Position;
                 var rotation = Simulation.Bodies.GetBodyReference(MobileObstacles[i]).Pose.Orientation;
@@ -930,6 +833,11 @@ namespace TGC.MonoGame.TP
         {
             return new NumericVector3(v.X, v.Y, v.Z);
         }
+        private System.Numerics.Quaternion ToSysNumQuaternion(Quaternion v)
+        {
+            return new System.Numerics.Quaternion(v.X, v.Y, v.Z,v.W);
+        }
+
        /// <summary>
         ///     Libero los recursos que se cargaron en el juego.
         /// </summary>
