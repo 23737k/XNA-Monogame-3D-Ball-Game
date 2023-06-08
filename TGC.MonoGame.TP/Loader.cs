@@ -108,6 +108,26 @@ namespace TGC.MonoGame.TP
                 Camera,-70f,3f,-60f,0f, "Y"));
             Obstacles.Add(new PeriodicObstacle(Matrix.CreateScale(50,10,50) * Matrix.CreateTranslation(700f,60,4.5f),new CubePrimitive(GraphicsDevice),Simulation,
                 Camera,70f,3f,60f,0f, "Y"));
+            
+            //Pisos que se mueven
+            Obstacles.Add(new PeriodicObstacle(Matrix.CreateScale(40,10,80) * Matrix.CreateTranslation(1740,0,5230),new CubePrimitive(GraphicsDevice),Simulation,
+                Camera,200f,2f,5230f,0f, "Z"));
+                Obstacles.Add(new PeriodicObstacle(Matrix.CreateScale(40,10,80) * Matrix.CreateTranslation(1690,0,5600),new CubePrimitive(GraphicsDevice),Simulation,
+                Camera,200f,2f,5600f,0f, "Z"));
+                Obstacles.Add(new PeriodicObstacle(Matrix.CreateScale(40,10,80) * Matrix.CreateTranslation(1740,0,6010),new CubePrimitive(GraphicsDevice),Simulation,
+                Camera,200f,2f,6010f,0f, "Z"));
+            
+            //Paredes que se mueven
+            Obstacles.Add(new PeriodicObstacle(Matrix.CreateScale(10,50,40) * Matrix.CreateTranslation(1720,30f,2800),new CubePrimitive(GraphicsDevice),Simulation,
+                Camera,40f,5f,1720f,0f, "X"));
+            Obstacles.Add(new PeriodicObstacle(Matrix.CreateScale(10,50,40) * Matrix.CreateTranslation(1720,30f,2900),new CubePrimitive(GraphicsDevice),Simulation,
+                Camera,-40f,5f,1720f,MathF.PI/4, "X"));
+            Obstacles.Add(new PeriodicObstacle(Matrix.CreateScale(10,50,40) * Matrix.CreateTranslation(1720,30f,3000),new CubePrimitive(GraphicsDevice),Simulation,
+                Camera,40f,5f,1720f,MathF.PI/2f, "X"));
+            Obstacles.Add(new PeriodicObstacle(Matrix.CreateScale(10,50,40) * Matrix.CreateTranslation(1720,30f,3100),new CubePrimitive(GraphicsDevice),Simulation,
+                Camera,-40f,5f,1720f,MathHelper.PiOver4*3f, "X"));
+            Obstacles.Add(new PeriodicObstacle(Matrix.CreateScale(10,50,40) * Matrix.CreateTranslation(1720,30f,3200),new CubePrimitive(GraphicsDevice),Simulation,
+                Camera,40f,5f,1720f,MathF.PI, "X"));
 
             return Obstacles;
         }
@@ -154,25 +174,13 @@ namespace TGC.MonoGame.TP
                 Matrix.CreateScale(40, 40f,10f) * Matrix.CreateTranslation(new Vector3(3090f,45f,510f)),
                 Matrix.CreateScale(40, 40f,10f) * Matrix.CreateTranslation(new Vector3(3080f,45f,670f)),
                 Matrix.CreateScale(40, 40f,10f) * Matrix.CreateTranslation(new Vector3(3060f,45f,590f)),
-                //Paredes que se mueven
-                Matrix.CreateScale(10, 50f,40f) * Matrix.CreateTranslation(new Vector3(40*MathF.Cos(5*1)+1720,40,2800)),
-                Matrix.CreateScale(10, 50f,40f) * Matrix.CreateTranslation(new Vector3(-40*MathF.Cos(5*1)+1720,40,2900)),
-                Matrix.CreateScale(10,50,40) * Matrix.CreateTranslation(new Vector3(40*MathF.Cos(5*1)+1720,40,3000)),
-                Matrix.CreateScale(10,50,40) * Matrix.CreateTranslation(new Vector3(-40*MathF.Cos(5*1)+1720,40,3100)),
-                Matrix.CreateScale(10,50,40) * Matrix.CreateTranslation(new Vector3(40*MathF.Cos(5*1)+1720,40,3200)),
 
                 //muros
                 Matrix.CreateScale(80,10,10) * Matrix.CreateTranslation(new Vector3(1720, 10, 3320)),
                 Matrix.CreateScale(80,10,10) * Matrix.CreateTranslation(new Vector3(1720, 10, 3460)),
                 Matrix.CreateScale(40,40,10) * Matrix.CreateTranslation(new Vector3(1700,25,3895)),
                 Matrix.CreateScale(40,40,10) * Matrix.CreateTranslation(new Vector3(1740, 25, 4020)),
-                Matrix.CreateScale(80,10,10) * Matrix.CreateTranslation(new Vector3(1720, 10, 7825)),
-
-                //Plataformas que se mueven
-                //Se tendrían que mover con time
-                Matrix.CreateScale(40,10,80) * Matrix.CreateTranslation(new Vector3(1740,0,200*MathF.Cos(2*1)+5230)),
-                Matrix.CreateScale(40,10,80) * Matrix.CreateTranslation(new Vector3(1690,0,200*MathF.Cos(2*1+MathHelper.Pi)+5600)),
-                Matrix.CreateScale(40,10,80) * Matrix.CreateTranslation(new Vector3(1740,0,200*MathF.Cos(2*1)+6010)),
+                Matrix.CreateScale(80,10,10) * Matrix.CreateTranslation(new Vector3(1720, 10, 7825))
             };
 
             

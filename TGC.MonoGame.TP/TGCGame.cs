@@ -51,7 +51,6 @@ namespace TGC.MonoGame.TP
         private const float CAMERA_UP_DISTANCE = 30f;
         private const float SALTO_BUFFER_VALUE = 12000f;
         private const float GRAVITY = -350f;
-        private Vector3 SPHERE_INITIAL_POSITION = new Vector3(0f,10.001f,0);
 
         //CHECKPOINTS DEBE ESTAR ORDENADO ASCENDENTEMENTE
         //EL PRIMER VALOR DEBE SER LA POSICION INICIAL DE LA ESFERA
@@ -186,11 +185,7 @@ namespace TGC.MonoGame.TP
         protected override void Update(GameTime gameTime)
         {
             var deltaTime= Convert.ToSingle(gameTime.ElapsedGameTime.TotalSeconds);
-            var totalTime = Convert.ToSingle(gameTime.TotalGameTime.TotalSeconds);
-
-
             MovementManager(deltaTime);
-
 
             BodyReference body = Simulation.Bodies.GetBodyReference(SphereHandle);
             var prevLinearVelocity = body.Velocity.Linear.Y;
@@ -200,8 +195,6 @@ namespace TGC.MonoGame.TP
             //body.ApplyAngularImpulse(ToNumericVector3(SphereVelocity))
 
             Simulation.Timestep(1 / 60f, ThreadDispatcher);
-
-            ModificarParametrosObjetosMoviles(deltaTime, totalTime); 
 
             // Capturar Input teclado
             if (Keyboard.GetState().IsKeyDown(Keys.Escape))
@@ -229,27 +222,12 @@ namespace TGC.MonoGame.TP
             if(MathHelper.Distance(bodyRef.Velocity.Linear.Y, prevLinearVelocity) < 0.5 
                && MathHelper.Distance(bodyRef.Velocity.Angular.Y, prevAngularVelocity) < 0.5) OnGround = true;
 
-            SphereVelocity = new Vector3(0f,bodyRef.Velocity.Linear.Y,0f);
+            SphereVelocity = new Vector3(0f,0f,0f);
            
             UpdateCamera();
 
             base.Update(gameTime);
         }     
-
-        protected void ModificarParametrosObjetosMoviles(float deltaTime, float totalTime){
-            //for(int i = 0 ; i<GroundWorld.Length;i++)
-            {
-                //var bodyRef= Simulation.Bodies.GetBodyReference(MobileObstacles[i]);          
-            }
-
-
-            /*GroundWorld[1] = Matrix.CreateScale(50,10,50) * Matrix.CreateTranslation(600f,+ 70*MathF.Cos(3*totalTime)-60,4.5f);
-            CollidersBoxes[1] = BoundingVolumesExtensions.FromMatrix(GroundWorld[1]);
-            GroundWorld[2] = Matrix.CreateScale(50,10,50)* Matrix.CreateTranslation(700f, 60-70*MathF.Cos(3*totalTime),4.5f);
-            CollidersBoxes[2] = BoundingVolumesExtensions.FromMatrix(GroundWorld[2]);
-            */
-            
-        }
         protected void MovementManager(float deltaTime){
 
             SphereRotationMatrix = Matrix.CreateRotationY(Mouse.GetState().X*-0.005f);
@@ -285,8 +263,6 @@ namespace TGC.MonoGame.TP
         }    
 */
         protected void AdministrarSalto(float deltaTime){
-
-             //   
             if ((Keyboard.GetState().IsKeyDown(Keys.Space)|| Keyboard.GetState().IsKeyDown(Keys.Up)&& PelotaEstaEnElSuelo() ))
             {
                 SphereVelocity += Vector3.Up * SALTO_BUFFER_VALUE;
@@ -333,41 +309,25 @@ namespace TGC.MonoGame.TP
             foreach(Obstacle obstacle in KinematicObstacles)    {obstacle.Render(Effect,gameTime);}
             foreach(Obstacle obstacle in PeriodicObstacles)    {obstacle.Render(Effect,gameTime);}
 
-            
-
             for (int i = 0; i < PowerUpsWorld.Length; i++)
             {
                 var matrix = PowerUpsWorld[i];
                 DrawGeometricPrimitive(matrix, YellowBox);
             }
 
-            DrawGeometry(Sphere, SphereWorld);
+            DrawGeometricPrimitive(SphereWorld, Sphere);
 
             //InclinedTrackModel.Draw(Matrix.CreateScale(1.5f) * Matrix.CreateRotationX(-MathHelper.PiOver2)*Matrix.CreateRotationY(-MathHelper.PiOver2)*TrackWorld* Matrix.CreateTranslation(864.1f,100f,415f) ,Camera.View, Camera.Projection);
-
-            //cilindros que giran
-            //DrawGeometry(new CylinderPrimitive(GraphicsDevice, 60, 10, 18),new Vector3(3100,100,1775), 3*CylinderYaw,0,MathHelper.PiOver2);
-            //
 
             base.Draw(gameTime);
         }
 
-        private void DrawGeometry(GeometricPrimitive geometry, Matrix World)
-        {
-            DrawGeometricPrimitive(World, geometry);
-        }
-
-        private void DrawRectangle (CubePrimitive BoxType ,float length, float height, float width, Vector3 position){
-            DrawGeometricPrimitive(Matrix.CreateScale(length,height, width) * Matrix.CreateTranslation(position.X, position.Y, position.Z ), BoxType);
-        }
 /*
         private void DrawCoin(float x, float y, float z){
              DrawGeometry(new CoinPrimitive(GraphicsDevice,1,10,40), new Vector3(x + 1f, y + 1f, z + 1f), 1f, 0, MathHelper.PiOver2);
         }
 */
-
         private void DrawGeometricPrimitive(Matrix World, GeometricPrimitive geometricPrimitive){
-
             var viewProjection = Camera.View * Camera.Projection;
             Effect.Parameters["World"].SetValue(World);
             Effect.Parameters["InverseTransposeWorld"]?.SetValue(Matrix.Invert(Matrix.Transpose(World)));
