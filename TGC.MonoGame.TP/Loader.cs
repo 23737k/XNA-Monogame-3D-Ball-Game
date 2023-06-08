@@ -1,18 +1,11 @@
 using System;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
-using Microsoft.Xna.Framework.Input;
 using TGC.MonoGame.TP.Cameras;
 using TGC.MonoGame.TP.Geometries;
-using TGC.MonoGame.TP.Collisions;
 using System.Collections.Generic;
 using BepuPhysics;
-using BepuPhysics.Collidables;
-using BepuPhysics.Constraints;
-using BepuUtilities.Memory;
-using TGC.MonoGame.TP.Physics.Bepu;
 using TGC.MonoGame.TP.MapObjects;
-using NumericVector3 = System.Numerics.Vector3;
 
 namespace TGC.MonoGame.TP
 {
@@ -75,9 +68,9 @@ namespace TGC.MonoGame.TP
 
                 //Cilindros que Giran  
                 Matrix.CreateFromYawPitchRoll(0,0,-MathHelper.PiOver2) * Matrix.CreateTranslation(new Vector3(3100,94,1775)),
-                Matrix.CreateFromYawPitchRoll(0,0,-MathHelper.PiOver2) * Matrix.CreateTranslation(new Vector3(3050,94,1820)),
-                Matrix.CreateFromYawPitchRoll(0,0,-MathHelper.PiOver2) * Matrix.CreateTranslation(new Vector3(3100,94,1870)),
-                Matrix.CreateFromYawPitchRoll(0,0,-MathHelper.PiOver2) * Matrix.CreateTranslation(new Vector3(3050,94,1920))
+                Matrix.CreateFromYawPitchRoll(0,0,-MathHelper.PiOver2) * Matrix.CreateTranslation(new Vector3(3050,94,1845)),
+                Matrix.CreateFromYawPitchRoll(0,0,-MathHelper.PiOver2) * Matrix.CreateTranslation(new Vector3(3100,94,1915)),
+                Matrix.CreateFromYawPitchRoll(0,0,-MathHelper.PiOver2) * Matrix.CreateTranslation(new Vector3(3050,94,1985))
             };
             for(int i =0; i< CylinderWorld.Length; i++){
                Obstacles.Add(new MovingObstacle(CylinderWorld[i],
