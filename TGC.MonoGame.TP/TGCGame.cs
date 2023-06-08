@@ -46,15 +46,14 @@ namespace TGC.MonoGame.TP
         }
 
 
-        private const float LINEAR_SPEED= 12000f;
+        private const float LINEAR_SPEED= 100;
         private const float CAMERA_FOLLOW_RADIUS = 70f;
         private const float CAMERA_UP_DISTANCE = 30f;
-        private const float SALTO_BUFFER_VALUE = 12000f;
+        private const float SALTO_BUFFER_VALUE = 1000f;
         private const float GRAVITY = -350f;
-
         //CHECKPOINTS DEBE ESTAR ORDENADO ASCENDENTEMENTE
         //EL PRIMER VALOR DEBE SER LA POSICION INICIAL DE LA ESFERA
-        private Vector3[] CHECKPOINTS={new Vector3(0, 10.001f, 0)};
+        private Vector3[] CHECKPOINTS={new Vector3(0, 10.001f, 0),new Vector3(800f,110f,245f), new Vector3(1750,30,404), new Vector3(1700,50,4950)};
         private const float COORDENADA_Y_MAS_BAJA = -80f;
         private GraphicsDeviceManager Graphics { get; }
         private SpriteBatch SpriteBatch { get; set; }
@@ -69,7 +68,6 @@ namespace TGC.MonoGame.TP
         private TargetCamera Camera { get; set; }
 
         private Matrix[] PowerUpsWorld { get; set;}
-        private BoundingSphere SphereCollider;
         private Vector3 SphereVelocity { get; set; }
         private bool OnGround { get; set; }
         private Vector3 SphereFrontDirection { get; set; }
@@ -105,11 +103,11 @@ namespace TGC.MonoGame.TP
             Graphics.ApplyChanges();
             // Seria hasta aca.
 
-            OnGround = true;
+            OnGround = false;
         
             // Esfera
             Sphere = new SpherePrimitive(GraphicsDevice);
-            SpherePosition = new Vector3(3100,94,1700);
+            SpherePosition = new Vector3(0,40,0);
             SphereWorld = Matrix.CreateTranslation(SpherePosition);
             SphereVelocity = Vector3.Zero;
             SphereFrontDirection =  Vector3.Backward;
@@ -184,28 +182,19 @@ namespace TGC.MonoGame.TP
 
         protected override void Update(GameTime gameTime)
         {
+
+
             var deltaTime= Convert.ToSingle(gameTime.ElapsedGameTime.TotalSeconds);
             MovementManager(deltaTime);
 
             BodyReference body = Simulation.Bodies.GetBodyReference(SphereHandle);
             var prevLinearVelocity = body.Velocity.Linear.Y;
             var prevAngularVelocity = body.Velocity.Angular.Y;
-
-            body.ApplyLinearImpulse(ToNumericVector3(SphereVelocity));
-            //body.ApplyAngularImpulse(ToNumericVector3(SphereVelocity))
-
-            Simulation.Timestep(1 / 60f, ThreadDispatcher);
-
-            // Capturar Input teclado
-            if (Keyboard.GetState().IsKeyDown(Keys.Escape))
-            {
-                //Salgo del juego.
-                Exit();
-            }
-
             if (PelotaSeCayo()){
                 VolverAlUltimoCheckpoint();
             }
+
+            Simulation.Timestep(1 / 60f, ThreadDispatcher);
 
             var pose = Simulation.Bodies.GetBodyReference(SphereHandle).Pose;
             SpherePosition = pose.Position;
@@ -222,25 +211,32 @@ namespace TGC.MonoGame.TP
             if(MathHelper.Distance(bodyRef.Velocity.Linear.Y, prevLinearVelocity) < 0.5 
                && MathHelper.Distance(bodyRef.Velocity.Angular.Y, prevAngularVelocity) < 0.5) OnGround = true;
 
-            SphereVelocity = new Vector3(0f,0f,0f);
-           
+            // Capturar Input teclado
+            if (Keyboard.GetState().IsKeyDown(Keys.Escape))
+            {
+                //Salgo del juego.
+                Exit();
+            }
+
             UpdateCamera();
 
             base.Update(gameTime);
         }     
         protected void MovementManager(float deltaTime){
 
-            SphereRotationMatrix = Matrix.CreateRotationY(Mouse.GetState().X*-0.005f);
+            SphereRotationMatrix = Matrix.CreateRotationY(Mouse.GetState().X*-0.01f);
             SphereFrontDirection = Vector3.Transform(Vector3.Backward, SphereRotationMatrix);
 
             var bodyRef= Simulation.Bodies.GetBodyReference(SphereHandle);
             if (Keyboard.GetState().IsKeyDown(Keys.W))
             {
-                SphereVelocity -= SphereFrontDirection * LINEAR_SPEED;
+                //SphereVelocity -= SphereFrontDirection * LINEAR_SPEED;
+                bodyRef.ApplyLinearImpulse(ToNumericVector3(-SphereFrontDirection * LINEAR_SPEED));
             }
             if (Keyboard.GetState().IsKeyDown(Keys.S) && !PelotaSeCayo())
             {
-                SphereVelocity += SphereFrontDirection * LINEAR_SPEED;
+                //SphereVelocity += SphereFrontDirection * LINEAR_SPEED;
+                bodyRef.ApplyLinearImpulse(ToNumericVector3(SphereFrontDirection * LINEAR_SPEED));
             }
             
             AdministrarSalto(deltaTime);
@@ -263,9 +259,11 @@ namespace TGC.MonoGame.TP
         }    
 */
         protected void AdministrarSalto(float deltaTime){
-            if ((Keyboard.GetState().IsKeyDown(Keys.Space)|| Keyboard.GetState().IsKeyDown(Keys.Up)&& PelotaEstaEnElSuelo() ))
+            var bodyRef= Simulation.Bodies.GetBodyReference(SphereHandle);
+            if ((Keyboard.GetState().IsKeyDown(Keys.Space)|| Keyboard.GetState().IsKeyDown(Keys.Up))&& PelotaEstaEnElSuelo())
             {
-                SphereVelocity += Vector3.Up * SALTO_BUFFER_VALUE;
+                //SphereVelocity += Vector3.Up * SALTO_BUFFER_VALUE;
+                bodyRef.ApplyLinearImpulse(ToNumericVector3(Vector3.Up * SALTO_BUFFER_VALUE));
                 OnGround = false;
             }  
         }
@@ -275,24 +273,34 @@ namespace TGC.MonoGame.TP
         }
 
         protected bool PelotaSeCayo(){
-            return SpherePosition.Y < (COORDENADA_Y_MAS_BAJA - 50f);
+            return SpherePosition.Y < COORDENADA_Y_MAS_BAJA;
         }
 
         protected void VolverAlUltimoCheckpoint(){
-            //Reconoce el último checkpoint por el valor de coordenada X
+        //Reconoce el último checkpoint por el valor de coordenada X
             //más cercano y menor a la coordenada X de la posición actual de la esfera
 
             //Supone que CHECKPOINT esta en orden ascendente
             bool found = false;
+            var bodyPosition = Simulation.Bodies.GetBodyReference(SphereHandle).Pose.Position;
 
-            for(int i = 0; i < CHECKPOINTS.Length; i++){
-                if (CHECKPOINTS[i].X <= SpherePosition.X){
-                    SphereCollider.Center = CHECKPOINTS[i];
+            for(int i = 0; i < CHECKPOINTS.Length - 1; i++){
+                if (CHECKPOINTS[i].X < SpherePosition.X){
+                    SpherePosition = ToNumericVector3(CHECKPOINTS[i]);
+                    bodyPosition = ToNumericVector3(SpherePosition);
+                    found = true;
+                }
+            }
+            
+            for(int i = 0; i < CHECKPOINTS.Length - 2; i++){
+                if(CHECKPOINTS[i].Z < SpherePosition.Z){
+                    SpherePosition = ToNumericVector3(CHECKPOINTS[i]);
+                    bodyPosition = ToNumericVector3(SpherePosition);
                     found = true;
                 }
             }
             //Si se cae atras del primer checkpoint
-            if (!found) SphereCollider.Center = CHECKPOINTS[0];
+            if (!found) SpherePosition = ToNumericVector3(CHECKPOINTS[0]);
         }
         
         protected override void Draw(GameTime gameTime)
@@ -363,10 +371,15 @@ namespace TGC.MonoGame.TP
             KinematicObstacles=  loader.LoadKinematics();
             PeriodicObstacles = loader.LoadPeriodics();
 
+
+            var bodyDescription = BodyDescription.CreateConvexDynamic(ToNumericVector3(SpherePosition), 5f,
+               Simulation.Shapes, BepuSphere);
+            /*
             var position = ToNumericVector3(SpherePosition);
             var bodyDescription = BodyDescription.CreateConvexDynamic(position,
                     new BodyVelocity(ToNumericVector3(SphereVelocity)),
-                    600f, Simulation.Shapes, BepuSphere);
+                    500f, Simulation.Shapes, BepuSphere);
+                */
             bodyDescription.Collidable.Continuity = ContinuousDetection.Continuous(1e-4f, 1e-4f);
             bodyDescription.Activity.SleepThreshold=-1;
             var bodyHandle = Simulation.Bodies.Add(bodyDescription);

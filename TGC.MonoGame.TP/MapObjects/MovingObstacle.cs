@@ -16,6 +16,8 @@ namespace TGC.MonoGame.TP.MapObjects
         public Camera Camera {get;set;}
         public CylinderPrimitive CylinderPrimitive {get;set;}
         public BodyHandle BodyHandle {get;set;}
+        public NumericVector3 AngularVelocity {get;set;}
+        public NumericVector3 LinearVelocity {get;set;}
 
 
         public MovingObstacle (Matrix world, CylinderPrimitive cylinderPrimitive, Simulation simulation, Camera camera)
@@ -24,7 +26,19 @@ namespace TGC.MonoGame.TP.MapObjects
             this.World = world;
             this.Camera = camera;
             this.CylinderPrimitive = cylinderPrimitive;
+            this.AngularVelocity = NumericVector3.Zero;
+            this.LinearVelocity = NumericVector3.Zero;
+            loadObstacle();
+        }
 
+        public MovingObstacle (Matrix world, CylinderPrimitive cylinderPrimitive, Simulation simulation, Camera camera, Vector3 angularVelocity, Vector3 linearVelocity)
+        {
+            this.Simulation = simulation;
+            this.World = world;
+            this.Camera = camera;
+            this.CylinderPrimitive = cylinderPrimitive;
+            this.AngularVelocity = new NumericVector3(angularVelocity.X,angularVelocity.Y,angularVelocity.Z);
+            this.LinearVelocity = new NumericVector3(linearVelocity.X,linearVelocity.Y,linearVelocity.Z);
             loadObstacle();
         }
 
@@ -48,7 +62,8 @@ namespace TGC.MonoGame.TP.MapObjects
                             CreateKinematic(new RigidPose(position,
                             rotation), 
             new CollidableDescription(Simulation.Shapes.Add(new Cylinder(CylinderPrimitive.Diameter/2 ,CylinderPrimitive.Height)), 0.1f, ContinuousDetection.Continuous(1e-4f, 1e-4f)), new BodyActivityDescription(-0.1f)));
-            Simulation.Bodies.GetBodyReference(BodyHandle).Velocity.Angular = new NumericVector3(0,3f,0);
+            Simulation.Bodies.GetBodyReference(BodyHandle).Velocity.Angular = AngularVelocity;
+            Simulation.Bodies.GetBodyReference(BodyHandle).Velocity.Linear = LinearVelocity;
         }
     }
 }

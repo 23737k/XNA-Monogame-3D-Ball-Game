@@ -67,14 +67,29 @@ namespace TGC.MonoGame.TP
                 Matrix.CreateTranslation(new Vector3(2130,20,414.5f)),
 
                 //Cilindros que Giran  
-                Matrix.CreateFromYawPitchRoll(0,0,-MathHelper.PiOver2) * Matrix.CreateTranslation(new Vector3(3100,94,1775)),
-                Matrix.CreateFromYawPitchRoll(0,0,-MathHelper.PiOver2) * Matrix.CreateTranslation(new Vector3(3050,94,1845)),
-                Matrix.CreateFromYawPitchRoll(0,0,-MathHelper.PiOver2) * Matrix.CreateTranslation(new Vector3(3100,94,1915)),
-                Matrix.CreateFromYawPitchRoll(0,0,-MathHelper.PiOver2) * Matrix.CreateTranslation(new Vector3(3050,94,1985))
+                Matrix.CreateFromYawPitchRoll(0,0,-MathHelper.PiOver2) * Matrix.CreateTranslation(new Vector3(3100,95,1775)),
+                Matrix.CreateFromYawPitchRoll(0,0,-MathHelper.PiOver2) * Matrix.CreateTranslation(new Vector3(3050,95,1845)),
+                Matrix.CreateFromYawPitchRoll(0,0,-MathHelper.PiOver2) * Matrix.CreateTranslation(new Vector3(3100,95,1915)),
+                Matrix.CreateFromYawPitchRoll(0,0,-MathHelper.PiOver2) * Matrix.CreateTranslation(new Vector3(3050,95,1985))
             };
-            for(int i =0; i< CylinderWorld.Length; i++){
+
+            for(int i =0; i< 6; i++)
+            {
+                int orientation = (i % 2 == 0) ? 1 : -1;
+                Obstacles.Add(new MovingObstacle(CylinderWorld[i],
+                    new CylinderPrimitive(GraphicsDevice, BasicCylindersMeasures[i].X, BasicCylindersMeasures[i].Y),Simulation,Camera,orientation*new Vector3(0,10f,0), Vector3.Zero));
+            }
+
+            for(int i =6; i< 13; i++)
+            {
                Obstacles.Add(new MovingObstacle(CylinderWorld[i],
                     new CylinderPrimitive(GraphicsDevice, BasicCylindersMeasures[i].X, BasicCylindersMeasures[i].Y),Simulation,Camera));
+            }
+            for(int i =13; i< 17; i++)
+            {
+                int orientation = (i % 2 == 0) ? 1 : -1;
+               Obstacles.Add(new MovingObstacle(CylinderWorld[i],
+                    new CylinderPrimitive(GraphicsDevice, BasicCylindersMeasures[i].X, BasicCylindersMeasures[i].Y),Simulation,Camera, orientation* new Vector3(0,5,0), Vector3.Zero));
             }
 
             return Obstacles;
