@@ -46,13 +46,9 @@ namespace TGC.MonoGame.TP
         }
 
 
-        private const float TAMANIO_CUBO = 10f;
         private const float LINEAR_SPEED= 12000f;
         private const float CAMERA_FOLLOW_RADIUS = 70f;
         private const float CAMERA_UP_DISTANCE = 30f;
-        private const float CYLINDER_HEIGHT = 10F;
-        private const float CYLINDER_DIAMETER = 10f * TAMANIO_CUBO;
-
         private const float SALTO_BUFFER_VALUE = 12000f;
         private const float GRAVITY = -350f;
         private Vector3 SPHERE_INITIAL_POSITION = new Vector3(0f,10.001f,0);
@@ -68,25 +64,19 @@ namespace TGC.MonoGame.TP
         private Matrix Projection { get; set; }
         private SpherePrimitive Sphere { get; set; }
         private Matrix SphereRotationMatrix { get; set; }
-        private CubePrimitive Box { get; set; }
         private CubePrimitive ObstacleBox { get; set; }
         private CubePrimitive YellowBox { get; set; }
-        private CylinderPrimitive Cylinder { get; set; }
-        private CylinderPrimitive SmallCylinder { get; set; }
         private Vector3 SpherePosition { get; set; }
         private TargetCamera Camera { get; set; }
 
-        private Vector3[] BasicCylindersMeasures{get; set;}
         private Matrix[] PowerUpsWorld { get; set;}
         private BoundingSphere SphereCollider;
         private Vector3 SphereVelocity { get; set; }
         private bool OnGround { get; set; }
         private Vector3 SphereFrontDirection { get; set; }
         private Matrix SphereScale {get; set; }
-        private float time { get; set; } 
         private CubePrimitive LightBox { get; set; }
         private Vector3 LightPosition { get; set; } = new Vector3 (0,2500,0);
-        private Matrix[] CylinderWorld { get; set; } 
 
 //Bepu
         private BodyHandle SphereHandle { get; set; }
@@ -96,9 +86,9 @@ namespace TGC.MonoGame.TP
         private SimpleThreadDispatcher ThreadDispatcher { get; set; }
         private Sphere BepuSphere { get; set; }
 
-        private List<BodyHandle> MobileObstacles { get; set; }
-        private Matrix[] KinematicObstacleWorld { get; set; }
+        private List<Obstacle> PeriodicObstacles { get; set; }
         private List<Obstacle> StaticObstacles {get;set;} 
+        private List<Obstacle> KinematicObstacles { get; set; }
 
         /// <summary>
         ///     Se llama una sola vez, al principio cuando se ejecuta el ejemplo.
@@ -136,69 +126,10 @@ namespace TGC.MonoGame.TP
               PowerUpsWorld = new Matrix[]
             {
                 Matrix.CreateScale(40, 10f, 80) * Matrix.CreateTranslation(new Vector3(2720,20f,435f))
-            };
-            BasicCylindersMeasures = new Vector3[]
-            {
-                new Vector3(10f,80f,60f),
-                new Vector3(10f,80f,60f),
-                new Vector3(10f,80f,60f),
-                new Vector3(30, 10, 60),
-                new Vector3(30, 10, 60),
-                new Vector3(30, 10, 60),
-
-                //Islas
-                new Vector3(10,20,18),
-                new Vector3(10,20,18),
-                new Vector3(10,20,18),
-                new Vector3(10,20,18),
-                new Vector3(10,20,18),
-                new Vector3(10,20,18),
-                new Vector3(10,20,18),
-
-                //Cilindros que giran
-                new Vector3(80, 10, 18),
-                new Vector3(80, 10, 18),
-                new Vector3(80, 10, 18),
-                new Vector3(80, 10, 18),
-            };
-
-            CylinderWorld = new Matrix[]{
-                Matrix.CreateTranslation(new Vector3(300,0f,4.5f)),
-                Matrix.CreateTranslation(new Vector3(400, 0f,4.5f)),
-                Matrix.CreateTranslation(new Vector3(500, 0, 4.5f)),
-                Matrix.CreateTranslation(new Vector3(400, 10, 4.5f )),
-                Matrix.CreateTranslation(new Vector3(500, 10, 4.5f )),
-                Matrix.CreateTranslation(new Vector3(300, 10, 4.5f )),
-
-                //Islas
-                Matrix.CreateTranslation(new Vector3(1850,20,404)),
-                Matrix.CreateTranslation(new Vector3(1890,20,434.5f)),
-                Matrix.CreateTranslation(new Vector3(1930,20,454.5f)),
-                Matrix.CreateTranslation(new Vector3(1980,20,454.5f)),
-                Matrix.CreateTranslation(new Vector3(2030,20,434.5f)),
-                Matrix.CreateTranslation(new Vector3(2080,20,404.5f)),
-                Matrix.CreateTranslation(new Vector3(2130,20,414.5f)),
-
-                //Cilindros que Giran  
-                Matrix.CreateFromYawPitchRoll(0,0,-MathHelper.PiOver2) * Matrix.CreateTranslation(new Vector3(3100,94,1775)),
-                Matrix.CreateFromYawPitchRoll(0,0,-MathHelper.PiOver2) * Matrix.CreateTranslation(new Vector3(3050,94,1820)),
-                Matrix.CreateFromYawPitchRoll(0,0,-MathHelper.PiOver2) * Matrix.CreateTranslation(new Vector3(3100,94,1870)),
-                Matrix.CreateFromYawPitchRoll(0,0,-MathHelper.PiOver2) * Matrix.CreateTranslation(new Vector3(3050,94,1920))
-            };
-
-            KinematicObstacleWorld = new Matrix [] {
-                Matrix.CreateScale(50,10,50) * Matrix.CreateTranslation(600f,-60,4.5f),
-                Matrix.CreateScale(50,10,50) * Matrix.CreateTranslation(700f,60,4.5f)
-            };
-                
-            MobileObstacles = new List<BodyHandle>();
+            };            
 
             YellowBox = new CubePrimitive(GraphicsDevice, 1f, Color.YellowGreen, Color.YellowGreen, Color.YellowGreen, Color.YellowGreen, Color.YellowGreen, Color.YellowGreen);
             ObstacleBox = new CubePrimitive(GraphicsDevice,1f,Color.Blue);
-            //Cilindro
-            Cylinder = new CylinderPrimitive(GraphicsDevice, CYLINDER_HEIGHT, CYLINDER_DIAMETER, 18);
-            SmallCylinder = new CylinderPrimitive(GraphicsDevice, CYLINDER_HEIGHT *2, CYLINDER_DIAMETER/10, 18);    
-
 
             UpdateCamera();
             base.Initialize();
@@ -232,51 +163,7 @@ namespace TGC.MonoGame.TP
             Effect.Parameters["shininess"]?.SetValue(10f);
             
             //Bepu
-            BufferPool = new BufferPool();
-            SphereHandle = new BodyHandle();
-            BepuSphere = new Sphere(5f);
-
-             var targetThreadCount = Math.Max(1,
-                Environment.ProcessorCount > 4 ? Environment.ProcessorCount - 2 : Environment.ProcessorCount - 1);
-            ThreadDispatcher = new SimpleThreadDispatcher(targetThreadCount);
-
-             Simulation = Simulation.Create(BufferPool,
-                new NarrowPhaseCallbacks(),
-                new PoseIntegratorCallbacks(new NumericVector3(0, GRAVITY, 0)),
-                new SolveDescription(8, 1));
-
-            StaticObstacles = new Loader(Simulation,GraphicsDevice,Camera).LoadStatics();
-
-            for(int i = 0; i<CylinderWorld.Length; i++){    
-                CylinderWorld[i].Decompose(out var scale, out Quaternion rotation, out var pos); 
-                var boxBodyHandle = Simulation.Bodies.Add(BodyDescription.
-                                CreateKinematic(new RigidPose(ToNumericVector3(pos),
-                                ToSysNumQuaternion(rotation)), 
-                new CollidableDescription(Simulation.Shapes.Add(new Cylinder(BasicCylindersMeasures[i].Y/2, BasicCylindersMeasures[i].X)), 0.1f, ContinuousDetection.Continuous(1e-4f, 1e-4f)), new BodyActivityDescription(-0.1f)));
-                Simulation.Bodies.GetBodyReference(boxBodyHandle).Velocity.Angular = new NumericVector3(0,3f,0);
-                MobileObstacles.Add(boxBodyHandle);
-            }
-
-            for(int i=0; i<KinematicObstacleWorld.Length; i++)
-            {
-                KinematicObstacleWorld[i].Decompose(out var scale, out Quaternion rotation, out var pos); 
-                var boxBodyHandle = Simulation.Bodies.Add(BodyDescription.
-                                CreateKinematic(new RigidPose(ToNumericVector3(pos),
-                                ToSysNumQuaternion(rotation)), 
-                new CollidableDescription(Simulation.Shapes.Add(new Box(scale.X, scale.Y, scale.Z)), 0.1f, ContinuousDetection.Continuous(1e-4f, 1e-4f)), new BodyActivityDescription(-0.1f)));
-                MobileObstacles.Add(boxBodyHandle);
-            }
-
-            var position = ToNumericVector3(SpherePosition);
-            var bodyDescription = BodyDescription.CreateConvexDynamic(position,
-                    new BodyVelocity(ToNumericVector3(SphereVelocity)),
-                    600f, Simulation.Shapes, BepuSphere);
-            bodyDescription.Collidable.Continuity = ContinuousDetection.Continuous(1e-4f, 1e-4f);
-            bodyDescription.Activity.SleepThreshold=-1;
-            var bodyHandle = Simulation.Bodies.Add(bodyDescription);
-            SphereHandle = bodyHandle;
-            SphereHandle = Simulation.Bodies.Add(bodyDescription);
-
+            LoadPhysics();
             base.LoadContent();
         }
 
@@ -304,9 +191,13 @@ namespace TGC.MonoGame.TP
 
             MovementManager(deltaTime);
 
+
             BodyReference body = Simulation.Bodies.GetBodyReference(SphereHandle);
+            var prevLinearVelocity = body.Velocity.Linear.Y;
+            var prevAngularVelocity = body.Velocity.Angular.Y;
+
             body.ApplyLinearImpulse(ToNumericVector3(SphereVelocity));
-            //body.ApplyAngularImpulse(ToNumericVector3(SphereVelocity));
+            //body.ApplyAngularImpulse(ToNumericVector3(SphereVelocity))
 
             Simulation.Timestep(1 / 60f, ThreadDispatcher);
 
@@ -334,6 +225,9 @@ namespace TGC.MonoGame.TP
             SpherePosition = pose.Position;
 
             var bodyRef = Simulation.Bodies.GetBodyReference(SphereHandle);
+
+            if(MathHelper.Distance(bodyRef.Velocity.Linear.Y, prevLinearVelocity) < 0.5 
+               && MathHelper.Distance(bodyRef.Velocity.Angular.Y, prevAngularVelocity) < 0.5) OnGround = true;
 
             SphereVelocity = new Vector3(0f,bodyRef.Velocity.Linear.Y,0f);
            
@@ -364,12 +258,10 @@ namespace TGC.MonoGame.TP
             var bodyRef= Simulation.Bodies.GetBodyReference(SphereHandle);
             if (Keyboard.GetState().IsKeyDown(Keys.W))
             {
-                bodyRef.Awake= true;
                 SphereVelocity -= SphereFrontDirection * LINEAR_SPEED;
             }
             if (Keyboard.GetState().IsKeyDown(Keys.S) && !PelotaSeCayo())
             {
-                bodyRef.Awake= true;
                 SphereVelocity += SphereFrontDirection * LINEAR_SPEED;
             }
             
@@ -394,12 +286,11 @@ namespace TGC.MonoGame.TP
 */
         protected void AdministrarSalto(float deltaTime){
 
-             //&& PelotaEstaEnElSuelo()    
-            if ((Keyboard.GetState().IsKeyDown(Keys.Space)|| Keyboard.GetState().IsKeyDown(Keys.Up)))
+             //   
+            if ((Keyboard.GetState().IsKeyDown(Keys.Space)|| Keyboard.GetState().IsKeyDown(Keys.Up)&& PelotaEstaEnElSuelo() ))
             {
-                var bodyRef= Simulation.Bodies.GetBodyReference(SphereHandle);
-                bodyRef.Awake = true;
                 SphereVelocity += Vector3.Up * SALTO_BUFFER_VALUE;
+                OnGround = false;
             }  
         }
 
@@ -433,44 +324,21 @@ namespace TGC.MonoGame.TP
             // Aca deberiamos poner toda la logia de renderizado del juego.
             GraphicsDevice.Clear(Color.Black);
 
-            time += Convert.ToSingle(gameTime.TotalGameTime.TotalSeconds);
-
             Effect.Parameters["eyePosition"]?.SetValue(Camera.Position);
             Effect.Parameters["Tiling"]?.SetValue(Vector2.One);
 
-
             //Dibujo el suelo
-            foreach(Obstacle obstacle in StaticObstacles)
-            {
-                obstacle.Render(Effect);
-            }
+            foreach(Obstacle obstacle in StaticObstacles)   {obstacle.Render(Effect,gameTime);}
+             //Dibujo los cilindros
+            foreach(Obstacle obstacle in KinematicObstacles)    {obstacle.Render(Effect,gameTime);}
+            foreach(Obstacle obstacle in PeriodicObstacles)    {obstacle.Render(Effect,gameTime);}
+
+            
 
             for (int i = 0; i < PowerUpsWorld.Length; i++)
             {
                 var matrix = PowerUpsWorld[i];
                 DrawGeometricPrimitive(matrix, YellowBox);
-            }
-
-            //Dibujo los cilindros
-            for (int i = 0; i < CylinderWorld.Length; i++)
-            {
-                var position = Simulation.Bodies.GetBodyReference(MobileObstacles[i]).Pose.Position;
-                var rotation = Simulation.Bodies.GetBodyReference(MobileObstacles[i]).Pose.Orientation;
-                Matrix world = Matrix.CreateFromQuaternion(rotation) * Matrix.CreateTranslation(position);
-
-                DrawGeometry(
-                    new CylinderPrimitive(GraphicsDevice, BasicCylindersMeasures[i].X, BasicCylindersMeasures[i].Y, 32 ),world
-                    );
-            }
-             for (int i = 0; i < CylinderWorld.Length; i++)
-            {
-                var position = Simulation.Bodies.GetBodyReference(MobileObstacles[i]).Pose.Position;
-                var rotation = Simulation.Bodies.GetBodyReference(MobileObstacles[i]).Pose.Orientation;
-                Matrix world = Matrix.CreateFromQuaternion(rotation) * Matrix.CreateTranslation(position);
-
-                DrawGeometry(
-                    new CylinderPrimitive(GraphicsDevice, BasicCylindersMeasures[i].X, BasicCylindersMeasures[i].Y, 32 ),world
-                    );
             }
 
             DrawGeometry(Sphere, SphereWorld);
@@ -480,13 +348,6 @@ namespace TGC.MonoGame.TP
             //cilindros que giran
             //DrawGeometry(new CylinderPrimitive(GraphicsDevice, 60, 10, 18),new Vector3(3100,100,1775), 3*CylinderYaw,0,MathHelper.PiOver2);
             //
-
-            DrawRectangle(ObstacleBox,20,10,20,new Vector3(1720,42.5f*MathF.Cos(3*time)+42.5f,2405));
-
-            //Pared que aplastan contra el suelo
-            DrawRectangle(ObstacleBox,80,10,80,new Vector3(1720,35*MathF.Cos(4*time)+45,4240));
-            DrawRectangle(ObstacleBox,80,10,80,new Vector3(1720,35*MathF.Cos(4*time+MathHelper.PiOver2)+45,4430));
-            DrawRectangle(ObstacleBox,80,10,80,new Vector3(1720,35*MathF.Cos(4*time+MathHelper.PiOver4)+45,4620));   
 
             base.Draw(gameTime);
         }
@@ -514,24 +375,47 @@ namespace TGC.MonoGame.TP
             geometricPrimitive.Draw(Effect);
         }
 
-
-        private NumericVector3 ToNumericVector3(Vector3 v)
+         public static NumericVector3 ToNumericVector3(Vector3 v)
         {
             return new NumericVector3(v.X, v.Y, v.Z);
         }
-        private System.Numerics.Quaternion ToSysNumQuaternion(Quaternion v)
+        public static System.Numerics.Quaternion ToSysNumQuaternion(Quaternion v)
         {
             return new System.Numerics.Quaternion(v.X, v.Y, v.Z,v.W);
         }
 
-       /// <summary>
-        ///     Libero los recursos que se cargaron en el juego.
-        /// </summary>
+        private void LoadPhysics()
+        {
+            BufferPool = new BufferPool();
+            BepuSphere = new Sphere(5f);
+
+             var targetThreadCount = Math.Max(1,
+                Environment.ProcessorCount > 4 ? Environment.ProcessorCount - 2 : Environment.ProcessorCount - 1);
+            ThreadDispatcher = new SimpleThreadDispatcher(targetThreadCount);
+
+             Simulation = Simulation.Create(BufferPool,
+                new NarrowPhaseCallbacks(),
+                new PoseIntegratorCallbacks(new NumericVector3(0, GRAVITY, 0)),
+                new SolveDescription(8, 1));
+
+            var loader = new Loader(Simulation,GraphicsDevice,Camera);
+            StaticObstacles = loader.LoadStatics();
+            KinematicObstacles=  loader.LoadKinematics();
+            PeriodicObstacles = loader.LoadPeriodics();
+
+            var position = ToNumericVector3(SpherePosition);
+            var bodyDescription = BodyDescription.CreateConvexDynamic(position,
+                    new BodyVelocity(ToNumericVector3(SphereVelocity)),
+                    600f, Simulation.Shapes, BepuSphere);
+            bodyDescription.Collidable.Continuity = ContinuousDetection.Continuous(1e-4f, 1e-4f);
+            bodyDescription.Activity.SleepThreshold=-1;
+            var bodyHandle = Simulation.Bodies.Add(bodyDescription);
+            SphereHandle = bodyHandle;
+        }
         protected override void UnloadContent()
         {
             // Libero los recursos.
             Content.Unload();
-
             base.UnloadContent();
         }
     }

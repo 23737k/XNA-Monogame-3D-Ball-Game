@@ -1,16 +1,9 @@
-using System;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
-using Microsoft.Xna.Framework.Input;
 using TGC.MonoGame.TP.Cameras;
 using TGC.MonoGame.TP.Geometries;
-using TGC.MonoGame.TP.Collisions;
-using System.Collections.Generic;
 using BepuPhysics;
 using BepuPhysics.Collidables;
-using BepuPhysics.Constraints;
-using BepuUtilities.Memory;
-using TGC.MonoGame.TP.Physics.Bepu;
 using NumericVector3 = System.Numerics.Vector3;
 
 namespace TGC.MonoGame.TP.MapObjects
@@ -33,7 +26,7 @@ namespace TGC.MonoGame.TP.MapObjects
             loadObstacle();
         }
 
-        public void Render(Effect effect)
+        public void Render(Effect effect, GameTime gameTime)
         {
             var viewProjection = Camera.View * Camera.Projection;
             effect.Parameters["World"].SetValue(World);

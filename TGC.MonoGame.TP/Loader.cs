@@ -16,30 +16,104 @@ using NumericVector3 = System.Numerics.Vector3;
 
 namespace TGC.MonoGame.TP
 {
-    /// <summary>
-    ///     Handles all of the aspects of working with a SkyBox.
-    /// </summary>
     public class Loader {
 
         public Loader (Simulation simulation, GraphicsDevice graphicsDevice, Camera camera)
         {
             this.Simulation = simulation;
-            this.Obstacles = new List<Obstacle>();
             this.GraphicsDevice = graphicsDevice;
             this.Camera = camera;
         }
         public Simulation Simulation {get;set;}
-        public List<Obstacle> Obstacles {get;set;} 
         public GraphicsDevice GraphicsDevice {get;set;}
         public Camera Camera {get;set;}
         
-        public List<BodyHandle> LoadKinematics()
+        public List<Obstacle> LoadKinematics()
         {
-            return null;
+            var Obstacles = new List<Obstacle>();
+            var BasicCylindersMeasures = new Vector3[]
+            {
+                new Vector3(10f,80f,60f),
+                new Vector3(10f,80f,60f),
+                new Vector3(10f,80f,60f),
+                new Vector3(30, 10, 60),
+                new Vector3(30, 10, 60),
+                new Vector3(30, 10, 60),
+
+                //Islas
+                new Vector3(10,20,18),
+                new Vector3(10,20,18),
+                new Vector3(10,20,18),
+                new Vector3(10,20,18),
+                new Vector3(10,20,18),
+                new Vector3(10,20,18),
+                new Vector3(10,20,18),
+
+                //Cilindros que giran
+                new Vector3(80, 10, 18),
+                new Vector3(80, 10, 18),
+                new Vector3(80, 10, 18),
+                new Vector3(80, 10, 18),
+            };
+
+            var CylinderWorld = new Matrix[]{
+                Matrix.CreateTranslation(new Vector3(300,0f,4.5f)),
+                Matrix.CreateTranslation(new Vector3(400, 0f,4.5f)),
+                Matrix.CreateTranslation(new Vector3(500, 0, 4.5f)),
+                Matrix.CreateTranslation(new Vector3(400, 10, 4.5f )),
+                Matrix.CreateTranslation(new Vector3(500, 10, 4.5f )),
+                Matrix.CreateTranslation(new Vector3(300, 10, 4.5f )),
+
+                //Islas
+                Matrix.CreateTranslation(new Vector3(1850,20,404)),
+                Matrix.CreateTranslation(new Vector3(1890,20,434.5f)),
+                Matrix.CreateTranslation(new Vector3(1930,20,454.5f)),
+                Matrix.CreateTranslation(new Vector3(1980,20,454.5f)),
+                Matrix.CreateTranslation(new Vector3(2030,20,434.5f)),
+                Matrix.CreateTranslation(new Vector3(2080,20,404.5f)),
+                Matrix.CreateTranslation(new Vector3(2130,20,414.5f)),
+
+                //Cilindros que Giran  
+                Matrix.CreateFromYawPitchRoll(0,0,-MathHelper.PiOver2) * Matrix.CreateTranslation(new Vector3(3100,94,1775)),
+                Matrix.CreateFromYawPitchRoll(0,0,-MathHelper.PiOver2) * Matrix.CreateTranslation(new Vector3(3050,94,1820)),
+                Matrix.CreateFromYawPitchRoll(0,0,-MathHelper.PiOver2) * Matrix.CreateTranslation(new Vector3(3100,94,1870)),
+                Matrix.CreateFromYawPitchRoll(0,0,-MathHelper.PiOver2) * Matrix.CreateTranslation(new Vector3(3050,94,1920))
+            };
+            for(int i =0; i< CylinderWorld.Length; i++){
+               Obstacles.Add(new MovingObstacle(CylinderWorld[i],
+                    new CylinderPrimitive(GraphicsDevice, BasicCylindersMeasures[i].X, BasicCylindersMeasures[i].Y),Simulation,Camera));
+            }
+
+            return Obstacles;
         }
 
+
+        public List<Obstacle> LoadPeriodics()
+        {
+            var Obstacles = new List<Obstacle>();
+
+            //Plataforma que baja
+            Obstacles.Add(new PeriodicObstacle(Matrix.CreateScale(20,10,20) * Matrix.CreateTranslation(1720,42.5f,2405),new CubePrimitive(GraphicsDevice),Simulation,
+                                Camera,42.5f,3f,42.5f,0f, "Y"));
+
+            //Pared que aplastan contra el suelo
+            Obstacles.Add(new PeriodicObstacle(Matrix.CreateScale(80,10,80) * Matrix.CreateTranslation(1720,45,4240),new CubePrimitive(GraphicsDevice),Simulation,
+                    Camera,35f,4f,45,0f, "Y"));
+            Obstacles.Add(new PeriodicObstacle(Matrix.CreateScale(80,10,80) * Matrix.CreateTranslation(1720,45,4430),new CubePrimitive(GraphicsDevice),Simulation,
+                    Camera,35f,4f,45,+MathHelper.PiOver4, "Y"));
+            Obstacles.Add(new PeriodicObstacle(Matrix.CreateScale(80,10,80) * Matrix.CreateTranslation(1720,45,4620),new CubePrimitive(GraphicsDevice),Simulation,
+                    Camera,35f,4f,45,MathHelper.PiOver4, "Y"));
+            //Plataformas que suben y bajan
+            Obstacles.Add(new PeriodicObstacle(Matrix.CreateScale(50,10,50) * Matrix.CreateTranslation(600f,-60,4.5f),new CubePrimitive(GraphicsDevice),Simulation,
+                Camera,-70f,3f,-60f,0f, "Y"));
+            Obstacles.Add(new PeriodicObstacle(Matrix.CreateScale(50,10,50) * Matrix.CreateTranslation(700f,60,4.5f),new CubePrimitive(GraphicsDevice),Simulation,
+                Camera,70f,3f,60f,0f, "Y"));
+
+            return Obstacles;
+        }
         public List<Obstacle> LoadStatics()
         {
+            var Obstacles = new List<Obstacle>();
             var staticsWorld = new List<Matrix> 
             {
                 //Ground

@@ -27,11 +27,17 @@ namespace TGC.MonoGame.TP.Geometries
         /// <summary>
         ///     Constructs a new cylinder primitive, with the specified size and tessellation level.
         /// </summary>
+        public float Height {get;set;}
+        public float Diameter {get;set;}
+        public float Tessellation {get;set;}
         public CylinderPrimitive (GraphicsDevice graphicsDevice,
                                   float height = 1,
                                   float diameter = 1,
                                   int tessellation = 32) 
         {
+            this.Height = height;
+            this.Diameter= diameter;
+            this.Tessellation = tessellation;
             if (tessellation < 3)
                 throw new ArgumentOutOfRangeException(nameof(tessellation));
 
