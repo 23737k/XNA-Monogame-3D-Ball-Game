@@ -4,15 +4,16 @@ using Microsoft.Xna.Framework.Graphics;
 using Microsoft.Xna.Framework.Input;
 using TGC.MonoGame.TP.Cameras;
 using TGC.MonoGame.TP.Geometries;
-using TGC.MonoGame.TP.Collisions;
 using System.Collections.Generic;
 using BepuPhysics;
 using BepuPhysics.Collidables;
-using BepuPhysics.Constraints;
 using BepuUtilities.Memory;
 using TGC.MonoGame.TP.Physics.Bepu;
 using TGC.MonoGame.TP.MapObjects;
+using TGC.MonoGame.TP.Spheres;
 using NumericVector3 = System.Numerics.Vector3;
+using TGC.MonoGame.TP.PBR;
+using System.Linq;
 
 //
 namespace TGC.MonoGame.TP
@@ -46,21 +47,31 @@ namespace TGC.MonoGame.TP
         }
 
 
-        private const float LINEAR_SPEED= 100;
+        private float LINEAR_SPEED= 100;
         private const float CAMERA_FOLLOW_RADIUS = 70f;
         private const float CAMERA_UP_DISTANCE = 30f;
-        private const float SALTO_BUFFER_VALUE = 1000f;
+        private  float SALTO_BUFFER_VALUE = 1000f;
         private const float GRAVITY = -350f;
         //CHECKPOINTS DEBE ESTAR ORDENADO ASCENDENTEMENTE
         //EL PRIMER VALOR DEBE SER LA POSICION INICIAL DE LA ESFERA
         private Vector3[] CHECKPOINTS={new Vector3(0, 10.001f, 0),new Vector3(800f,110f,245f), new Vector3(1750,30,404), new Vector3(1700,50,4950)};
         private const float COORDENADA_Y_MAS_BAJA = -80f;
         private GraphicsDeviceManager Graphics { get; }
+        //EFFECTS
+        private Effect SimpleColor { get; set; }
+        private Effect SphereEffect { get; set; }
+        private List<Light> Lights {get;set;} 
+        //TEXTURES
+        private Texture2D albedo, ao, metalness, roughness, normals;
+        //Texture index
+        private int textureIndex;
+        private SphereType[] SpheresArray; 
+        //
         private SpriteBatch SpriteBatch { get; set; }
-        private Effect Effect { get; set; }
         private Matrix View { get; set; }
         private Matrix Projection { get; set; }
-        private SpherePrimitive Sphere { get; set; }
+        //SPHERE
+        private Model SphereModel  {get; set;}
         private Matrix SphereRotationMatrix { get; set; }
         private CubePrimitive ObstacleBox { get; set; }
         private CubePrimitive YellowBox { get; set; }
@@ -71,11 +82,9 @@ namespace TGC.MonoGame.TP
         private Vector3 SphereVelocity { get; set; }
         private bool OnGround { get; set; }
         private Vector3 SphereFrontDirection { get; set; }
-        private Matrix SphereScale {get; set; }
-        private CubePrimitive LightBox { get; set; }
         private Vector3 LightPosition { get; set; } = new Vector3 (0,2500,0);
 
-//Bepu
+        //Bepu
         private BodyHandle SphereHandle { get; set; }
         private Matrix SphereWorld { get; set; }
         private BufferPool BufferPool { get; set; }
@@ -106,14 +115,26 @@ namespace TGC.MonoGame.TP
             OnGround = false;
         
             // Esfera
-            Sphere = new SpherePrimitive(GraphicsDevice);
             SpherePosition = new Vector3(0,40,0);
             SphereWorld = Matrix.CreateTranslation(SpherePosition);
             SphereVelocity = Vector3.Zero;
             SphereFrontDirection =  Vector3.Backward;
-            SphereScale = Matrix.CreateScale(0.3f);
-
             SphereRotationMatrix = Matrix.Identity;
+
+            //Texture Index
+            //Elegimos el texture index que querramos para modificar los valores de la textura, salto, etc.
+            textureIndex = 2;
+            SpheresArray = new SphereType[]
+            {   
+                new SphereMarble(),
+                new SphereMetal(),
+                new SphereGround() 
+            };
+    
+
+            LINEAR_SPEED = SpheresArray[textureIndex].speed();
+            SALTO_BUFFER_VALUE = SpheresArray[textureIndex].jump();
+
             View = Matrix.CreateLookAt(Vector3.UnitZ * 150, Vector3.Zero, Vector3.Up);
             Projection =
                 Matrix.CreatePerspectiveFieldOfView(MathHelper.PiOver4, GraphicsDevice.Viewport.AspectRatio, 1, 250);
@@ -148,16 +169,22 @@ namespace TGC.MonoGame.TP
 */
 
             //Luz
-            LightBox = new CubePrimitive(GraphicsDevice, 1f, Color.White);
-            Effect = Content.Load<Effect>(ContentFolderEffects + "BlinnPhongTypes");
-            Effect.Parameters["lightPosition"].SetValue(LightPosition);
-            Effect.Parameters["ambientColor"]?.SetValue(new Vector3(1f, 1f, 1f));
-            Effect.Parameters["diffuseColor"]?.SetValue(new Vector3(1f, 1f, 1f));
-            Effect.Parameters["specularColor"]?.SetValue(new Vector3(1,1,1));
-            Effect.Parameters["KAmbient"]?.SetValue(0.3f);
-            Effect.Parameters["KDiffuse"]?.SetValue(0.7f);
-            Effect.Parameters["KSpecular"]?.SetValue(0.4f);
-            Effect.Parameters["shininess"]?.SetValue(10f);
+            SimpleColor = Content.Load<Effect>(ContentFolderEffects + "ColorShader");
+            SimpleColor.Parameters["lightPosition"].SetValue(LightPosition);
+            SimpleColor.Parameters["ambientColor"]?.SetValue(new Vector3(1f, 1f, 1f));
+            SimpleColor.Parameters["diffuseColor"]?.SetValue(new Vector3(1f, 1f, 1f));
+            SimpleColor.Parameters["specularColor"]?.SetValue(new Vector3(1,1,1));
+
+            SimpleColor.Parameters["KAmbient"]?.SetValue(0.3f);
+            SimpleColor.Parameters["KDiffuse"]?.SetValue(0.7f);
+            SimpleColor.Parameters["KSpecular"]?.SetValue(0.4f);
+            SimpleColor.Parameters["shininess"]?.SetValue(10f);
+
+            InitializeLights();
+            InitializeEffect();
+            LoadTextures();
+            SphereModel = Content.Load<Model>(ContentFolder3D + "sphere");
+            SphereModel.Meshes.FirstOrDefault().MeshParts.FirstOrDefault().Effect = SphereEffect;
             
             //Bepu
             LoadPhysics();
@@ -179,7 +206,6 @@ namespace TGC.MonoGame.TP
             Camera.BuildView();
         }
 
-
         protected override void Update(GameTime gameTime)
         {
 
@@ -199,7 +225,7 @@ namespace TGC.MonoGame.TP
             var pose = Simulation.Bodies.GetBodyReference(SphereHandle).Pose;
             SpherePosition = pose.Position;
             var quaternion = pose.Orientation;
-            var world = Matrix.CreateScale(BepuSphere.Radius*2) *
+            var world = Matrix.CreateScale(BepuSphere.Radius) *
                             Matrix.CreateFromQuaternion(new Quaternion(quaternion.X, quaternion.Y, quaternion.Z,
                                 quaternion.W)) *
                             Matrix.CreateTranslation(new Vector3(SpherePosition.X, SpherePosition.Y, SpherePosition.Z));
@@ -226,6 +252,7 @@ namespace TGC.MonoGame.TP
 
             SphereRotationMatrix = Matrix.CreateRotationY(Mouse.GetState().X*-0.01f);
             SphereFrontDirection = Vector3.Transform(Vector3.Backward, SphereRotationMatrix);
+            var SphereLateralDirection = Vector3.Transform(Vector3.Right, SphereRotationMatrix);
 
             var bodyRef= Simulation.Bodies.GetBodyReference(SphereHandle);
             if (Keyboard.GetState().IsKeyDown(Keys.W))
@@ -237,6 +264,15 @@ namespace TGC.MonoGame.TP
             {
                 //SphereVelocity += SphereFrontDirection * LINEAR_SPEED;
                 bodyRef.ApplyLinearImpulse(ToNumericVector3(SphereFrontDirection * LINEAR_SPEED));
+            }
+
+            if (Keyboard.GetState().IsKeyDown(Keys.A) && !PelotaSeCayo())
+            {
+                bodyRef.ApplyLinearImpulse(ToNumericVector3(-SphereLateralDirection * LINEAR_SPEED));
+            }
+            if (Keyboard.GetState().IsKeyDown(Keys.D) && !PelotaSeCayo())
+            {
+                bodyRef.ApplyLinearImpulse(ToNumericVector3(SphereLateralDirection * LINEAR_SPEED));
             }
             
             AdministrarSalto(deltaTime);
@@ -308,22 +344,28 @@ namespace TGC.MonoGame.TP
             // Aca deberiamos poner toda la logia de renderizado del juego.
             GraphicsDevice.Clear(Color.Black);
 
-            Effect.Parameters["eyePosition"]?.SetValue(Camera.Position);
-            Effect.Parameters["Tiling"]?.SetValue(Vector2.One);
+            SphereEffect.Parameters["eyePosition"].SetValue(Camera.Position);
+            SimpleColor.Parameters["eyePosition"]?.SetValue(Camera.Position);
+            SimpleColor.Parameters["Tiling"]?.SetValue(Vector2.One);
 
             //Dibujo el suelo
-            foreach(Obstacle obstacle in StaticObstacles)   {obstacle.Render(Effect,gameTime);}
+            foreach(Obstacle obstacle in StaticObstacles)   {obstacle.Render(SimpleColor,gameTime);}
              //Dibujo los cilindros
-            foreach(Obstacle obstacle in KinematicObstacles)    {obstacle.Render(Effect,gameTime);}
-            foreach(Obstacle obstacle in PeriodicObstacles)    {obstacle.Render(Effect,gameTime);}
-
+            foreach(Obstacle obstacle in KinematicObstacles)    {obstacle.Render(SimpleColor,gameTime);}
+            foreach(Obstacle obstacle in PeriodicObstacles)    {obstacle.Render(SimpleColor,gameTime);}
+/*
             for (int i = 0; i < PowerUpsWorld.Length; i++)
             {
                 var matrix = PowerUpsWorld[i];
                 DrawGeometricPrimitive(matrix, YellowBox);
             }
+*/
 
-            DrawGeometricPrimitive(SphereWorld, Sphere);
+            var worldView = SphereWorld * Camera.View;
+            SphereEffect.Parameters["matWorld"].SetValue(SphereWorld);
+            SphereEffect.Parameters["matWorldViewProj"].SetValue(worldView * Camera.Projection);
+            SphereEffect.Parameters["matInverseTransposeWorld"].SetValue(Matrix.Transpose(Matrix.Invert(SphereWorld)));
+            SphereModel.Meshes.FirstOrDefault().Draw();
 
             //InclinedTrackModel.Draw(Matrix.CreateScale(1.5f) * Matrix.CreateRotationX(-MathHelper.PiOver2)*Matrix.CreateRotationY(-MathHelper.PiOver2)*TrackWorld* Matrix.CreateTranslation(864.1f,100f,415f) ,Camera.View, Camera.Projection);
 
@@ -335,13 +377,15 @@ namespace TGC.MonoGame.TP
              DrawGeometry(new CoinPrimitive(GraphicsDevice,1,10,40), new Vector3(x + 1f, y + 1f, z + 1f), 1f, 0, MathHelper.PiOver2);
         }
 */
-        private void DrawGeometricPrimitive(Matrix World, GeometricPrimitive geometricPrimitive){
+/*
+        private void DrawGeometricPrimitive(GeometricPrimitive geometricPrimitive, Matrix world, Effect effect){
             var viewProjection = Camera.View * Camera.Projection;
-            Effect.Parameters["World"].SetValue(World);
-            Effect.Parameters["InverseTransposeWorld"]?.SetValue(Matrix.Invert(Matrix.Transpose(World)));
-            Effect.Parameters["WorldViewProjection"]?.SetValue(World * viewProjection);
-            geometricPrimitive.Draw(Effect);
+            effect.Parameters["World"].SetValue(world);
+            effect.Parameters["InverseTransposeWorld"]?.SetValue(Matrix.Invert(Matrix.Transpose(world)));
+            effect.Parameters["WorldViewProjection"]?.SetValue(world * viewProjection);
+            geometricPrimitive.Draw(effect);
         }
+*/
 
          public static NumericVector3 ToNumericVector3(Vector3 v)
         {
@@ -374,17 +418,60 @@ namespace TGC.MonoGame.TP
 
             var bodyDescription = BodyDescription.CreateConvexDynamic(ToNumericVector3(SpherePosition), 5f,
                Simulation.Shapes, BepuSphere);
-            /*
-            var position = ToNumericVector3(SpherePosition);
-            var bodyDescription = BodyDescription.CreateConvexDynamic(position,
-                    new BodyVelocity(ToNumericVector3(SphereVelocity)),
-                    500f, Simulation.Shapes, BepuSphere);
-                */
             bodyDescription.Collidable.Continuity = ContinuousDetection.Continuous(1e-4f, 1e-4f);
             bodyDescription.Activity.SleepThreshold=-1;
             var bodyHandle = Simulation.Bodies.Add(bodyDescription);
             SphereHandle = bodyHandle;
         }
+
+         private void InitializeLights()
+        {
+            Lights = new List<Light>();
+            var lightOne = new Light();
+
+            lightOne.Position = new Vector3(1500,25000,1775);
+            lightOne.Color = new Vector3(255,255,255);
+
+            var lightTwo = new Light();
+            lightTwo.Position = new Vector3(4500,25000,1775);
+            lightTwo.Color = new Vector3(255,255,255);
+
+            Lights.Add(lightOne);
+            Lights.Add(lightTwo);
+            Lights = Lights.ConvertAll(light => light.GenerateShowColor());
+        }
+        private void InitializeEffect()
+        {
+            SphereEffect = Content.Load<Effect>(ContentFolderEffects + "PBR");
+            SphereEffect.CurrentTechnique = SphereEffect.Techniques["PBR"];
+
+            var positions = SphereEffect.Parameters["lightPositions"].Elements;
+            var colors = SphereEffect.Parameters["lightColors"].Elements;
+
+            for (var index = 0; index < Lights.Count; index++)
+            {
+                var light = Lights[index];
+                positions[index].SetValue(light.Position);
+                colors[index].SetValue(light.Color);
+            }
+        }
+        private void LoadTextures()
+        {
+            String folder = SpheresArray[textureIndex].folder();
+
+            normals = Content.Load<Texture2D>(ContentFolderTextures + folder +"normal");
+            ao = Content.Load<Texture2D>(ContentFolderTextures + folder + "ao");
+            metalness = Content.Load<Texture2D>(ContentFolderTextures +  folder + "metalness");
+            roughness = Content.Load<Texture2D>(ContentFolderTextures + folder + "roughness");
+            albedo = Content.Load<Texture2D>(ContentFolderTextures + folder + "color");
+
+            SphereEffect.Parameters["albedoTexture"]?.SetValue(albedo);
+            SphereEffect.Parameters["normalTexture"]?.SetValue(normals);
+            SphereEffect.Parameters["metallicTexture"]?.SetValue(metalness);
+            SphereEffect.Parameters["roughnessTexture"]?.SetValue(roughness);
+            SphereEffect.Parameters["aoTexture"]?.SetValue(ao);
+        }
+
         protected override void UnloadContent()
         {
             // Libero los recursos.
