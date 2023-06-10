@@ -21,7 +21,6 @@ float shininess;
 float3 lightPosition;
 float3 eyePosition; // Camera position
 float2 Tiling;
-float3 Color;
 
 texture ModelTexture;
 sampler2D textureSampler = sampler_state
@@ -70,7 +69,6 @@ struct VertexShaderInput
 	float4 Position : POSITION0;
     float4 Normal : NORMAL;
     float2 TextureCoordinates : TEXCOORD0;
-	float4 Color : COLOR0;
 };
 
 struct VertexShaderOutput
@@ -79,7 +77,6 @@ struct VertexShaderOutput
     float2 TextureCoordinates : TEXCOORD0;
     float4 WorldPosition : TEXCOORD1;
     float4 Normal : TEXCOORD2;    
-    float4 Color : TEXCOORD3;
 };
 
 VertexShaderOutput MainVS(in VertexShaderInput input)
@@ -89,8 +86,7 @@ VertexShaderOutput MainVS(in VertexShaderInput input)
     output.Position = mul(input.Position, WorldViewProjection);
     output.WorldPosition = mul(input.Position, World);
     output.Normal = mul(float4(normalize(input.Normal.xyz), 1.0), InverseTransposeWorld);
-    //output.TextureCoordinates = input.TextureCoordinates * Tiling;
-    output.Color = input.Color;
+    output.TextureCoordinates = input.TextureCoordinates * Tiling;
 	
 	return output;
 }
@@ -104,7 +100,7 @@ float4 MainPS(VertexShaderOutput input) : COLOR
     float3 normal = normalize(input.Normal.xyz);
     
 	// Get the texture texel
-    //float4 texelColor = tex2D(textureSampler, input.TextureCoordinates);
+    float4 texelColor = tex2D(textureSampler, input.TextureCoordinates);
     
 	// Calculate the diffuse light
     float NdotL = saturate(dot(normal, lightDirection));
@@ -115,7 +111,7 @@ float4 MainPS(VertexShaderOutput input) : COLOR
     float3 specularLight = KSpecular * specularColor * pow(saturate(NdotH), shininess);
     
     // Final calculation
-    float4 finalColor = float4(saturate(ambientColor * KAmbient + diffuseLight) * input.Color.rgb + specularLight, input.Color.a);
+    float4 finalColor = float4(saturate(ambientColor * KAmbient + diffuseLight) * texelColor.rgb + specularLight, texelColor.a);
      
     return finalColor;
 

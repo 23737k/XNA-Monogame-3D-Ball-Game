@@ -48,6 +48,7 @@ namespace TGC.MonoGame.TP
 
 
         private float LINEAR_SPEED= 100;
+        private float JUMPING_SPEED = 50F;
         private const float CAMERA_FOLLOW_RADIUS = 70f;
         private const float CAMERA_UP_DISTANCE = 30f;
         private  float SALTO_BUFFER_VALUE = 1000f;
@@ -73,8 +74,8 @@ namespace TGC.MonoGame.TP
         //SPHERE
         private Model SphereModel  {get; set;}
         private Matrix SphereRotationMatrix { get; set; }
-        private CubePrimitive ObstacleBox { get; set; }
-        private CubePrimitive YellowBox { get; set; }
+        private BoxPrimitive ObstacleBox { get; set; }
+        private BoxPrimitive YellowBox { get; set; }
         private Vector3 SpherePosition { get; set; }
         private TargetCamera Camera { get; set; }
 
@@ -115,7 +116,7 @@ namespace TGC.MonoGame.TP
             OnGround = false;
         
             // Esfera
-            SpherePosition = new Vector3(0,40,0);
+            SpherePosition = new Vector3(1700,50,4800);
             SphereWorld = Matrix.CreateTranslation(SpherePosition);
             SphereVelocity = Vector3.Zero;
             SphereFrontDirection =  Vector3.Backward;
@@ -123,7 +124,7 @@ namespace TGC.MonoGame.TP
 
             //Texture Index
             //Elegimos el texture index que querramos para modificar los valores de la textura, salto, etc.
-            textureIndex = 2;
+            textureIndex = 0;
             SpheresArray = new SphereType[]
             {   
                 new SphereMarble(),
@@ -146,8 +147,6 @@ namespace TGC.MonoGame.TP
                 Matrix.CreateScale(40, 10f, 80) * Matrix.CreateTranslation(new Vector3(2720,20f,435f))
             };            
 
-            YellowBox = new CubePrimitive(GraphicsDevice, 1f, Color.YellowGreen, Color.YellowGreen, Color.YellowGreen, Color.YellowGreen, Color.YellowGreen, Color.YellowGreen);
-            ObstacleBox = new CubePrimitive(GraphicsDevice,1f,Color.Blue);
 
             UpdateCamera();
             base.Initialize();
@@ -179,6 +178,10 @@ namespace TGC.MonoGame.TP
             SimpleColor.Parameters["KDiffuse"]?.SetValue(0.7f);
             SimpleColor.Parameters["KSpecular"]?.SetValue(0.4f);
             SimpleColor.Parameters["shininess"]?.SetValue(10f);
+            var texture = Content.Load<Texture2D>(ContentFolderTextures +"tiles/" +"color");
+            var normal = Content.Load<Texture2D>(ContentFolderTextures + "tiles/" + "normal");
+            SimpleColor.Parameters["ModelTexture"].SetValue(texture);
+            SimpleColor.Parameters["NormalTexture"].SetValue(normal);
 
             InitializeLights();
             InitializeEffect();
@@ -205,7 +208,7 @@ namespace TGC.MonoGame.TP
 
             Camera.BuildView();
         }
-
+        private bool canDraw = true;
         protected override void Update(GameTime gameTime)
         {
 
@@ -232,6 +235,13 @@ namespace TGC.MonoGame.TP
             SphereWorld = world;
             SpherePosition = pose.Position;
 
+            if(SpherePosition.X > 3000 && SpherePosition.Z > 2365 && canDraw)
+            {
+                KinematicObstacles.AddRange(new Loader(Simulation,GraphicsDevice, Camera).LoadRollingCylinders());
+                canDraw=false;
+            }
+                
+
             var bodyRef = Simulation.Bodies.GetBodyReference(SphereHandle);
 
             if(MathHelper.Distance(bodyRef.Velocity.Linear.Y, prevLinearVelocity) < 0.5 
@@ -257,8 +267,10 @@ namespace TGC.MonoGame.TP
             var bodyRef= Simulation.Bodies.GetBodyReference(SphereHandle);
             if (Keyboard.GetState().IsKeyDown(Keys.W))
             {
-                //SphereVelocity -= SphereFrontDirection * LINEAR_SPEED;
-                bodyRef.ApplyLinearImpulse(ToNumericVector3(-SphereFrontDirection * LINEAR_SPEED));
+                if(!PelotaEstaEnElSuelo())
+                    bodyRef.ApplyLinearImpulse(ToNumericVector3(-SphereFrontDirection * JUMPING_SPEED));
+                else
+                     bodyRef.ApplyLinearImpulse(ToNumericVector3(-SphereFrontDirection * LINEAR_SPEED));
             }
             if (Keyboard.GetState().IsKeyDown(Keys.S) && !PelotaSeCayo())
             {

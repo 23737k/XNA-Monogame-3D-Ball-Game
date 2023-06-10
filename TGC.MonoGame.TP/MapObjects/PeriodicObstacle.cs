@@ -22,7 +22,7 @@ namespace TGC.MonoGame.TP.MapObjects
         public Simulation Simulation {get;set;}
         public Matrix World {get;set;}
         public Camera Camera {get;set;}
-        public CubePrimitive CubePrimitive {get;set;}
+        public BoxPrimitive CubePrimitive {get;set;}
         public BodyHandle BodyHandle {get;set;}
         public float Amplitude {get;set;}
         public float Frecuency {get;set;}
@@ -31,7 +31,7 @@ namespace TGC.MonoGame.TP.MapObjects
         public string Axis {get;set;}
 
 
-        public PeriodicObstacle (Matrix world, CubePrimitive cubePrimitive, Simulation simulation, Camera camera,
+        public PeriodicObstacle (Matrix world, BoxPrimitive cubePrimitive, Simulation simulation, Camera camera,
                                 float amplitude, float frecuency, float verticalOffset, float horizontalOffset, string axis)
         {
             this.Simulation = simulation;

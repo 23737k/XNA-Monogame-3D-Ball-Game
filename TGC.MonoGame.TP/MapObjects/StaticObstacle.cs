@@ -13,11 +13,11 @@ namespace TGC.MonoGame.TP.MapObjects
         public Simulation Simulation {get;set;}
         public Matrix World {get;set;}
         public Camera Camera {get;set;}
-        public GeometricPrimitive GeometricPrimitive {get;set;}
+        public BoxPrimitive GeometricPrimitive {get;set;}
         public StaticHandle StaticHandle {get;set;}
 
 
-        public StaticObstacle (Matrix world, GeometricPrimitive geometricPrimitive, Simulation simulation, Camera camera)
+        public StaticObstacle (Matrix world, BoxPrimitive geometricPrimitive, Simulation simulation, Camera camera)
         {
             this.Simulation = simulation;
             this.World = world;

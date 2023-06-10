@@ -58,7 +58,7 @@ namespace TGC.MonoGame.TP
                 Matrix.CreateTranslation(new Vector3(300, 10, 4.5f )),
 
                 //Islas
-                Matrix.CreateTranslation(new Vector3(1850,20,404)),
+                Matrix.CreateTranslation(new Vector3(1950,20,404)),
                 Matrix.CreateTranslation(new Vector3(1890,20,434.5f)),
                 Matrix.CreateTranslation(new Vector3(1930,20,454.5f)),
                 Matrix.CreateTranslation(new Vector3(1980,20,454.5f)),
@@ -70,7 +70,7 @@ namespace TGC.MonoGame.TP
                 Matrix.CreateFromYawPitchRoll(0,0,-MathHelper.PiOver2) * Matrix.CreateTranslation(new Vector3(3100,95,1775)),
                 Matrix.CreateFromYawPitchRoll(0,0,-MathHelper.PiOver2) * Matrix.CreateTranslation(new Vector3(3050,95,1845)),
                 Matrix.CreateFromYawPitchRoll(0,0,-MathHelper.PiOver2) * Matrix.CreateTranslation(new Vector3(3100,95,1915)),
-                Matrix.CreateFromYawPitchRoll(0,0,-MathHelper.PiOver2) * Matrix.CreateTranslation(new Vector3(3050,95,1985))
+                Matrix.CreateFromYawPitchRoll(0,0,-MathHelper.PiOver2) * Matrix.CreateTranslation(new Vector3(3050,95,1995))
             };
 
             for(int i =0; i< 6; i++)
@@ -101,41 +101,98 @@ namespace TGC.MonoGame.TP
             var Obstacles = new List<Obstacle>();
 
             //Plataforma que baja
-            Obstacles.Add(new PeriodicObstacle(Matrix.CreateScale(20,10,20) * Matrix.CreateTranslation(1720,42.5f,2405),new CubePrimitive(GraphicsDevice),Simulation,
+            Obstacles.Add(new PeriodicObstacle(Matrix.CreateScale(20,10,20) * Matrix.CreateTranslation(1720,42.5f,2405),new BoxPrimitive(GraphicsDevice),Simulation,
                                 Camera,42.5f,3f,42.5f,0f, "Y"));
 
             //Pared que aplastan contra el suelo
-            Obstacles.Add(new PeriodicObstacle(Matrix.CreateScale(80,10,80) * Matrix.CreateTranslation(1720,45,4240),new CubePrimitive(GraphicsDevice),Simulation,
+            Obstacles.Add(new PeriodicObstacle(Matrix.CreateScale(80,10,80) * Matrix.CreateTranslation(1720,45,4240),new BoxPrimitive(GraphicsDevice),Simulation,
                     Camera,35f,4f,45,0f, "Y"));
-            Obstacles.Add(new PeriodicObstacle(Matrix.CreateScale(80,10,80) * Matrix.CreateTranslation(1720,45,4430),new CubePrimitive(GraphicsDevice),Simulation,
+            Obstacles.Add(new PeriodicObstacle(Matrix.CreateScale(80,10,80) * Matrix.CreateTranslation(1720,45,4430),new BoxPrimitive(GraphicsDevice),Simulation,
                     Camera,35f,4f,45,+MathHelper.PiOver4, "Y"));
-            Obstacles.Add(new PeriodicObstacle(Matrix.CreateScale(80,10,80) * Matrix.CreateTranslation(1720,45,4620),new CubePrimitive(GraphicsDevice),Simulation,
+            Obstacles.Add(new PeriodicObstacle(Matrix.CreateScale(80,10,80) * Matrix.CreateTranslation(1720,45,4620),new BoxPrimitive(GraphicsDevice),Simulation,
                     Camera,35f,4f,45,MathHelper.PiOver4, "Y"));
             //Plataformas que suben y bajan
-            Obstacles.Add(new PeriodicObstacle(Matrix.CreateScale(50,10,50) * Matrix.CreateTranslation(600f,-60,4.5f),new CubePrimitive(GraphicsDevice),Simulation,
+            Obstacles.Add(new PeriodicObstacle(Matrix.CreateScale(50,10,50) * Matrix.CreateTranslation(600f,-60,4.5f),new BoxPrimitive(GraphicsDevice),Simulation,
                 Camera,-70f,3f,-60f,0f, "Y"));
-            Obstacles.Add(new PeriodicObstacle(Matrix.CreateScale(50,10,50) * Matrix.CreateTranslation(700f,60,4.5f),new CubePrimitive(GraphicsDevice),Simulation,
+            Obstacles.Add(new PeriodicObstacle(Matrix.CreateScale(50,10,50) * Matrix.CreateTranslation(700f,60,4.5f),new BoxPrimitive(GraphicsDevice),Simulation,
                 Camera,70f,3f,60f,0f, "Y"));
             
             //Pisos que se mueven
-            Obstacles.Add(new PeriodicObstacle(Matrix.CreateScale(40,10,80) * Matrix.CreateTranslation(1740,0,5230),new CubePrimitive(GraphicsDevice),Simulation,
-                Camera,200f,2f,5230f,0f, "Z"));
-                Obstacles.Add(new PeriodicObstacle(Matrix.CreateScale(40,10,80) * Matrix.CreateTranslation(1690,0,5600),new CubePrimitive(GraphicsDevice),Simulation,
-                Camera,200f,2f,5600f,0f, "Z"));
-                Obstacles.Add(new PeriodicObstacle(Matrix.CreateScale(40,10,80) * Matrix.CreateTranslation(1740,0,6010),new CubePrimitive(GraphicsDevice),Simulation,
-                Camera,200f,2f,6010f,0f, "Z"));
+            Obstacles.Add(new PeriodicObstacle(Matrix.CreateScale(40,10,80) * Matrix.CreateTranslation(1740,0,5230),new BoxPrimitive(GraphicsDevice),Simulation,
+                Camera,200f,1.5f,5230f,0f, "Z"));
+                Obstacles.Add(new PeriodicObstacle(Matrix.CreateScale(40,10,80) * Matrix.CreateTranslation(1690,0,5600),new BoxPrimitive(GraphicsDevice),Simulation,
+                Camera,200f,1.5f,5600f,MathHelper.Pi, "Z"));
+                Obstacles.Add(new PeriodicObstacle(Matrix.CreateScale(40,10,80) * Matrix.CreateTranslation(1740,0,6010),new BoxPrimitive(GraphicsDevice),Simulation,
+                Camera,200f,1.5f,6010f,0f, "Z"));
+
+            Obstacles.Add(new PeriodicObstacle(Matrix.CreateScale(40,10,5) * Matrix.CreateTranslation(1740,10,5190),new BoxPrimitive(GraphicsDevice),Simulation,
+                Camera,200f,1.5f,5190,0f, "Z"));
+            Obstacles.Add(new PeriodicObstacle(Matrix.CreateScale(40,10,5) * Matrix.CreateTranslation(1740,10,5270),new BoxPrimitive(GraphicsDevice),Simulation,
+                Camera,200f,1.5f,5270,0f, "Z"));
+            Obstacles.Add(new PeriodicObstacle(Matrix.CreateScale(5,10,80) * Matrix.CreateTranslation(1760,10,5230),new BoxPrimitive(GraphicsDevice),Simulation,
+                Camera,200f,1.5f,5230,0f, "Z"));
+            Obstacles.Add(new PeriodicObstacle(Matrix.CreateScale(5,10,80) * Matrix.CreateTranslation(1720,10,5230),new BoxPrimitive(GraphicsDevice),Simulation,
+                Camera,200f,1.5f,5230,0f, "Z"));
+
+            Obstacles.Add(new PeriodicObstacle(Matrix.CreateScale(40,10,5) * Matrix.CreateTranslation(1690,10,5640),new BoxPrimitive(GraphicsDevice),Simulation,
+                Camera,200f,1.5f,5640,MathHelper.Pi, "Z"));
+            Obstacles.Add(new PeriodicObstacle(Matrix.CreateScale(40,10,5) * Matrix.CreateTranslation(1690,10,5560),new BoxPrimitive(GraphicsDevice),Simulation,
+                Camera,200f,1.5f,5560,MathHelper.Pi, "Z"));
+            Obstacles.Add(new PeriodicObstacle(Matrix.CreateScale(5,10,80) * Matrix.CreateTranslation(1710,10,5600),new BoxPrimitive(GraphicsDevice),Simulation,
+                Camera,200f,1.5f,5600,MathHelper.Pi, "Z"));
+            Obstacles.Add(new PeriodicObstacle(Matrix.CreateScale(5,10,80) * Matrix.CreateTranslation(1670,10,5600),new BoxPrimitive(GraphicsDevice),Simulation,
+                Camera,200f,1.5f,5600,MathHelper.Pi, "Z"));
+
+            Obstacles.Add(new PeriodicObstacle(Matrix.CreateScale(40,10,5) * Matrix.CreateTranslation(1740,10,6050),new BoxPrimitive(GraphicsDevice),Simulation,
+                Camera,200f,1.5f,6050,0f, "Z"));
+            Obstacles.Add(new PeriodicObstacle(Matrix.CreateScale(40,10,5) * Matrix.CreateTranslation(1740,10,5970),new BoxPrimitive(GraphicsDevice),Simulation,
+                Camera,200f,1.5f,5970,0f, "Z"));
+            Obstacles.Add(new PeriodicObstacle(Matrix.CreateScale(5,10,80) * Matrix.CreateTranslation(1760,10,6010),new BoxPrimitive(GraphicsDevice),Simulation,
+                Camera,200f,1.5f,6010,0f, "Z"));
+            Obstacles.Add(new PeriodicObstacle(Matrix.CreateScale(5,10,80) * Matrix.CreateTranslation(1720,10,6010),new BoxPrimitive(GraphicsDevice),Simulation,
+                Camera,200f,1.5f,6010,0f, "Z"));
+
+
+
+/*
+ 
+
+            WallsWorld[20].Decompose(out scale, out rotation, out position);
+            max = new Vector3(position.X + 20,position.Y + 10.1f,position.Z+40);
+            min = new Vector3(position.X - 20,position.Y - 10.1f,position.Z-40);
+            isWithinLimits = SphereCollider.Center == Vector3.Clamp(SphereCollider.Center, min, max);
+            WallsWorld[20] = Matrix.CreateScale(40,10,80) * Matrix.CreateTranslation(new Vector3(1690,0,200*MathF.Cos(1.5f*totalTime+MathHelper.Pi)+5600));
+            if(isWithinLimits)
+                SphereCollider.Center.Z += 200*MathF.Cos(1.5f*totalTime+MathHelper.Pi)+5600 - position.Z;
+
+            WallsWorld[21].Decompose(out scale, out rotation, out position);
+            max = new Vector3(position.X + 20,position.Y + 10.1f,position.Z+40);
+            min = new Vector3(position.X - 20,position.Y - 10.1f,position.Z-40);
+            isWithinLimits = SphereCollider.Center == Vector3.Clamp(SphereCollider.Center, min, max);
+            WallsWorld[21] = Matrix.CreateScale(40,10,80) * Matrix.CreateTranslation(new Vector3(1740,0,200*MathF.Cos(1.5f*totalTime)+6010));
+            if(isWithinLimits)
+                SphereCollider.Center.Z += 200*MathF.Cos(1.5f*totalTime)+6010 - position.Z;
+
+            CreateBoundingBoxes();
+
+        }*/
+
             
             //Paredes que se mueven
-            Obstacles.Add(new PeriodicObstacle(Matrix.CreateScale(10,50,40) * Matrix.CreateTranslation(1720,30f,2800),new CubePrimitive(GraphicsDevice),Simulation,
+            Obstacles.Add(new PeriodicObstacle(Matrix.CreateScale(10,50,40) * Matrix.CreateTranslation(1720,30f,2800),new BoxPrimitive(GraphicsDevice),Simulation,
                 Camera,40f,5f,1720f,0f, "X"));
-            Obstacles.Add(new PeriodicObstacle(Matrix.CreateScale(10,50,40) * Matrix.CreateTranslation(1720,30f,2900),new CubePrimitive(GraphicsDevice),Simulation,
+            Obstacles.Add(new PeriodicObstacle(Matrix.CreateScale(10,50,40) * Matrix.CreateTranslation(1720,30f,2900),new BoxPrimitive(GraphicsDevice),Simulation,
                 Camera,-40f,5f,1720f,MathF.PI/4, "X"));
-            Obstacles.Add(new PeriodicObstacle(Matrix.CreateScale(10,50,40) * Matrix.CreateTranslation(1720,30f,3000),new CubePrimitive(GraphicsDevice),Simulation,
+            Obstacles.Add(new PeriodicObstacle(Matrix.CreateScale(10,50,40) * Matrix.CreateTranslation(1720,30f,3000),new BoxPrimitive(GraphicsDevice),Simulation,
                 Camera,40f,5f,1720f,MathF.PI/2f, "X"));
-            Obstacles.Add(new PeriodicObstacle(Matrix.CreateScale(10,50,40) * Matrix.CreateTranslation(1720,30f,3100),new CubePrimitive(GraphicsDevice),Simulation,
+            Obstacles.Add(new PeriodicObstacle(Matrix.CreateScale(10,50,40) * Matrix.CreateTranslation(1720,30f,3100),new BoxPrimitive(GraphicsDevice),Simulation,
                 Camera,-40f,5f,1720f,MathHelper.PiOver4*3f, "X"));
-            Obstacles.Add(new PeriodicObstacle(Matrix.CreateScale(10,50,40) * Matrix.CreateTranslation(1720,30f,3200),new CubePrimitive(GraphicsDevice),Simulation,
+            Obstacles.Add(new PeriodicObstacle(Matrix.CreateScale(10,50,40) * Matrix.CreateTranslation(1720,30f,3200),new BoxPrimitive(GraphicsDevice),Simulation,
                 Camera,40f,5f,1720f,MathF.PI, "X"));
+
+
+
+            
 
             return Obstacles;
         }
@@ -161,13 +218,15 @@ namespace TGC.MonoGame.TP
                 Matrix.CreateScale(80,10f,100) * Matrix.CreateTranslation(new Vector3(3070f,30,865f)),
                 Matrix.CreateScale(80,10f,100) * Matrix.CreateTranslation(new Vector3(3070f,40,1005f)),
                 Matrix.CreateScale(80,10f,100) * Matrix.CreateTranslation(new Vector3(3070f,55,1145f)),
-                Matrix.CreateScale(80,10f,100) * Matrix.CreateTranslation(new Vector3(3070f,70,1285f)),
+                Matrix.CreateScale(80,10f,100) * Matrix.CreateTranslation(new Vector3(3070f,70,1295f)),
                 Matrix.CreateScale(80,10f,100) * Matrix.CreateTranslation(new Vector3(3070f,85,1425f)),
                 Matrix.CreateScale(80,10f,600) * Matrix.CreateTranslation(new Vector3(3070f,85,1825f)),
                 Matrix.CreateScale(80,10f,200) * Matrix.CreateTranslation(new Vector3(3070f,85,2245)),
                 Matrix.CreateScale(600,10f,120) * Matrix.CreateTranslation(new Vector3(2810,85,2405)),
+
                 Matrix.CreateScale(800,10f,40) * Matrix.CreateTranslation(new Vector3(2110,85,2365)),
                 Matrix.CreateScale(800,10f,40) * Matrix.CreateTranslation(new Vector3(2110,85,2445)),
+
                 Matrix.CreateScale(80,10f,1500) * Matrix.CreateTranslation(new Vector3(1720,0,3175)),
                 Matrix.CreateScale(80,10,1000) * Matrix.CreateTranslation(new Vector3(1720,0,4455)),
                 Matrix.CreateScale(100,10f,2600) * Matrix.CreateTranslation(new Vector3(1720,0,7620)),
@@ -179,9 +238,9 @@ namespace TGC.MonoGame.TP
                 Matrix.CreateScale(10,10f,30f) * Matrix.CreateTranslation(new Vector3(1565f,30f,435f)),
                 Matrix.CreateScale(10,10f, 80f) * Matrix.CreateTranslation(new Vector3(2565f,30f,435f)),
                 //Muro alto
-                Matrix.CreateScale(40, 40f,10f) * Matrix.CreateTranslation(new Vector3(3090f,45f,510f)),
-                Matrix.CreateScale(40, 40f,10f) * Matrix.CreateTranslation(new Vector3(3080f,45f,670f)),
-                Matrix.CreateScale(40, 40f,10f) * Matrix.CreateTranslation(new Vector3(3060f,45f,590f)),
+                Matrix.CreateScale(40, 30f,10f) * Matrix.CreateTranslation(new Vector3(3090f,35f,510f)),
+                Matrix.CreateScale(40, 30f,10f) * Matrix.CreateTranslation(new Vector3(3090f,35f,670f)),
+                Matrix.CreateScale(40, 30f,10f) * Matrix.CreateTranslation(new Vector3(3050f,35f,590f)),
 
                 //muros
                 Matrix.CreateScale(80,10,10) * Matrix.CreateTranslation(new Vector3(1720, 10, 3320)),
@@ -193,11 +252,64 @@ namespace TGC.MonoGame.TP
 
             
             foreach(Matrix world in staticsWorld){
-               Obstacles.Add(new StaticObstacle(world,new CubePrimitive(GraphicsDevice),Simulation,Camera));
+               Obstacles.Add(new StaticObstacle(world,new BoxPrimitive(GraphicsDevice),Simulation,Camera));
             }
 
             return Obstacles;
 
+        }
+
+        public List<Obstacle> LoadRollingCylinders() 
+        {
+            var Obstacles = new List<Obstacle>();
+            var BasicCylindersMeasures = new Vector3[]
+            {
+                //Cilindros que giran
+                new Vector3(60, 10, 18),
+                new Vector3(60, 10, 18),
+                new Vector3(60, 10, 18),
+                new Vector3(60, 20, 18),                
+                new Vector3(60, 20, 18),
+                new Vector3(60, 10, 18),
+                new Vector3(60, 10, 18),
+                new Vector3(60, 10, 18),
+                new Vector3(60, 10, 18),
+                new Vector3(60, 10, 18),
+                new Vector3(60, 10, 18),
+                new Vector3(60, 20, 18),                
+                new Vector3(60, 20, 18),
+                new Vector3(60, 10, 18),
+                new Vector3(60, 10, 18),
+                new Vector3(60, 10, 18)
+            };
+
+            var CylinderWorld = new Matrix[]{
+                Matrix.CreateFromYawPitchRoll(0,-MathHelper.PiOver2,0) * Matrix.CreateTranslation(new Vector3(2100,93.8f,2365)),
+                Matrix.CreateFromYawPitchRoll(0,-MathHelper.PiOver2,0) * Matrix.CreateTranslation(new Vector3(2000,90,2365)),
+               Matrix.CreateFromYawPitchRoll(0,-MathHelper.PiOver2,0) * Matrix.CreateTranslation(new Vector3(1900,85,2365)),
+               Matrix.CreateFromYawPitchRoll(0,-MathHelper.PiOver2,0) * Matrix.CreateTranslation(new Vector3(1800,85,2365)),
+                Matrix.CreateFromYawPitchRoll(0,-MathHelper.PiOver2,0) * Matrix.CreateTranslation(new Vector3(1700,90,2365)),
+                Matrix.CreateFromYawPitchRoll(0,-MathHelper.PiOver2,0) * Matrix.CreateTranslation(new Vector3(1600,90,2365)),
+               Matrix.CreateFromYawPitchRoll(0,-MathHelper.PiOver2,0) * Matrix.CreateTranslation(new Vector3(1500,90,2365)),
+                Matrix.CreateFromYawPitchRoll(0,-MathHelper.PiOver2,0) * Matrix.CreateTranslation(new Vector3(1400,90,2365)),
+
+                Matrix.CreateFromYawPitchRoll(0,-MathHelper.PiOver2,0) * Matrix.CreateTranslation(new Vector3(2200,85,2445)),
+                Matrix.CreateFromYawPitchRoll(0,-MathHelper.PiOver2,0) * Matrix.CreateTranslation(new Vector3(2100,95,2445)),
+               Matrix.CreateFromYawPitchRoll(0,-MathHelper.PiOver2,0) * Matrix.CreateTranslation(new Vector3(2000,95,2445)),
+               Matrix.CreateFromYawPitchRoll(0,-MathHelper.PiOver2,0) * Matrix.CreateTranslation(new Vector3(1900,95,2445)),
+                Matrix.CreateFromYawPitchRoll(0,-MathHelper.PiOver2,0) * Matrix.CreateTranslation(new Vector3(1800,95,2445)),
+                Matrix.CreateFromYawPitchRoll(0,-MathHelper.PiOver2,0) * Matrix.CreateTranslation(new Vector3(1700,95,2445)),
+               Matrix.CreateFromYawPitchRoll(0,-MathHelper.PiOver2,0) * Matrix.CreateTranslation(new Vector3(1600,95,2445)),
+                Matrix.CreateFromYawPitchRoll(0,-MathHelper.PiOver2,0) * Matrix.CreateTranslation(new Vector3(1500,95,2445)),
+
+            };
+
+            for(int i =0; i< CylinderWorld.Length; i++)
+            {
+                Obstacles.Add(new MovingObstacle(CylinderWorld[i],
+                    new CylinderPrimitive(GraphicsDevice, BasicCylindersMeasures[i].X, BasicCylindersMeasures[i].Y),Simulation,Camera, Vector3.Zero, new Vector3(50,0,0)));
+            }
+            return Obstacles;
         }
     }
 }
