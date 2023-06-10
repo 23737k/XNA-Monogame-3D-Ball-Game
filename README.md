@@ -8,6 +8,4 @@
 TGC, Tgcito  |  Apellido, Nombre
 ------------ | -------------
 | | Antezana, Kenti Gabriel |
-| |Spagnol, Martin |
-| | Ricciardi, Leandro|
 
