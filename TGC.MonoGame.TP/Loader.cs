@@ -151,32 +151,6 @@ namespace TGC.MonoGame.TP
                 Camera,200f,1.5f,6010,0f, "Z"));
             Obstacles.Add(new PeriodicObstacle(Matrix.CreateScale(5,10,80) * Matrix.CreateTranslation(1720,10,6010),new BoxPrimitive(GraphicsDevice),Simulation,
                 Camera,200f,1.5f,6010,0f, "Z"));
-
-
-
-/*
- 
-
-            WallsWorld[20].Decompose(out scale, out rotation, out position);
-            max = new Vector3(position.X + 20,position.Y + 10.1f,position.Z+40);
-            min = new Vector3(position.X - 20,position.Y - 10.1f,position.Z-40);
-            isWithinLimits = SphereCollider.Center == Vector3.Clamp(SphereCollider.Center, min, max);
-            WallsWorld[20] = Matrix.CreateScale(40,10,80) * Matrix.CreateTranslation(new Vector3(1690,0,200*MathF.Cos(1.5f*totalTime+MathHelper.Pi)+5600));
-            if(isWithinLimits)
-                SphereCollider.Center.Z += 200*MathF.Cos(1.5f*totalTime+MathHelper.Pi)+5600 - position.Z;
-
-            WallsWorld[21].Decompose(out scale, out rotation, out position);
-            max = new Vector3(position.X + 20,position.Y + 10.1f,position.Z+40);
-            min = new Vector3(position.X - 20,position.Y - 10.1f,position.Z-40);
-            isWithinLimits = SphereCollider.Center == Vector3.Clamp(SphereCollider.Center, min, max);
-            WallsWorld[21] = Matrix.CreateScale(40,10,80) * Matrix.CreateTranslation(new Vector3(1740,0,200*MathF.Cos(1.5f*totalTime)+6010));
-            if(isWithinLimits)
-                SphereCollider.Center.Z += 200*MathF.Cos(1.5f*totalTime)+6010 - position.Z;
-
-            CreateBoundingBoxes();
-
-        }*/
-
             
             //Paredes que se mueven
             Obstacles.Add(new PeriodicObstacle(Matrix.CreateScale(10,50,40) * Matrix.CreateTranslation(1720,30f,2800),new BoxPrimitive(GraphicsDevice),Simulation,
@@ -189,11 +163,6 @@ namespace TGC.MonoGame.TP
                 Camera,-40f,5f,1720f,MathHelper.PiOver4*3f, "X"));
             Obstacles.Add(new PeriodicObstacle(Matrix.CreateScale(10,50,40) * Matrix.CreateTranslation(1720,30f,3200),new BoxPrimitive(GraphicsDevice),Simulation,
                 Camera,40f,5f,1720f,MathF.PI, "X"));
-
-
-
-            
-
             return Obstacles;
         }
         public List<Obstacle> LoadStatics()

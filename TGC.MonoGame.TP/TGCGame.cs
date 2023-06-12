@@ -13,6 +13,7 @@ using TGC.MonoGame.TP.MapObjects;
 using TGC.MonoGame.TP.Spheres;
 using NumericVector3 = System.Numerics.Vector3;
 using TGC.MonoGame.TP.PBR;
+using TGC.MonoGame.TP.Checkpoints;
 using System.Linq;
 
 //
@@ -54,8 +55,8 @@ namespace TGC.MonoGame.TP
         private  float SALTO_BUFFER_VALUE = 1000f;
         private const float GRAVITY = -350f;
         //CHECKPOINTS DEBE ESTAR ORDENADO ASCENDENTEMENTE
-        //EL PRIMER VALOR DEBE SER LA POSICION INICIAL DE LA ESFERA
-        private Vector3[] CHECKPOINTS={new Vector3(0, 10.001f, 0),new Vector3(800f,110f,245f), new Vector3(1750,30,404), new Vector3(1700,50,4950)};
+        private Checkpoint[] Checkpoints {get;set;}
+        private int CurrentCheckpoint {get;set;}
         private const float COORDENADA_Y_MAS_BAJA = -80f;
         private GraphicsDeviceManager Graphics { get; }
         //EFFECTS
@@ -116,11 +117,22 @@ namespace TGC.MonoGame.TP
             OnGround = false;
         
             // Esfera
-            SpherePosition = new Vector3(1700,50,4800);
+            SpherePosition =new Vector3(3050,95,2245);
             SphereWorld = Matrix.CreateTranslation(SpherePosition);
             SphereVelocity = Vector3.Zero;
             SphereFrontDirection =  Vector3.Backward;
             SphereRotationMatrix = Matrix.Identity;
+
+            Checkpoints = new Checkpoint[]
+            {
+                new Checkpoint(new Vector3(0, 10.001f, 0)),
+                new Checkpoint(new Vector3(800f,110f,245f)),
+                new Checkpoint(new Vector3(2230f,30,435f)),
+                new Checkpoint(new Vector3(3050,95,2245)),
+                new Checkpoint(new Vector3(1720,10,3175)),
+                new Checkpoint(new Vector3(1700,60,4800)),
+            };
+            CurrentCheckpoint = 0;
 
             //Texture Index
             //Elegimos el texture index que querramos para modificar los valores de la textura, salto, etc.
@@ -219,9 +231,7 @@ namespace TGC.MonoGame.TP
             BodyReference body = Simulation.Bodies.GetBodyReference(SphereHandle);
             var prevLinearVelocity = body.Velocity.Linear.Y;
             var prevAngularVelocity = body.Velocity.Angular.Y;
-            if (PelotaSeCayo()){
-                VolverAlUltimoCheckpoint();
-            }
+            CheckpointManager();
 
             Simulation.Timestep(1 / 60f, ThreadDispatcher);
 
@@ -323,33 +333,6 @@ namespace TGC.MonoGame.TP
         protected bool PelotaSeCayo(){
             return SpherePosition.Y < COORDENADA_Y_MAS_BAJA;
         }
-
-        protected void VolverAlUltimoCheckpoint(){
-        //Reconoce el último checkpoint por el valor de coordenada X
-            //más cercano y menor a la coordenada X de la posición actual de la esfera
-
-            //Supone que CHECKPOINT esta en orden ascendente
-            bool found = false;
-            var bodyPosition = Simulation.Bodies.GetBodyReference(SphereHandle).Pose.Position;
-
-            for(int i = 0; i < CHECKPOINTS.Length - 1; i++){
-                if (CHECKPOINTS[i].X < SpherePosition.X){
-                    SpherePosition = ToNumericVector3(CHECKPOINTS[i]);
-                    bodyPosition = ToNumericVector3(SpherePosition);
-                    found = true;
-                }
-            }
-            
-            for(int i = 0; i < CHECKPOINTS.Length - 2; i++){
-                if(CHECKPOINTS[i].Z < SpherePosition.Z){
-                    SpherePosition = ToNumericVector3(CHECKPOINTS[i]);
-                    bodyPosition = ToNumericVector3(SpherePosition);
-                    found = true;
-                }
-            }
-            //Si se cae atras del primer checkpoint
-            if (!found) SpherePosition = ToNumericVector3(CHECKPOINTS[0]);
-        }
         
         protected override void Draw(GameTime gameTime)
         {
@@ -365,13 +348,6 @@ namespace TGC.MonoGame.TP
              //Dibujo los cilindros
             foreach(Obstacle obstacle in KinematicObstacles)    {obstacle.Render(SimpleColor,gameTime);}
             foreach(Obstacle obstacle in PeriodicObstacles)    {obstacle.Render(SimpleColor,gameTime);}
-/*
-            for (int i = 0; i < PowerUpsWorld.Length; i++)
-            {
-                var matrix = PowerUpsWorld[i];
-                DrawGeometricPrimitive(matrix, YellowBox);
-            }
-*/
 
             var worldView = SphereWorld * Camera.View;
             SphereEffect.Parameters["matWorld"].SetValue(SphereWorld);
@@ -387,15 +363,6 @@ namespace TGC.MonoGame.TP
 /*
         private void DrawCoin(float x, float y, float z){
              DrawGeometry(new CoinPrimitive(GraphicsDevice,1,10,40), new Vector3(x + 1f, y + 1f, z + 1f), 1f, 0, MathHelper.PiOver2);
-        }
-*/
-/*
-        private void DrawGeometricPrimitive(GeometricPrimitive geometricPrimitive, Matrix world, Effect effect){
-            var viewProjection = Camera.View * Camera.Projection;
-            effect.Parameters["World"].SetValue(world);
-            effect.Parameters["InverseTransposeWorld"]?.SetValue(Matrix.Invert(Matrix.Transpose(world)));
-            effect.Parameters["WorldViewProjection"]?.SetValue(world * viewProjection);
-            geometricPrimitive.Draw(effect);
         }
 */
 
@@ -489,6 +456,24 @@ namespace TGC.MonoGame.TP
             // Libero los recursos.
             Content.Unload();
             base.UnloadContent();
+        }
+
+        private void CheckpointManager()
+        {
+            var bodyRef = Simulation.Bodies.GetBodyReference(SphereHandle);
+            if(PelotaSeCayo())
+            {
+                bodyRef.Pose.Position = ToNumericVector3(Checkpoints[CurrentCheckpoint].Position);
+                return;
+            }
+            for(int i= CurrentCheckpoint; i< Checkpoints.Length; i++)
+            {
+                if(Checkpoints[i].IsWithinBounds(bodyRef.Pose.Position))
+                {
+                    CurrentCheckpoint = i;
+                    break;
+                }
+            }
         }
     }
 }
