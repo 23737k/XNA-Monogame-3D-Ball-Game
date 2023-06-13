@@ -8,7 +8,7 @@ using NumericVector3 = System.Numerics.Vector3;
 
 namespace TGC.MonoGame.TP.MapObjects
 {
-    public class StaticObstacle : Obstacle
+    public class StaticObstacle
     {
         public Simulation Simulation {get;set;}
         public Matrix World {get;set;}
@@ -40,7 +40,8 @@ namespace TGC.MonoGame.TP.MapObjects
             Vector3 scale, translation;
             Quaternion rotation; 
             this.World.Decompose(out scale, out rotation , out translation);
-            StaticHandle = this.Simulation.Statics.Add(new StaticDescription(new NumericVector3(translation.X, translation.Y, translation.Z),
+            StaticHandle = this.Simulation.Statics.Add(new StaticDescription(new NumericVector3(translation.X, translation.Y, translation.Z),new System.Numerics.Quaternion(rotation.X,
+                rotation.Y, rotation.Z, rotation.W),
             this.Simulation.Shapes.Add(new Box(scale.X, scale.Y, scale.Z))));   
         }
     }

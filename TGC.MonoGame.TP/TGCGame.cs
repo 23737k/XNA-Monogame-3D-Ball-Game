@@ -50,10 +50,10 @@ namespace TGC.MonoGame.TP
 
         private float LINEAR_SPEED= 100;
         private float JUMPING_SPEED = 50F;
-        private const float CAMERA_FOLLOW_RADIUS = 70f;
+        private const float CAMERA_FOLLOW_RADIUS = 65;
         private const float CAMERA_UP_DISTANCE = 30f;
         private  float SALTO_BUFFER_VALUE = 1000f;
-        private const float GRAVITY = -350f;
+        private const float GRAVITY = -450;
         //CHECKPOINTS DEBE ESTAR ORDENADO ASCENDENTEMENTE
         private Checkpoint[] Checkpoints {get;set;}
         private int CurrentCheckpoint {get;set;}
@@ -70,6 +70,7 @@ namespace TGC.MonoGame.TP
         private SphereType[] SpheresArray; 
         //
         private SpriteBatch SpriteBatch { get; set; }
+        private SpriteFont SpriteFont {get;set;}
         private Matrix View { get; set; }
         private Matrix Projection { get; set; }
         //SPHERE
@@ -94,9 +95,14 @@ namespace TGC.MonoGame.TP
         private SimpleThreadDispatcher ThreadDispatcher { get; set; }
         private Sphere BepuSphere { get; set; }
 
-        private List<Obstacle> PeriodicObstacles { get; set; }
-        private List<Obstacle> StaticObstacles {get;set;} 
-        private List<Obstacle> KinematicObstacles { get; set; }
+        private List<PeriodicObstacle> PeriodicObstacles { get; set; }
+        private List<StaticObstacle> StaticObstacles {get;set;} 
+        private List<MovingObstacle> MovingObstacles { get; set; }
+        private bool FinalBossEnabled {get;set;} = true;
+        private BodyHandle BossSphereHandle {get;set;}
+        private Loader Loader {get;set;}
+
+        private bool FinalBossStage {get;set;} =false;
 
         /// <summary>
         ///     Se llama una sola vez, al principio cuando se ejecuta el ejemplo.
@@ -117,7 +123,8 @@ namespace TGC.MonoGame.TP
             OnGround = false;
         
             // Esfera
-            SpherePosition =new Vector3(3050,95,2245);
+            SpherePosition = new Vector3(1720,10,6342);//new Vector3(1732,20, 8073);
+            //
             SphereWorld = Matrix.CreateTranslation(SpherePosition);
             SphereVelocity = Vector3.Zero;
             SphereFrontDirection =  Vector3.Backward;
@@ -129,10 +136,11 @@ namespace TGC.MonoGame.TP
                 new Checkpoint(new Vector3(800f,110f,245f)),
                 new Checkpoint(new Vector3(2230f,30,435f)),
                 new Checkpoint(new Vector3(3050,95,2245)),
-                new Checkpoint(new Vector3(1720,10,3175)),
-                new Checkpoint(new Vector3(1700,60,4800)),
+                new Checkpoint(new Vector3(1723,10,2537)),
+                new Checkpoint(new Vector3(1725,10,4800)),
+                new Checkpoint(new Vector3(1720,10,6302))
             };
-            CurrentCheckpoint = 0;
+            CurrentCheckpoint = 3;
 
             //Texture Index
             //Elegimos el texture index que querramos para modificar los valores de la textura, salto, etc.
@@ -203,6 +211,8 @@ namespace TGC.MonoGame.TP
             
             //Bepu
             LoadPhysics();
+
+            SpriteFont = Content.Load<SpriteFont>(ContentFolderSpriteFonts + "CascadiaCode/CascadiaCodePL");
             base.LoadContent();
         }
 
@@ -214,13 +224,13 @@ namespace TGC.MonoGame.TP
 
             var upDistance = Vector3.Up * CAMERA_UP_DISTANCE;
 
+
             Camera.Position = SpherePosition + orbitalPosition + upDistance;
 
             Camera.TargetPosition = SpherePosition;
 
             Camera.BuildView();
         }
-        private bool canDraw = true;
         protected override void Update(GameTime gameTime)
         {
 
@@ -231,7 +241,21 @@ namespace TGC.MonoGame.TP
             BodyReference body = Simulation.Bodies.GetBodyReference(SphereHandle);
             var prevLinearVelocity = body.Velocity.Linear.Y;
             var prevAngularVelocity = body.Velocity.Angular.Y;
+
+            /*
+            
+            if(SpherePosition == Vector3.Clamp(SpherePosition, new Vector3(1673,9.9f,6439), new Vector3(1768,10,6517)) && FinalBossEnabled)
+            {
+                BossSphereHandle = Loader.LoadFinalBoss();
+                FinalBossEnabled = false;
+                FinalBossStage = true;
+            }
+            */
+            
+            
             CheckpointManager();
+            ObstacleContact();
+
 
             Simulation.Timestep(1 / 60f, ThreadDispatcher);
 
@@ -244,13 +268,7 @@ namespace TGC.MonoGame.TP
                             Matrix.CreateTranslation(new Vector3(SpherePosition.X, SpherePosition.Y, SpherePosition.Z));
             SphereWorld = world;
             SpherePosition = pose.Position;
-
-            if(SpherePosition.X > 3000 && SpherePosition.Z > 2365 && canDraw)
-            {
-                KinematicObstacles.AddRange(new Loader(Simulation,GraphicsDevice, Camera).LoadRollingCylinders());
-                canDraw=false;
-            }
-                
+               
 
             var bodyRef = Simulation.Bodies.GetBodyReference(SphereHandle);
 
@@ -290,11 +308,11 @@ namespace TGC.MonoGame.TP
 
             if (Keyboard.GetState().IsKeyDown(Keys.A) && !PelotaSeCayo())
             {
-                bodyRef.ApplyLinearImpulse(ToNumericVector3(-SphereLateralDirection * LINEAR_SPEED));
+                bodyRef.ApplyLinearImpulse(ToNumericVector3(-SphereLateralDirection * LINEAR_SPEED*0.5f));
             }
             if (Keyboard.GetState().IsKeyDown(Keys.D) && !PelotaSeCayo())
             {
-                bodyRef.ApplyLinearImpulse(ToNumericVector3(SphereLateralDirection * LINEAR_SPEED));
+                bodyRef.ApplyLinearImpulse(ToNumericVector3(SphereLateralDirection * LINEAR_SPEED*0.5f));
             }
             
             AdministrarSalto(deltaTime);
@@ -344,16 +362,33 @@ namespace TGC.MonoGame.TP
             SimpleColor.Parameters["Tiling"]?.SetValue(Vector2.One);
 
             //Dibujo el suelo
-            foreach(Obstacle obstacle in StaticObstacles)   {obstacle.Render(SimpleColor,gameTime);}
+            foreach(StaticObstacle obstacle in StaticObstacles)   {obstacle.Render(SimpleColor,gameTime);}
              //Dibujo los cilindros
-            foreach(Obstacle obstacle in KinematicObstacles)    {obstacle.Render(SimpleColor,gameTime);}
-            foreach(Obstacle obstacle in PeriodicObstacles)    {obstacle.Render(SimpleColor,gameTime);}
+            foreach(MovingObstacle obstacle in MovingObstacles)    {obstacle.Render(SimpleColor,gameTime);}
+            foreach(PeriodicObstacle obstacle in PeriodicObstacles)    {obstacle.Render(SimpleColor,gameTime);}
 
             var worldView = SphereWorld * Camera.View;
             SphereEffect.Parameters["matWorld"].SetValue(SphereWorld);
             SphereEffect.Parameters["matWorldViewProj"].SetValue(worldView * Camera.Projection);
             SphereEffect.Parameters["matInverseTransposeWorld"].SetValue(Matrix.Transpose(Matrix.Invert(SphereWorld)));
             SphereModel.Meshes.FirstOrDefault().Draw();
+
+            
+            if(FinalBossStage)
+            {
+            var pose = Simulation.Bodies.GetBodyReference(BossSphereHandle).Pose;
+            var bossWorldView = Matrix.CreateScale(40) * Matrix.CreateFromQuaternion(pose.Orientation) * Matrix.CreateTranslation(pose.Position) * Camera.View;
+            SphereEffect.Parameters["matWorld"].SetValue(bossWorldView);
+            SphereEffect.Parameters["matWorldViewProj"].SetValue(bossWorldView * Camera.Projection);
+            SphereEffect.Parameters["matInverseTransposeWorld"].SetValue(Matrix.Transpose(Matrix.Invert(bossWorldView)));
+            SphereModel.Meshes.FirstOrDefault().Draw();
+            }
+
+
+            SpriteBatch.Begin(SpriteSortMode.BackToFront, BlendState.Opaque, SamplerState.PointClamp, DepthStencilState.Default, RasterizerState.CullCounterClockwise);
+            var position= new Vector3(MathF.Round(SpherePosition.X,1), MathF.Round(SpherePosition.Y,1), MathF.Round(SpherePosition.Z,1));
+            SpriteBatch.DrawString(SpriteFont, "Position:" + position.ToString(), new Vector2(GraphicsDevice.Viewport.Width - 500, 0), Color.White);
+            SpriteBatch.End();
 
             //InclinedTrackModel.Draw(Matrix.CreateScale(1.5f) * Matrix.CreateRotationX(-MathHelper.PiOver2)*Matrix.CreateRotationY(-MathHelper.PiOver2)*TrackWorld* Matrix.CreateTranslation(864.1f,100f,415f) ,Camera.View, Camera.Projection);
 
@@ -389,10 +424,10 @@ namespace TGC.MonoGame.TP
                 new PoseIntegratorCallbacks(new NumericVector3(0, GRAVITY, 0)),
                 new SolveDescription(8, 1));
 
-            var loader = new Loader(Simulation,GraphicsDevice,Camera);
-            StaticObstacles = loader.LoadStatics();
-            KinematicObstacles=  loader.LoadKinematics();
-            PeriodicObstacles = loader.LoadPeriodics();
+            Loader = new Loader(Simulation,GraphicsDevice,Camera);
+            StaticObstacles = Loader.LoadStatics();
+            MovingObstacles=  Loader.LoadKinematics();
+            PeriodicObstacles = Loader.LoadPeriodics();
 
 
             var bodyDescription = BodyDescription.CreateConvexDynamic(ToNumericVector3(SpherePosition), 5f,
@@ -464,6 +499,8 @@ namespace TGC.MonoGame.TP
             if(PelotaSeCayo())
             {
                 bodyRef.Pose.Position = ToNumericVector3(Checkpoints[CurrentCheckpoint].Position);
+                FinalBossEnabled = true;
+                FinalBossStage = false;
                 return;
             }
             for(int i= CurrentCheckpoint; i< Checkpoints.Length; i++)
@@ -475,5 +512,31 @@ namespace TGC.MonoGame.TP
                 }
             }
         }
+    
+
+        private void ObstacleContact()
+        {
+            var boundingSphere = new BepuUtilities.BoundingSphere(ToNumericVector3(SpherePosition), 5f);
+            for(int i=1; i<4; i++)
+            {
+                if(Simulation.Bodies.GetBodyReference(PeriodicObstacles[i].BodyHandle).BoundingBox.Intersects(
+                     ref boundingSphere))
+                    {
+                        Simulation.Bodies.GetBodyReference(SphereHandle).Pose.Position = ToNumericVector3(Checkpoints[CurrentCheckpoint].Position);
+                        FinalBossStage = false;
+                        break;
+                    }
+            }
+
+
+            var bossBoundingSphere = new BoundingSphere(ToNumericVector3(Simulation.Bodies.GetBodyReference(BossSphereHandle).Pose.Position), 40f);
+            if(bossBoundingSphere.Intersects(new BoundingSphere(ToNumericVector3(SpherePosition), 5f)))
+                {
+                    Simulation.Bodies.GetBodyReference(SphereHandle).Pose.Position = ToNumericVector3(Checkpoints[CurrentCheckpoint].Position);
+                    FinalBossEnabled = true;
+                    FinalBossStage = false;
+                }
+        }
     }
+
 }

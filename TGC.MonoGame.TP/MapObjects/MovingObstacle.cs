@@ -9,7 +9,7 @@ using NumericVector3 = System.Numerics.Vector3;
 
 namespace TGC.MonoGame.TP.MapObjects
 {
-    public class MovingObstacle : Obstacle
+    public class MovingObstacle
     {
         public Simulation Simulation {get;set;}
         public Matrix World {get;set;}
