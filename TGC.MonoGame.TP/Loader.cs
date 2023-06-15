@@ -264,12 +264,12 @@ namespace TGC.MonoGame.TP
                 Matrix.CreateScale(70,5,10) * Matrix.CreateTranslation(new Vector3(1720, 7.5f, 7348)),
 
 //islas boss
-                Matrix.CreateScale(20,5,30) * Matrix.CreateTranslation(new Vector3(1720, 10, 7464)),
-                Matrix.CreateScale(20,5,30) * Matrix.CreateTranslation(new Vector3(1720, 10, 7514)),
-                Matrix.CreateScale(20,5,30) * Matrix.CreateTranslation(new Vector3(1740, 10, 7565)),
-                Matrix.CreateScale(20,5,30) * Matrix.CreateTranslation(new Vector3(1720, 10, 7615)),
-                Matrix.CreateScale(20,5,30) * Matrix.CreateTranslation(new Vector3(1695, 10, 7665)),
-                Matrix.CreateScale(20,5,30) * Matrix.CreateTranslation(new Vector3(1720,10, 7715)),
+                Matrix.CreateScale(20,5,30) * Matrix.CreateTranslation(new Vector3(1720, 10, 7484)),
+                //Matrix.CreateScale(20,5,30) * Matrix.CreateTranslation(new Vector3(1720, 10, 7514)),
+                Matrix.CreateScale(20,5,30) * Matrix.CreateTranslation(new Vector3(1740, 10, 7564)),
+                //Matrix.CreateScale(20,5,30) * Matrix.CreateTranslation(new Vector3(1720, 10, 7615)),
+                Matrix.CreateScale(20,5,30) * Matrix.CreateTranslation(new Vector3(1720, 10, 7644)),
+                Matrix.CreateScale(20,5,30) * Matrix.CreateTranslation(new Vector3(1690,10, 7724)),
 
                 Matrix.CreateScale(70,10,100) * Matrix.CreateTranslation(new Vector3(1720,0, 7815)),
                 Matrix.CreateScale(70,10,200) * Matrix.CreateTranslation(new Vector3(1720,0, 8005)),
@@ -331,7 +331,7 @@ namespace TGC.MonoGame.TP
                             CreateKinematic(new RigidPose(position), 
             new CollidableDescription(Simulation.Shapes.Add(new Sphere(20f)), 0.1f, ContinuousDetection.Continuous(1e-4f, 1e-4f)), new BodyActivityDescription(-0.1f)));
 
-            Simulation.Bodies.GetBodyReference(bodyHandle).Velocity.Linear= new NumericVector3(0,0,100);
+            Simulation.Bodies.GetBodyReference(bodyHandle).Velocity.Linear= new NumericVector3(0,0,120);
             Simulation.Bodies.GetBodyReference(bodyHandle).Velocity.Angular= new NumericVector3(15,0,0);
             return bodyHandle;
         }
