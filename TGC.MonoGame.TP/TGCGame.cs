@@ -104,6 +104,14 @@ namespace TGC.MonoGame.TP
 
         private bool FinalBossStage {get;set;} =false;
 
+        //Skybox
+        private float Angle { get; set; }
+        private Vector3 CameraPosition { get; set; }
+        private Vector3 CameraTarget { get; set; }
+        private float Distance { get; set; }
+        private Vector3 ViewVector { get; set; }
+        private SkyBox SkyBox { get; set; }
+
         /// <summary>
         ///     Se llama una sola vez, al principio cuando se ejecuta el ejemplo.
         ///     Escribir aqui el codigo de inicializacion: el procesamiento que podemos pre calcular para nuestro juego.
@@ -155,17 +163,13 @@ namespace TGC.MonoGame.TP
 
             LINEAR_SPEED = SpheresArray[textureIndex].speed();
             SALTO_BUFFER_VALUE = SpheresArray[textureIndex].jump();
-
+/*
             View = Matrix.CreateLookAt(Vector3.UnitZ * 150, Vector3.Zero, Vector3.Up);
             Projection =
                 Matrix.CreatePerspectiveFieldOfView(MathHelper.PiOver4, GraphicsDevice.Viewport.AspectRatio, 1, 250);
+                         
+*/
             Camera = new TargetCamera(GraphicsDevice.Viewport.AspectRatio, new Vector3(0, 20, 60), Vector3.Zero);
-         
-
-              PowerUpsWorld = new Matrix[]
-            {
-                Matrix.CreateScale(40, 10f, 80) * Matrix.CreateTranslation(new Vector3(2720,20f,435f))
-            };            
 
 
             UpdateCamera();
@@ -181,25 +185,28 @@ namespace TGC.MonoGame.TP
         {
             // Aca es donde deberiamos cargar todos los contenido necesarios antes de iniciar el juego.
             SpriteBatch = new SpriteBatch(GraphicsDevice);
-           /*
-            InclinedTrackBox.Center = (TrackWorld* Matrix.CreateTranslation(864.1f,100f,415f)).Translation;
-            // Then set its orientation!
-            InclinedTrackBox.Orientation =Matrix.CreateRotationX(-MathHelper.PiOver2)*Matrix.CreateRotationY(-MathHelper.PiOver2);    
-*/
+            
+            var skyBox = Content.Load<Model>(ContentFolder3D + "skybox/cube");
+            var skyBoxTexture = Content.Load<TextureCube>(ContentFolderTextures + "/skyboxes/skybox/skybox");
+            //var skyBoxTexture = Content.Load<TextureCube>(ContentFolderTextures + "/skyboxes/sun-in-space/sun-in-space");
+            //var skyBoxTexture = Content.Load<TextureCube>(ContentFolderTextures + "skybox");
+            var skyBoxEffect = Content.Load<Effect>(ContentFolderEffects + "SkyBox");
+            SkyBox = new SkyBox(skyBox, skyBoxTexture, skyBoxEffect, 1000);
+
 
             //Luz
             SimpleColor = Content.Load<Effect>(ContentFolderEffects + "ColorShader");
             SimpleColor.Parameters["lightPosition"].SetValue(LightPosition);
-            SimpleColor.Parameters["ambientColor"]?.SetValue(new Vector3(1f, 1f, 1f));
-            SimpleColor.Parameters["diffuseColor"]?.SetValue(new Vector3(1f, 1f, 1f));
+            SimpleColor.Parameters["ambientColor"]?.SetValue(new Vector3(0.8f, 0.95f,  1f));
+            SimpleColor.Parameters["diffuseColor"]?.SetValue(new Vector3(0.8f, 0.95f,  1f));
             SimpleColor.Parameters["specularColor"]?.SetValue(new Vector3(1,1,1));
 
             SimpleColor.Parameters["KAmbient"]?.SetValue(0.3f);
             SimpleColor.Parameters["KDiffuse"]?.SetValue(0.7f);
             SimpleColor.Parameters["KSpecular"]?.SetValue(0.4f);
             SimpleColor.Parameters["shininess"]?.SetValue(10f);
-            var texture = Content.Load<Texture2D>(ContentFolderTextures +"tiles/" +"color");
-            var normal = Content.Load<Texture2D>(ContentFolderTextures + "tiles/" + "normal");
+            var texture = Content.Load<Texture2D>(ContentFolderTextures +"piso/" +"color");
+            var normal = Content.Load<Texture2D>(ContentFolderTextures + "piso/" + "normal");
             SimpleColor.Parameters["ModelTexture"].SetValue(texture);
             SimpleColor.Parameters["NormalTexture"].SetValue(normal);
 
@@ -242,7 +249,7 @@ namespace TGC.MonoGame.TP
             var prevLinearVelocity = body.Velocity.Linear.Y;
             var prevAngularVelocity = body.Velocity.Angular.Y;
 
-            /*
+            
             
             if(SpherePosition == Vector3.Clamp(SpherePosition, new Vector3(1673,9.9f,6439), new Vector3(1768,10,6517)) && FinalBossEnabled)
             {
@@ -250,7 +257,7 @@ namespace TGC.MonoGame.TP
                 FinalBossEnabled = false;
                 FinalBossStage = true;
             }
-            */
+            
             
             
             CheckpointManager();
@@ -317,23 +324,6 @@ namespace TGC.MonoGame.TP
             
             AdministrarSalto(deltaTime);
         }
-/*
-        private void SolvePowerUps(BoundingBox boxCollider)
-        {       
-            bool isApowerUp = false;
-
-            for(int i = 0; i < PowerUpsWorld.Length; i++){
-                if(PowerUpBoxes[i] == boxCollider)
-                    {
-                        isApowerUp = true;
-                        break;
-                    }
-            }
-
-            if(isApowerUp)
-                SphereVelocity -= SphereFrontDirection * LINEAR_SPEED * 5; 
-        }    
-*/
         protected void AdministrarSalto(float deltaTime){
             var bodyRef= Simulation.Bodies.GetBodyReference(SphereHandle);
             if ((Keyboard.GetState().IsKeyDown(Keys.Space)|| Keyboard.GetState().IsKeyDown(Keys.Up))&& PelotaEstaEnElSuelo())
@@ -356,6 +346,15 @@ namespace TGC.MonoGame.TP
         {
             // Aca deberiamos poner toda la logia de renderizado del juego.
             GraphicsDevice.Clear(Color.Black);
+            var originalRasterizerState = GraphicsDevice.RasterizerState;
+            var rasterizerState = new RasterizerState();
+            rasterizerState.CullMode = CullMode.None;
+            Graphics.GraphicsDevice.RasterizerState = rasterizerState;
+
+            //TODO why I have to set 1 in the alpha channel in the fx file?
+            SkyBox.Draw(Camera.View, Camera.Projection, Camera.Position);
+
+            GraphicsDevice.RasterizerState = originalRasterizerState;
 
             SphereEffect.Parameters["eyePosition"].SetValue(Camera.Position);
             SimpleColor.Parameters["eyePosition"]?.SetValue(Camera.Position);
