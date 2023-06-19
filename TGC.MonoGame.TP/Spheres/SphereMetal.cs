@@ -3,7 +3,7 @@ namespace TGC.MonoGame.TP {
     public class SphereMetal : SphereType {
         
         public string folder(){
-            return "metal/";
+            return "metal1/";
         }
 
         public float jump() {

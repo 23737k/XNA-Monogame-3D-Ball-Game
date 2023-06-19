@@ -1,9 +1,9 @@
 namespace TGC.MonoGame.TP.Spheres {
 
-    public class SphereGround : SphereType {
+    public class SpherePlastic : SphereType {
         
         public string folder(){
-            return "ground/";
+            return "plastic/";
         }
 
         public float jump() {
@@ -11,7 +11,7 @@ namespace TGC.MonoGame.TP.Spheres {
         }
 
         public float speed() {
-            return 100f;
+            return 70;
         }
 
 

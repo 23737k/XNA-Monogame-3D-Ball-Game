@@ -50,14 +50,14 @@ namespace TGC.MonoGame.TP
 
         private float LINEAR_SPEED= 100;
         private float JUMPING_SPEED = 50F;
-        private const float CAMERA_FOLLOW_RADIUS = 65;
+        private const float CAMERA_FOLLOW_RADIUS = 65f;
         private const float CAMERA_UP_DISTANCE = 30f;
         private  float SALTO_BUFFER_VALUE = 1000f;
         private const float GRAVITY = -450;
         //CHECKPOINTS DEBE ESTAR ORDENADO ASCENDENTEMENTE
         private Checkpoint[] Checkpoints {get;set;}
         private int CurrentCheckpoint {get;set;}
-        private const float COORDENADA_Y_MAS_BAJA = -80f;
+        private const float COORDENADA_Y_MAS_BAJA = -100;
         private GraphicsDeviceManager Graphics { get; }
         //EFFECTS
         private Effect SimpleColor { get; set; }
@@ -112,6 +112,8 @@ namespace TGC.MonoGame.TP
         private Vector3 ViewVector { get; set; }
         private SkyBox SkyBox { get; set; }
 
+        private Model PowerupModel {get;set;}
+
         /// <summary>
         ///     Se llama una sola vez, al principio cuando se ejecuta el ejemplo.
         ///     Escribir aqui el codigo de inicializacion: el procesamiento que podemos pre calcular para nuestro juego.
@@ -131,7 +133,7 @@ namespace TGC.MonoGame.TP
             OnGround = false;
         
             // Esfera
-            SpherePosition = new Vector3(1720,10,6342);//new Vector3(1732,20, 8073);
+            SpherePosition = new Vector3(0,50,0);//new Vector3(1732,20, 8073);
             //
             SphereWorld = Matrix.CreateTranslation(SpherePosition);
             SphereVelocity = Vector3.Zero;
@@ -148,16 +150,16 @@ namespace TGC.MonoGame.TP
                 new Checkpoint(new Vector3(1725,10,4800)),
                 new Checkpoint(new Vector3(1720,10,6302))
             };
-            CurrentCheckpoint = 3;
+            CurrentCheckpoint = 6;
 
             //Texture Index
             //Elegimos el texture index que querramos para modificar los valores de la textura, salto, etc.
-            textureIndex = 0;
+            textureIndex = 2;
             SpheresArray = new SphereType[]
             {   
                 new SphereMarble(),
                 new SphereMetal(),
-                new SphereGround() 
+                new SpherePlastic() 
             };
     
 
@@ -188,8 +190,7 @@ namespace TGC.MonoGame.TP
             
             var skyBox = Content.Load<Model>(ContentFolder3D + "skybox/cube");
             var skyBoxTexture = Content.Load<TextureCube>(ContentFolderTextures + "/skyboxes/skybox/skybox");
-            //var skyBoxTexture = Content.Load<TextureCube>(ContentFolderTextures + "/skyboxes/sun-in-space/sun-in-space");
-            //var skyBoxTexture = Content.Load<TextureCube>(ContentFolderTextures + "skybox");
+            //var skyBoxTexture = Content.Load<TextureCube>(ContentFolderTextures + "/skyboxes/sunset/sunset");
             var skyBoxEffect = Content.Load<Effect>(ContentFolderEffects + "SkyBox");
             SkyBox = new SkyBox(skyBox, skyBoxTexture, skyBoxEffect, 1000);
 
@@ -214,8 +215,7 @@ namespace TGC.MonoGame.TP
             InitializeEffect();
             LoadTextures();
             SphereModel = Content.Load<Model>(ContentFolder3D + "sphere");
-            SphereModel.Meshes.FirstOrDefault().MeshParts.FirstOrDefault().Effect = SphereEffect;
-            
+            SphereModel.Meshes.FirstOrDefault().MeshParts.FirstOrDefault().Effect = SphereEffect;            
             //Bepu
             LoadPhysics();
 
@@ -226,10 +226,12 @@ namespace TGC.MonoGame.TP
         private void UpdateCamera()
         {
             var sphereBackDirection = -Vector3.Transform(Vector3.Forward, SphereRotationMatrix);
-        
-            var orbitalPosition = sphereBackDirection * CAMERA_FOLLOW_RADIUS;
+            var camera_follow_radius= CAMERA_FOLLOW_RADIUS;
+            var camera_up_distance = CAMERA_UP_DISTANCE;
+            
+            var orbitalPosition = sphereBackDirection * camera_follow_radius;
 
-            var upDistance = Vector3.Up * CAMERA_UP_DISTANCE;
+            var upDistance = Vector3.Up * camera_up_distance;
 
 
             Camera.Position = SpherePosition + orbitalPosition + upDistance;
@@ -250,14 +252,14 @@ namespace TGC.MonoGame.TP
             var prevAngularVelocity = body.Velocity.Angular.Y;
 
             
-            
-            if(SpherePosition == Vector3.Clamp(SpherePosition, new Vector3(1673,9.9f,6439), new Vector3(1768,10,6517)) && FinalBossEnabled)
+            /*
+            if(SpherePosition == Vector3.Clamp(SpherePosition, new Vector3(1673,9.9f,6439), new Vector3(1768,40,6517)) && FinalBossEnabled)
             {
                 BossSphereHandle = Loader.LoadFinalBoss();
                 FinalBossEnabled = false;
                 FinalBossStage = true;
             }
-            
+            */
             
             
             CheckpointManager();
@@ -279,8 +281,8 @@ namespace TGC.MonoGame.TP
 
             var bodyRef = Simulation.Bodies.GetBodyReference(SphereHandle);
 
-            if(MathHelper.Distance(bodyRef.Velocity.Linear.Y, prevLinearVelocity) < 0.5 
-               && MathHelper.Distance(bodyRef.Velocity.Angular.Y, prevAngularVelocity) < 0.5) OnGround = true;
+            if(MathHelper.Distance(bodyRef.Velocity.Linear.Y, prevLinearVelocity) < 0.2f 
+               && MathHelper.Distance(bodyRef.Velocity.Angular.Y, prevAngularVelocity) < 0.2f) OnGround = true;
 
             // Capturar Input teclado
             if (Keyboard.GetState().IsKeyDown(Keys.Escape))
@@ -352,7 +354,7 @@ namespace TGC.MonoGame.TP
             Graphics.GraphicsDevice.RasterizerState = rasterizerState;
 
             //TODO why I have to set 1 in the alpha channel in the fx file?
-            SkyBox.Draw(Camera.View, Camera.Projection, Camera.Position);
+            SkyBox.Draw(Camera.View, Camera.Projection, SpherePosition+new Vector3(0,-300,0) );
 
             GraphicsDevice.RasterizerState = originalRasterizerState;
 
@@ -376,13 +378,23 @@ namespace TGC.MonoGame.TP
             if(FinalBossStage)
             {
             var pose = Simulation.Bodies.GetBodyReference(BossSphereHandle).Pose;
-            var bossWorldView = Matrix.CreateScale(40) * Matrix.CreateFromQuaternion(pose.Orientation) * Matrix.CreateTranslation(pose.Position) * Camera.View;
+            var bossWorldView = Matrix.CreateScale(45f) * Matrix.CreateFromQuaternion(pose.Orientation) * Matrix.CreateTranslation(pose.Position) * Camera.View;
             SphereEffect.Parameters["matWorld"].SetValue(bossWorldView);
             SphereEffect.Parameters["matWorldViewProj"].SetValue(bossWorldView * Camera.Projection);
             SphereEffect.Parameters["matInverseTransposeWorld"].SetValue(Matrix.Transpose(Matrix.Invert(bossWorldView)));
             SphereModel.Meshes.FirstOrDefault().Draw();
             }
 
+            /*
+            var powerup=  new BoxPrimitive(GraphicsDevice);
+             var wordlViewProjection =Matrix.CreateScale(10f) *Matrix.CreateTranslation(0,15,0) * Camera.View * Camera.Projection;
+              SimpleColor.Parameters["ModelTexture"].SetValue(Content.Load<Texture2D>(ContentFolderTextures +"powerup"));
+              SimpleColor.Parameters["NormalTexture"].SetValue(Content.Load<Texture2D>(ContentFolderTextures +"normal"));
+            SimpleColor.Parameters["World"].SetValue(Matrix.CreateScale(5f)*Matrix.CreateTranslation(0,15,0));
+            SimpleColor.Parameters["WorldViewProjection"].SetValue(wordlViewProjection);
+            SimpleColor.Parameters["InverseTransposeWorld"].SetValue(Matrix.Transpose(Matrix.CreateScale(5f)*Matrix.Invert(Matrix.CreateTranslation(0,15,0))));
+            powerup.Draw(SimpleColor);
+            */
 
             SpriteBatch.Begin(SpriteSortMode.BackToFront, BlendState.Opaque, SamplerState.PointClamp, DepthStencilState.Default, RasterizerState.CullCounterClockwise);
             var position= new Vector3(MathF.Round(SpherePosition.X,1), MathF.Round(SpherePosition.Y,1), MathF.Round(SpherePosition.Z,1));
@@ -529,7 +541,7 @@ namespace TGC.MonoGame.TP
 
 
             var bossBoundingSphere = new BoundingSphere(ToNumericVector3(Simulation.Bodies.GetBodyReference(BossSphereHandle).Pose.Position), 40f);
-            if(bossBoundingSphere.Intersects(new BoundingSphere(ToNumericVector3(SpherePosition), 5f)))
+            if(bossBoundingSphere.Intersects(new BoundingSphere(ToNumericVector3(SpherePosition), 5f))&&FinalBossStage)
                 {
                     Simulation.Bodies.GetBodyReference(SphereHandle).Pose.Position = ToNumericVector3(Checkpoints[CurrentCheckpoint].Position);
                     FinalBossEnabled = true;

@@ -115,11 +115,11 @@ namespace TGC.MonoGame.TP
 
             //Pared que aplastan contra el suelo
             Obstacles.Add(new PeriodicObstacle(Matrix.CreateScale(80,10,80) * Matrix.CreateTranslation(1720,45,4240),new BoxPrimitive(GraphicsDevice),Simulation,
-                    Camera,35f,7f,45,0f, "Y"));
+                    Camera,35f,5f,45,0f, "Y"));
             Obstacles.Add(new PeriodicObstacle(Matrix.CreateScale(80,10,80) * Matrix.CreateTranslation(1720,45,4430),new BoxPrimitive(GraphicsDevice),Simulation,
-                    Camera,35f,7f,45,+MathHelper.PiOver4, "Y"));
+                    Camera,35f,5f,45,+MathHelper.PiOver4, "Y"));
             Obstacles.Add(new PeriodicObstacle(Matrix.CreateScale(80,10,80) * Matrix.CreateTranslation(1720,45,4620),new BoxPrimitive(GraphicsDevice),Simulation,
-                    Camera,35f,7f,45,MathHelper.PiOver4, "Y"));
+                    Camera,35f,5f,45,MathHelper.PiOver4, "Y"));
             //Plataformas que suben y bajan
             Obstacles.Add(new PeriodicObstacle(Matrix.CreateScale(50,10,50) * Matrix.CreateTranslation(600f,-60,4.5f),new BoxPrimitive(GraphicsDevice),Simulation,
                 Camera,-70f,3f,-60f,0f, "Y"));
@@ -325,13 +325,13 @@ namespace TGC.MonoGame.TP
 
         public BodyHandle LoadFinalBoss()
         {
-            var collidableDescription =  new CollidableDescription(Simulation.Shapes.Add(new Sphere(40f)), 0.1f, ContinuousDetection.Continuous(1e-4f, 1e-4f));
+            var collidableDescription =  new CollidableDescription(Simulation.Shapes.Add(new Sphere(20f)), 0.1f, ContinuousDetection.Continuous(1e-4f, 1e-4f));
             var position = new NumericVector3(1720,35,6323);
             var bodyHandle = Simulation.Bodies.Add(BodyDescription.
                             CreateKinematic(new RigidPose(position), 
-            new CollidableDescription(Simulation.Shapes.Add(new Sphere(20f)), 0.1f, ContinuousDetection.Continuous(1e-4f, 1e-4f)), new BodyActivityDescription(-0.1f)));
+            collidableDescription, new BodyActivityDescription(-0.1f)));
 
-            Simulation.Bodies.GetBodyReference(bodyHandle).Velocity.Linear= new NumericVector3(0,0,120);
+            Simulation.Bodies.GetBodyReference(bodyHandle).Velocity.Linear= new NumericVector3(0,0,20);
             Simulation.Bodies.GetBodyReference(bodyHandle).Velocity.Angular= new NumericVector3(15,0,0);
             return bodyHandle;
         }

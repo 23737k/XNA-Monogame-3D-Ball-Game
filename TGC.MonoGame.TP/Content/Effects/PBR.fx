@@ -209,7 +209,7 @@ float4 MainPS(VertexShaderOutput input) : COLOR
 		light = normalize(light);
 		float3 halfVector = normalize(view + light);		
 		float attenuation = 1.0 / (distance);
-		float3 radiance = lightColors[index] * 0.2;
+		float3 radiance = lightColors[index] * 0.04;
 
 
 		// Cook-Torrance BRDF
@@ -218,7 +218,7 @@ float4 MainPS(VertexShaderOutput input) : COLOR
 		float3 F = fresnelSchlick(max(dot(halfVector, view), 0.0), F0);
 
 		float3 nominator = NDF * G * F;
-		float denominator = 4.0 * max(dot(normal, view), 0.0) + 0.001;
+		float denominator = 4.0 * max(dot(normal, view), 0.0) + 0.2;
 		float3 specular = nominator / denominator;
 
 		float3 kS = F;
@@ -234,7 +234,7 @@ float4 MainPS(VertexShaderOutput input) : COLOR
 		Lo += (kD * NdotL * albedo / PI + specular) * radiance;
 	}
 
-	float3 ambient = float3(0.03, 0.03, 0.03) * albedo * ao;
+	float3 ambient = float3(0.08, 0.095,  0.1) * albedo * ao;
 
     float3 color = ambient + Lo;
 
