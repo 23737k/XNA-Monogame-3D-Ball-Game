@@ -69,25 +69,18 @@ namespace TGC.MonoGame.TP
         private List<Light> Lights {get;set;} 
         //TEXTURES
         private Texture2D albedo, ao, metalness, roughness, normals;
+        private Texture2D FloorT, FloorN;
         //Texture index
         private int textureIndex;
         private SphereType[] SpheresArray; 
         //
         private SpriteBatch SpriteBatch { get; set; }
         private SpriteFont SpriteFont {get;set;}
-        private Matrix View { get; set; }
-        private Matrix Projection { get; set; }
         //SPHERE
         private Model SphereModel  {get; set;}
-
-        private Model SpeedModel {get;set;}
         private Matrix SphereRotationMatrix { get; set; }
-        private BoxPrimitive ObstacleBox { get; set; }
-        private BoxPrimitive YellowBox { get; set; }
         private Vector3 SpherePosition { get; set; }
         private TargetCamera Camera { get; set; }
-
-        private Matrix[] PowerUpsWorld { get; set;}
         private Vector3 SphereVelocity { get; set; }
         private bool OnGround { get; set; }
         private Vector3 SphereFrontDirection { get; set; }
@@ -111,11 +104,6 @@ namespace TGC.MonoGame.TP
         private bool FinalBossStage {get;set;} =false;
 
         //Skybox
-        private float Angle { get; set; }
-        private Vector3 CameraPosition { get; set; }
-        private Vector3 CameraTarget { get; set; }
-        private float Distance { get; set; }
-        private Vector3 ViewVector { get; set; }
         private SkyBox SkyBox { get; set; }
 
         private Model PowerupModel {get;set;}
@@ -149,14 +137,11 @@ namespace TGC.MonoGame.TP
                 new Checkpoint(new Vector3(1725,10,4800)),
                 new Checkpoint(new Vector3(1720,10,6302))
             };
-            CurrentCheckpoint = 3;
-
-            Powerups = new List<Powerup>();
-            Powerups.Add(new Powerup(new Vector3(30,15,0),100,0));
+            CurrentCheckpoint = 4;
 
         
             // Esfera
-            SpherePosition = new Vector3(0,15,0);//new Vector3(0,50,0);//new Vector3(1732,20, 8073);
+            SpherePosition = Checkpoints[CurrentCheckpoint].Position;//new Vector3(0,50,0);//new Vector3(1732,20, 8073);
             //
             SphereWorld = Matrix.CreateTranslation(SpherePosition);
             SphereVelocity = Vector3.Zero;
@@ -209,10 +194,10 @@ namespace TGC.MonoGame.TP
             DefaultEffect.Parameters["KDiffuse"]?.SetValue(0.7f);
             DefaultEffect.Parameters["KSpecular"]?.SetValue(0.4f);
             DefaultEffect.Parameters["shininess"]?.SetValue(10f);
-            var texture = Content.Load<Texture2D>(ContentFolderTextures +"piso/" +"color");
-            var normal = Content.Load<Texture2D>(ContentFolderTextures + "piso/" + "normal");
-            DefaultEffect.Parameters["ModelTexture"].SetValue(texture);
-            DefaultEffect.Parameters["NormalTexture"].SetValue(normal);
+            FloorT = Content.Load<Texture2D>(ContentFolderTextures +"piso/" +"color");
+            FloorN = Content.Load<Texture2D>(ContentFolderTextures + "piso/" + "normal");
+            DefaultEffect.Parameters["ModelTexture"].SetValue(FloorT);
+            DefaultEffect.Parameters["NormalTexture"].SetValue(FloorN);
 
             DefaultEffect.CurrentTechnique = DefaultEffect.Techniques["NormalMapping"];
 
@@ -220,13 +205,18 @@ namespace TGC.MonoGame.TP
             InitializeEffect();
             LoadTextures();
             SphereModel = Content.Load<Model>(ContentFolder3D + "sphere");
-            SphereModel.Meshes.FirstOrDefault().MeshParts.FirstOrDefault().Effect = SphereEffect;     
-
-            SpeedModel = Content.Load<Model>(ContentFolder3D + "speedPower");     
-            SpeedModel.Meshes.FirstOrDefault().MeshParts.FirstOrDefault().Effect = DefaultEffect;  
+            SphereModel.Meshes.FirstOrDefault().MeshParts.FirstOrDefault().Effect = SphereEffect; 
 
             CylinderModel = Content.Load<Model>(ContentFolder3D + "cylinder");
             CylinderModel.Meshes.FirstOrDefault().MeshParts.FirstOrDefault().Effect = DefaultEffect;
+
+            var speedTexture = Content.Load<Texture2D>(ContentFolderTextures + "speed-powerup");
+            var normalTexture = Content.Load<Texture2D>(ContentFolderTextures + "normal");
+            var jumpTexture = Content.Load<Texture2D>(ContentFolderTextures + "jump-powerup");
+            Powerups = new List<Powerup>();
+            Powerups.Add(new Powerup(new Vector3(30,15,0),100,0,CylinderModel,speedTexture,normalTexture,Camera));
+            Powerups.Add(new Powerup(new Vector3(1554,60,420),0,800,CylinderModel,jumpTexture,normalTexture,Camera));
+            Powerups.Add(new Powerup(new Vector3(1721,30,2785),100,0,CylinderModel,speedTexture,normalTexture,Camera));
             //Bepu
             LoadPhysics();
 
@@ -259,7 +249,6 @@ namespace TGC.MonoGame.TP
             BodyReference body = Simulation.Bodies.GetBodyReference(SphereHandle);
             var prevLinearVelocity = body.Velocity.Linear.Y;
             var prevAngularVelocity = body.Velocity.Angular.Y;
-
             
             /*
             if(SpherePosition == Vector3.Clamp(SpherePosition, new Vector3(1673,9.9f,6439), new Vector3(1768,40,6517)) && FinalBossEnabled)
@@ -342,10 +331,16 @@ namespace TGC.MonoGame.TP
         }
         protected void AdministrarSalto(float deltaTime){
             var bodyRef= Simulation.Bodies.GetBodyReference(SphereHandle);
+            var FinalImpulse = SALTO_BUFFER_VALUE;
+            if(CurrentPowerUp != null)
+            {
+                FinalImpulse += CurrentPowerUp.JumpBoost;
+            }
+
             if ((Keyboard.GetState().IsKeyDown(Keys.Space)|| Keyboard.GetState().IsKeyDown(Keys.Up))&& PelotaEstaEnElSuelo())
             {
                 //SphereVelocity += Vector3.Up * SALTO_BUFFER_VALUE;
-                bodyRef.ApplyLinearImpulse(Utils.ToNumericVector3(Vector3.Up * SALTO_BUFFER_VALUE));
+                bodyRef.ApplyLinearImpulse(Utils.ToNumericVector3(Vector3.Up * FinalImpulse));
                 OnGround = false;
             }  
         }
@@ -365,6 +360,8 @@ namespace TGC.MonoGame.TP
 
             DrawSkybox();
 
+            DefaultEffect.Parameters["ModelTexture"].SetValue(FloorT);
+            DefaultEffect.Parameters["NormalTexture"].SetValue(FloorN);
             //Dibujo el suelo
             foreach(StaticObstacle obstacle in StaticObstacles)   {obstacle.Render(DefaultEffect,gameTime);}
              //Dibujo los cilindros
@@ -374,13 +371,10 @@ namespace TGC.MonoGame.TP
             Utils.SetEffect(Camera, SphereEffect, SphereWorld);
             SphereModel.Meshes.FirstOrDefault().Draw();
 
-            var powerUpWorld = Matrix.CreateScale(2f) * Matrix.CreateFromYawPitchRoll(Convert.ToSingle(gameTime.TotalGameTime.TotalSeconds)*3,0,MathF.PI/2)* Matrix.CreateTranslation(30,15,0);
-            Utils.SetEffect(Camera,DefaultEffect,powerUpWorld);
-            SpeedModel.Meshes.FirstOrDefault().Draw();
-
-            var powerUpWorld2 = Matrix.CreateScale(2f) * Matrix.CreateFromYawPitchRoll(Convert.ToSingle(gameTime.TotalGameTime.TotalSeconds)*3,0,MathF.PI/2)* Matrix.CreateTranslation(30,15,-7);
-            Utils.SetEffect(Camera,DefaultEffect,powerUpWorld2);
-            SpeedModel.Meshes.FirstOrDefault().Draw();
+            foreach (var powerUp in Powerups)
+            {
+                powerUp.Render(DefaultEffect, gameTime);
+            }
 
             
             if(FinalBossStage)
@@ -529,15 +523,15 @@ namespace TGC.MonoGame.TP
                     if(powerUp.IsWithinBounds(bodyRef.Pose.Position, gameTime))
                     {
                         CurrentPowerUp = powerUp;
+                        Powerups.Remove(CurrentPowerUp);
                         return;
                     }
                 }
                 return;
             }
 
-            else if(!CurrentPowerUp.isActive(gameTime))
+            else if(!CurrentPowerUp.IsActive(gameTime))
             {
-                Powerups.Remove(CurrentPowerUp);
                 CurrentPowerUp = null;
             }
         }
