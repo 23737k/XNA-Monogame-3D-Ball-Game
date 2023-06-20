@@ -73,10 +73,7 @@ namespace TGC.MonoGame.TP.MapObjects
             World.Decompose(out var scale, out var rotation, out var pos);
         
             World = Matrix.CreateScale(scale) * Matrix.CreateFromQuaternion(rotation) * Matrix.CreateTranslation(bodyPosition);
-            var viewProjection = Camera.View * Camera.Projection;
-            effect.Parameters["World"].SetValue(World);
-            effect.Parameters["InverseTransposeWorld"]?.SetValue(Matrix.Invert(Matrix.Transpose(World)));
-            effect.Parameters["WorldViewProjection"]?.SetValue(World * viewProjection);
+            Utils.SetEffect(Camera,effect,World);
             CubePrimitive.Draw(effect);
         }
         private void loadObstacle()

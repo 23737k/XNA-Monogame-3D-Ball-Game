@@ -13,16 +13,17 @@ namespace TGC.MonoGame.TP
 {
     public class Loader {
 
-        public Loader (Simulation simulation, GraphicsDevice graphicsDevice, Camera camera)
+        public Loader (Simulation simulation, GraphicsDevice graphicsDevice, Camera camera, Model cylinderModel)
         {
             this.Simulation = simulation;
             this.GraphicsDevice = graphicsDevice;
             this.Camera = camera;
+            this.Cylinder = cylinderModel;
         }
         public Simulation Simulation {get;set;}
         public GraphicsDevice GraphicsDevice {get;set;}
         public Camera Camera {get;set;}
-        
+        public Model Cylinder {get;set;}
         public List<MovingObstacle> LoadKinematics()
         {
             var Obstacles = new List<MovingObstacle>();
@@ -34,6 +35,7 @@ namespace TGC.MonoGame.TP
                 new Vector3(30, 10, 60),
                 new Vector3(30, 10, 60),
                 new Vector3(30, 10, 60),
+
 
                 //Islas
                 new Vector3(10,20,18),
@@ -50,11 +52,11 @@ namespace TGC.MonoGame.TP
                 new Vector3(80, 10, 18),
                 new Vector3(80, 10, 18),
 
-                new Vector3(120, 10, 18),
+                new Vector3(120, 10, 18)
             };
 
             var CylinderWorld = new Matrix[]{
-                Matrix.CreateTranslation(new Vector3(300,0f,4.5f)),
+                Matrix.CreateTranslation(new Vector3(300,0f,4.5f)) ,
                 Matrix.CreateTranslation(new Vector3(400, 0f,4.5f)),
                 Matrix.CreateTranslation(new Vector3(500, 0, 4.5f)),
                 Matrix.CreateTranslation(new Vector3(400, 10, 4.5f )),
@@ -83,23 +85,23 @@ namespace TGC.MonoGame.TP
             for(int i =0; i< 6; i++)
             {
                 int orientation = (i % 2 == 0) ? -1 : 1;
-                Obstacles.Add(new MovingObstacle(CylinderWorld[i],
-                    new CylinderPrimitive(GraphicsDevice, BasicCylindersMeasures[i].X, BasicCylindersMeasures[i].Y),Simulation,Camera,orientation*new Vector3(0,-10f,0), Vector3.Zero));
+                Obstacles.Add(new MovingObstacle(Matrix.CreateScale(BasicCylindersMeasures[i].Y,BasicCylindersMeasures[i].X,BasicCylindersMeasures[i].Y) * CylinderWorld[i],
+                    Cylinder,Simulation,Camera,orientation*new Vector3(0,-15f,0), Vector3.Zero));
             }
 
             for(int i =6; i< 13; i++)
             {
-               Obstacles.Add(new MovingObstacle(CylinderWorld[i],
-                    new CylinderPrimitive(GraphicsDevice, BasicCylindersMeasures[i].X, BasicCylindersMeasures[i].Y),Simulation,Camera));
+               Obstacles.Add(new MovingObstacle(Matrix.CreateScale(BasicCylindersMeasures[i].Y,BasicCylindersMeasures[i].X,BasicCylindersMeasures[i].Y) *CylinderWorld[i],
+                    Cylinder,Simulation,Camera));
             }
             for(int i =13; i< 17; i++)
             {
                 int orientation = (i % 2 == 0) ? 1 : -1;
-               Obstacles.Add(new MovingObstacle(CylinderWorld[i],
-                    new CylinderPrimitive(GraphicsDevice, BasicCylindersMeasures[i].X, BasicCylindersMeasures[i].Y),Simulation,Camera, orientation* new Vector3(0,5,0), Vector3.Zero));
+               Obstacles.Add(new MovingObstacle(Matrix.CreateScale(BasicCylindersMeasures[i].Y,BasicCylindersMeasures[i].X,BasicCylindersMeasures[i].Y) *CylinderWorld[i],
+                     Cylinder,Simulation,Camera, orientation* new Vector3(0,5,0), Vector3.Zero));
             }
-            Obstacles.Add(new MovingObstacle(CylinderWorld[17],
-                    new CylinderPrimitive(GraphicsDevice, BasicCylindersMeasures[17].X, BasicCylindersMeasures[17].Y),Simulation,Camera, new Vector3(0,-12,0), Vector3.Zero));
+            Obstacles.Add(new MovingObstacle(Matrix.CreateScale(BasicCylindersMeasures[17].Y,BasicCylindersMeasures[17].X,BasicCylindersMeasures[17].Y) * CylinderWorld[17],
+                     Cylinder,Simulation,Camera, new Vector3(0,-8f,0), Vector3.Zero));
 
             return Obstacles;
         }

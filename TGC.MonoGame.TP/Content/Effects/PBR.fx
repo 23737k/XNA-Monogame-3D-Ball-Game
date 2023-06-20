@@ -7,9 +7,9 @@
 	#define PS_SHADERMODEL ps_4_0_level_9_1
 #endif
 
-float4x4 matWorld; //Matriz de transformacion World
-float4x4 matWorldViewProj; //Matriz World * View * Projection
-float3x3 matInverseTransposeWorld; //Matriz Transpose(Invert(World))
+float4x4 World; //Matriz de transformacion World
+float4x4 WorldViewProjection; //Matriz World * View * Projection
+float3x3 InverseTransposeWorld; //Matriz Transpose(Invert(World))
 
 //Textura para Albedo
 texture albedoTexture;
@@ -110,16 +110,16 @@ VertexShaderOutput MainVS(VertexShaderInput input)
 	VertexShaderOutput output;
 
 	// Proyectamos la position
-	output.Position = mul(input.Position, matWorldViewProj);
+	output.Position = mul(input.Position, WorldViewProjection);
 
 	// Propagamos las coordenadas de textura
 	output.TextureCoordinates = input.TextureCoordinates;
 
 	// Usamos la matriz normal para proyectar el vector normal
-	output.WorldNormal = mul(input.Normal, matInverseTransposeWorld);
+	output.WorldNormal = mul(input.Normal, InverseTransposeWorld);
 
 	// Usamos la matriz de world para proyectar la posicion
-	output.WorldPosition = mul(input.Position, matWorld);
+	output.WorldPosition = mul(input.Position, World);
 
 	return output;
 }

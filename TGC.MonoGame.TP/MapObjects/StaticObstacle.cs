@@ -28,10 +28,7 @@ namespace TGC.MonoGame.TP.MapObjects
 
         public void Render(Effect effect, GameTime gameTime)
         {
-            var viewProjection = Camera.View * Camera.Projection;
-            effect.Parameters["World"].SetValue(World);
-            effect.Parameters["InverseTransposeWorld"]?.SetValue(Matrix.Invert(Matrix.Transpose(World)));
-            effect.Parameters["WorldViewProjection"]?.SetValue(World * viewProjection);
+            Utils.SetEffect(Camera,effect,World);
             GeometricPrimitive.Draw(effect);
         }
 
