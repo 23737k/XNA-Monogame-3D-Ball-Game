@@ -232,7 +232,15 @@ namespace TGC.MonoGame.TP
 
                 Matrix.CreateScale(80,10,1000) * Matrix.CreateTranslation(new Vector3(1720,0,4455)),
                 Matrix.CreateScale(70,10f,1125) * Matrix.CreateTranslation(new Vector3(1720,0,6852)),
-                Matrix.CreateScale(70,10f,150) * Matrix.CreateTranslation(new Vector3(1720,0,8995)),
+                Matrix.CreateScale(70,10f,250) * Matrix.CreateTranslation(new Vector3(1720,0,8660)),
+                Matrix.CreateScale(70,10f,200) * Matrix.CreateTranslation(new Vector3(1720,0,8915)),
+                
+                Matrix.CreateScale(70,10f,400) * Matrix.CreateTranslation(new Vector3(1720,0,9255)),
+                Matrix.CreateScale(70,10f,200) * Matrix.CreateTranslation(new Vector3(1720,0,9585)),
+                Matrix.CreateScale(70,10f,400) * Matrix.CreateTranslation(new Vector3(1720,0,9915)),
+                Matrix.CreateScale(35,10f,500) * Matrix.CreateTranslation(new Vector3(1737,0,10365)),
+                Matrix.CreateScale(70,10f,500) * Matrix.CreateTranslation(new Vector3(1720,0,10865)),
+                
 
                 //Walls
 
@@ -328,12 +336,12 @@ namespace TGC.MonoGame.TP
         public BodyHandle LoadFinalBoss()
         {
             var collidableDescription =  new CollidableDescription(Simulation.Shapes.Add(new Sphere(20f)), 0.1f, ContinuousDetection.Continuous(1e-4f, 1e-4f));
-            var position = new NumericVector3(1720,35,6323);
+            var position = new NumericVector3(1720,42,8363);
             var bodyHandle = Simulation.Bodies.Add(BodyDescription.
                             CreateKinematic(new RigidPose(position), 
             collidableDescription, new BodyActivityDescription(-0.1f)));
 
-            Simulation.Bodies.GetBodyReference(bodyHandle).Velocity.Linear= new NumericVector3(0,0,20);
+            Simulation.Bodies.GetBodyReference(bodyHandle).Velocity.Linear= new NumericVector3(0,0,30);
             Simulation.Bodies.GetBodyReference(bodyHandle).Velocity.Angular= new NumericVector3(15,0,0);
             return bodyHandle;
         }

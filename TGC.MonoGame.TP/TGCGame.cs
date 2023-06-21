@@ -84,6 +84,7 @@ namespace TGC.MonoGame.TP
         private Vector3 SphereVelocity { get; set; }
         private bool OnGround { get; set; }
         private Vector3 SphereFrontDirection { get; set; }
+        private Vector3 SphereLateralDirection {get;set;}
         private Vector3 LightPosition { get; set; } = new Vector3 (0,2500,0);
 
         //Bepu
@@ -137,11 +138,11 @@ namespace TGC.MonoGame.TP
                 new Checkpoint(new Vector3(1725,10,4800)),
                 new Checkpoint(new Vector3(1720,10,6302))
             };
-            CurrentCheckpoint = 4;
+            CurrentCheckpoint = 6;
 
         
             // Esfera
-            SpherePosition = Checkpoints[CurrentCheckpoint].Position;//new Vector3(0,50,0);//new Vector3(1732,20, 8073);
+            SpherePosition = new Vector3(1719,15,8396);//Checkpoints[CurrentCheckpoint].Position;//new Vector3(0,50,0);//new Vector3(1732,20, 8073);
             //
             SphereWorld = Matrix.CreateTranslation(SpherePosition);
             SphereVelocity = Vector3.Zero;
@@ -230,6 +231,12 @@ namespace TGC.MonoGame.TP
             var camera_follow_radius= CAMERA_FOLLOW_RADIUS;
             var camera_up_distance = CAMERA_UP_DISTANCE;
             
+            if(FinalBossStage)
+            {
+                sphereBackDirection = Vector3.UnitZ;
+                camera_follow_radius += 40;
+            }
+
             var orbitalPosition = sphereBackDirection * camera_follow_radius;
 
             var upDistance = Vector3.Up * camera_up_distance;
@@ -250,14 +257,14 @@ namespace TGC.MonoGame.TP
             var prevLinearVelocity = body.Velocity.Linear.Y;
             var prevAngularVelocity = body.Velocity.Angular.Y;
             
-            /*
-            if(SpherePosition == Vector3.Clamp(SpherePosition, new Vector3(1673,9.9f,6439), new Vector3(1768,40,6517)) && FinalBossEnabled)
+            
+            if(SpherePosition.Z > 8437 && FinalBossEnabled)
             {
                 BossSphereHandle = Loader.LoadFinalBoss();
                 FinalBossEnabled = false;
                 FinalBossStage = true;
             }
-            */
+            
             
             CheckpointManager();
             ObstacleContact();
@@ -300,9 +307,19 @@ namespace TGC.MonoGame.TP
             }
 
             
-            SphereRotationMatrix = Matrix.CreateRotationY(Mouse.GetState().X*-0.01f);
-            SphereFrontDirection = Vector3.Transform(Vector3.Backward, SphereRotationMatrix);
-            var SphereLateralDirection = Vector3.Transform(Vector3.Right, SphereRotationMatrix);
+            if(FinalBossStage)
+            {
+                SphereRotationMatrix = Matrix.Identity;
+                SphereFrontDirection = Vector3.UnitZ;
+                SphereLateralDirection = Vector3.UnitX;
+            }
+            else
+            {
+                SphereRotationMatrix = Matrix.CreateRotationY(Mouse.GetState().X*-0.01f);
+                SphereFrontDirection = Vector3.Transform(Vector3.Backward, SphereRotationMatrix);
+                SphereLateralDirection = Vector3.Transform(Vector3.Right, SphereRotationMatrix);
+            }
+            
 
             var bodyRef= Simulation.Bodies.GetBodyReference(SphereHandle);
             if (Keyboard.GetState().IsKeyDown(Keys.W))
