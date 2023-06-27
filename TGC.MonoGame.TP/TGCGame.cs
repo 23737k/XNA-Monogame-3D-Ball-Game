@@ -112,6 +112,7 @@ namespace TGC.MonoGame.TP
         private SoundEffect JumpSound { get; set; }
         private SoundEffect LoseSound { get; set; }
         private SoundEffect ButtonSound;
+        private SoundEffect PowerupSound;
         //Menu
         private Button PlayButton;
         private Button QuitButton;
@@ -246,9 +247,12 @@ namespace TGC.MonoGame.TP
             //Music
             Song = Content.Load<Song>(ContentFolderMusic + "soundtrack");
             MediaPlayer.IsRepeating = true;
+            MediaPlayer.Volume = 0.5f;
             JumpSound = Content.Load<SoundEffect>(ContentFolderMusic + "jumpEffect");
             LoseSound = Content.Load<SoundEffect>(ContentFolderMusic + "loosingEffect");
             ButtonSound = Content.Load<SoundEffect>(ContentFolderMusic + "buttonEffect");
+            PowerupSound = Content.Load<SoundEffect>(ContentFolderMusic + "powerupEffect");
+
             SpriteFont = Content.Load<SpriteFont>(ContentFolderSpriteFonts + "CascadiaCode/CascadiaCodePL");
 
             //Menu
@@ -637,6 +641,7 @@ namespace TGC.MonoGame.TP
                     if(powerUp.IsWithinBounds(bodyRef.Pose.Position, gameTime)&&!powerUp.Used)
                     {
                         CurrentPowerUp = powerUp;
+                        PowerupSound.Play();
                         return;
                     }
                 }

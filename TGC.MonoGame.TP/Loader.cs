@@ -218,7 +218,7 @@ namespace TGC.MonoGame.TP
                 Matrix.CreateScale(300,10f,80) * Matrix.CreateTranslation(new Vector3(1670f,20f,435f)),
                 Matrix.CreateScale(100,10f,80) * Matrix.CreateTranslation(new Vector3(2230f,20f,435f)),
                 Matrix.CreateScale(350,10f,80) * Matrix.CreateTranslation(new Vector3(2475f,20f,435f)),
-                Matrix.CreateScale(310,10f,80) * Matrix.CreateTranslation(new Vector3(2895f,20f,435f)),
+                Matrix.CreateScale(290,10f,80) * Matrix.CreateTranslation(new Vector3(2885,20f,435f)),
                 Matrix.CreateScale(80,10f,400) * Matrix.CreateTranslation(new Vector3(3070f,20f,595f)),
                 Matrix.CreateScale(80,10f,100) * Matrix.CreateTranslation(new Vector3(3070f,30,865f)),
                 Matrix.CreateScale(80,10f,100) * Matrix.CreateTranslation(new Vector3(3070f,40,1005f)),
@@ -266,9 +266,9 @@ namespace TGC.MonoGame.TP
                 Matrix.CreateScale(10,10f,30f) * Matrix.CreateTranslation(new Vector3(1565f,30f,435f)),
                 Matrix.CreateScale(10,10f, 80f) * Matrix.CreateTranslation(new Vector3(2565f,30f,435f)),
                 //Muro alto
-                Matrix.CreateScale(40, 30f,10f) * Matrix.CreateTranslation(new Vector3(3090f,35f,510f)),
-                Matrix.CreateScale(40, 30f,10f) * Matrix.CreateTranslation(new Vector3(3090f,35f,670f)),
-                Matrix.CreateScale(40, 30f,10f) * Matrix.CreateTranslation(new Vector3(3050f,35f,590f)),
+                Matrix.CreateScale(40, 30f,10f) * Matrix.CreateTranslation(new Vector3(3090f,40f,510f)),
+                Matrix.CreateScale(40, 30f,10f) * Matrix.CreateTranslation(new Vector3(3090f,40f,670f)),
+                Matrix.CreateScale(40, 30f,10f) * Matrix.CreateTranslation(new Vector3(3050f,40f,590f)),
 
                 //muros
                 Matrix.CreateScale(80,10,10) * Matrix.CreateTranslation(new Vector3(1720, 10, 3320)),

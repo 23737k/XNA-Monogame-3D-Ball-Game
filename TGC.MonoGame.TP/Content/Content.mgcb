@@ -200,6 +200,12 @@
 /processorParam:Quality=Best
 /build:Music/loosingEffect.mp3
 
+#begin Music/powerupEffect.mp3
+/importer:Mp3Importer
+/processor:SoundEffectProcessor
+/processorParam:Quality=Best
+/build:Music/powerupEffect.mp3
+
 #begin Music/soundtrack.mp3
 /importer:Mp3Importer
 /processor:SongProcessor
