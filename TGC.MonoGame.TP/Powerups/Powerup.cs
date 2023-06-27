@@ -19,6 +19,7 @@ namespace TGC.MonoGame.TP.Powerups
         private bool Activated = false;
         public readonly float SpeedBoost = 0;
         public readonly float JumpBoost = 0;
+        public bool Used = false;
 
         public Powerup(Vector3 position, float speedBoost, float jumpBoost, Model model, Texture2D texture, Texture2D normal, Camera camera)
         {
@@ -46,6 +47,7 @@ namespace TGC.MonoGame.TP.Powerups
             {
                 var currentTime = Convert.ToSingle(gameTime.TotalGameTime.TotalSeconds);
                 status = (currentTime - StartTime) < Duration;
+                Used=true;
             }
             return status;
         }
@@ -53,7 +55,7 @@ namespace TGC.MonoGame.TP.Powerups
         {
             var status = false;
             var BoundingSphere = new BoundingSphere(position, 2.5f);
-            if(BoundingBox.Intersects(BoundingSphere))
+            if(BoundingBox.Intersects(BoundingSphere)&&!Used)
             {
                 status = true;
                 Activate(gameTime);
@@ -62,8 +64,12 @@ namespace TGC.MonoGame.TP.Powerups
             return status;
         }
 
+
+
         public void Render (Effect effect,GameTime gameTime)
         {
+            if(Used)
+                return;
             var time = Convert.ToSingle(gameTime.TotalGameTime.TotalSeconds);
             var world = Matrix.CreateScale(2,0.2f,2) * Matrix.CreateFromYawPitchRoll(time*2,0,MathF.PI/2)* Matrix.CreateTranslation(Position);
             effect.Parameters["ModelTexture"].SetValue(Texture);

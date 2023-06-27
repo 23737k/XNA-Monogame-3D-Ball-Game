@@ -101,7 +101,7 @@ namespace TGC.MonoGame.TP
                      Cylinder,Simulation,Camera, orientation* new Vector3(0,5,0), Vector3.Zero));
             }
             Obstacles.Add(new MovingObstacle(Matrix.CreateScale(BasicCylindersMeasures[17].Y,BasicCylindersMeasures[17].X,BasicCylindersMeasures[17].Y) * CylinderWorld[17],
-                     Cylinder,Simulation,Camera, new Vector3(0,-8f,0), Vector3.Zero));
+                     Cylinder,Simulation,Camera, new Vector3(0,-13f,0), Vector3.Zero));
 
             return Obstacles;
         }
@@ -176,9 +176,9 @@ namespace TGC.MonoGame.TP
                 Camera,40f,5f,1720f,MathF.PI, "X"));
 
             Obstacles.Add(new PeriodicObstacle(Matrix.CreateScale(10,50,40) * Matrix.CreateTranslation(2674,115f,2363),new BoxPrimitive(GraphicsDevice),Simulation,
-                Camera,135f,2.3f,2674,MathF.PI, "X"));
+                Camera,135f,2f,2674,MathF.PI, "X"));
             Obstacles.Add(new PeriodicObstacle(Matrix.CreateScale(10,50,40) * Matrix.CreateTranslation(2720,115f,2447),new BoxPrimitive(GraphicsDevice),Simulation,
-                Camera,135f,2.3f,2720,0, "X"));
+                Camera,135f,2f,2720,0, "X"));
 
             Obstacles.Add(new PeriodicObstacle(Matrix.CreateScale(30,30,10) * Matrix.CreateTranslation(2462,100,2345),new BoxPrimitive(GraphicsDevice),Simulation,
                 Camera,35,3.2f,2345,0, "Z"));

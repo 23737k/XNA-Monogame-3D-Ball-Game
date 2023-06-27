@@ -235,8 +235,12 @@ namespace TGC.MonoGame.TP
             var jumpTexture = Content.Load<Texture2D>(ContentFolderTextures + "jump-powerup");
             Powerups = new List<Powerup>();
             Powerups.Add(new Powerup(new Vector3(30,15,0),100,0,CylinderModel,speedTexture,normalTexture,Camera));
-            Powerups.Add(new Powerup(new Vector3(1554,60,420),0,800,CylinderModel,jumpTexture,normalTexture,Camera));
-            Powerups.Add(new Powerup(new Vector3(1721,30,2785),100,0,CylinderModel,speedTexture,normalTexture,Camera));
+            Powerups.Add(new Powerup(new Vector3(1590,60,434),0,800,CylinderModel,jumpTexture,normalTexture,Camera));
+            Powerups.Add(new Powerup(new Vector3(3080,40,707),0,800,CylinderModel,jumpTexture,normalTexture,Camera));
+            Powerups.Add(new Powerup(new Vector3(3064,100,2415),150,0,CylinderModel,jumpTexture,normalTexture,Camera));
+            Powerups.Add(new Powerup(new Vector3(2347,108,2354),200,0,CylinderModel,jumpTexture,normalTexture,Camera));
+            Powerups.Add(new Powerup(new Vector3(1722,30,2733),100,0,CylinderModel,speedTexture,normalTexture,Camera));
+            Powerups.Add(new Powerup(new Vector3(1733,15,4934   ),0,900,CylinderModel,speedTexture,normalTexture,Camera));
             //Bepu
             LoadPhysics();
             //Music
@@ -307,7 +311,7 @@ namespace TGC.MonoGame.TP
             else if(gameState == GameState.Paused)
             {
                 if (PlayButton.IsPressed(PreviousMouseState,MouseState))    gameState = GameState.Playing;
-                else if(RestartButton.IsPressed(PreviousMouseState,MouseState))     {Initialize(); gameState = GameState.StartMenu;}
+                else if(RestartButton.IsPressed(PreviousMouseState,MouseState))     {RestoreGame();}
                 else if(QuitButton.IsPressed(PreviousMouseState,MouseState))    Exit();
             }
 
@@ -458,12 +462,6 @@ namespace TGC.MonoGame.TP
             foreach(MovingObstacle obstacle in MovingObstacles)    {obstacle.Render(DefaultEffect,gameTime);}
             foreach(PeriodicObstacle obstacle in PeriodicObstacles)    {obstacle.Render(DefaultEffect,gameTime);}
 
-            var mainSphere = SpheresArray[textureIndex];
-            SphereEffect.Parameters["albedoTexture"]?.SetValue(mainSphere.Color);
-            SphereEffect.Parameters["normalTexture"]?.SetValue(mainSphere.Normal);
-            SphereEffect.Parameters["metallicTexture"]?.SetValue(mainSphere.Metalness);
-            SphereEffect.Parameters["roughnessTexture"]?.SetValue(mainSphere.Roughness);
-            SphereEffect.Parameters["aoTexture"]?.SetValue(mainSphere.Ao);
             Utils.SetEffect(Camera, SphereEffect, SphereWorld);
             SphereModel.Meshes.FirstOrDefault().Draw();
 
@@ -493,6 +491,12 @@ namespace TGC.MonoGame.TP
                 QuitButton.Render(SpriteBatch);
                 RightButton.Render(SpriteBatch);
                 LeftButton.Render(SpriteBatch);
+                var mainSphere = SpheresArray[textureIndex];
+                SphereEffect.Parameters["albedoTexture"]?.SetValue(mainSphere.Color);
+                SphereEffect.Parameters["normalTexture"]?.SetValue(mainSphere.Normal);
+                SphereEffect.Parameters["metallicTexture"]?.SetValue(mainSphere.Metalness);
+                SphereEffect.Parameters["roughnessTexture"]?.SetValue(mainSphere.Roughness);
+                SphereEffect.Parameters["aoTexture"]?.SetValue(mainSphere.Ao);
             }
  
             if (gameState == GameState.Paused)
@@ -583,12 +587,6 @@ namespace TGC.MonoGame.TP
             SphereEffect.Parameters["aoTexture"]?.SetValue(mainSphere.Ao);
         }
 
-        private void LoadMusic() 
-        {
-            Song = Content.Load<Song>(ContentFolderMusic + "soundtrack");
-            MediaPlayer.IsRepeating = true;
-        }
-
         private void DrawSkybox()
         {
             var originalRasterizerState = GraphicsDevice.RasterizerState;
@@ -636,10 +634,9 @@ namespace TGC.MonoGame.TP
             {
                 foreach (var powerUp in Powerups)
                 {
-                    if(powerUp.IsWithinBounds(bodyRef.Pose.Position, gameTime))
+                    if(powerUp.IsWithinBounds(bodyRef.Pose.Position, gameTime)&&!powerUp.Used)
                     {
                         CurrentPowerUp = powerUp;
-                        Powerups.Remove(CurrentPowerUp);
                         return;
                     }
                 }
@@ -673,6 +670,21 @@ namespace TGC.MonoGame.TP
                     FinalBossEnabled = true;
                     FinalBossStage = false;
                 }
+        }
+
+        private void RestoreGame ()
+        {
+            OnGround = false;
+            GodMode = false;
+            CurrentCheckpoint = 0;
+            SpherePosition = Checkpoints[0].Position;
+            foreach (var powerUp in Powerups)    powerUp.Used=false;
+            SphereFrontDirection =  Vector3.Backward;
+            SphereRotationMatrix = Matrix.Identity;
+            var bodyRef = Simulation.Bodies.GetBodyReference(SphereHandle);
+            bodyRef.Pose.Position = Utils.ToNumericVector3(SpherePosition);
+            bodyRef.Pose.Orientation = Utils.ToSysNumQuaternion(Quaternion.CreateFromRotationMatrix(SphereRotationMatrix));
+            gameState = GameState.StartMenu;
         }
 
     }
