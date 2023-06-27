@@ -3,7 +3,6 @@ using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
 using Microsoft.Xna.Framework.Input;
 using TGC.MonoGame.TP.Cameras;
-using TGC.MonoGame.TP.Geometries;
 using System.Collections.Generic;
 using BepuPhysics;
 using BepuPhysics.Collidables;
@@ -16,7 +15,9 @@ using TGC.MonoGame.TP.PBR;
 using TGC.MonoGame.TP.Checkpoints;
 using TGC.MonoGame.TP.Powerups;
 using System.Linq;
-
+using Microsoft.Xna.Framework.Media;
+using Microsoft.Xna.Framework.Audio;
+using TGC.MonoGame.TP.UI;
 //
 namespace TGC.MonoGame.TP
 {
@@ -68,7 +69,6 @@ namespace TGC.MonoGame.TP
         private Effect SphereEffect { get; set; }
         private List<Light> Lights {get;set;} 
         //TEXTURES
-        private Texture2D albedo, ao, metalness, roughness, normals;
         private Texture2D FloorT, FloorN;
         //Texture index
         private int textureIndex;
@@ -81,7 +81,6 @@ namespace TGC.MonoGame.TP
         private Matrix SphereRotationMatrix { get; set; }
         private Vector3 SpherePosition { get; set; }
         private TargetCamera Camera { get; set; }
-        private Vector3 SphereVelocity { get; set; }
         private bool OnGround { get; set; }
         private Vector3 SphereFrontDirection { get; set; }
         private Vector3 SphereLateralDirection {get;set;}
@@ -106,9 +105,33 @@ namespace TGC.MonoGame.TP
 
         //Skybox
         private SkyBox SkyBox { get; set; }
-
-        private Model PowerupModel {get;set;}
         private Model CylinderModel {get;set;}
+
+        //Music
+        private Song Song { get; set; }
+        private SoundEffect JumpSound { get; set; }
+        private SoundEffect LoosingSound { get; set; }
+
+        //Menu
+        private Button PlayButton;
+        private Button QuitButton;
+        private Button RestartButton;
+        private Button LeftButton;
+        private Button RightButton;
+        private MouseState  mouseState;
+        private MouseState  previousMouseState;
+        private KeyboardState KeyboardState;
+        private KeyboardState PreviousKeyboardState;
+
+        enum GameState
+        {
+            StartMenu,
+            Loading,
+            Playing,
+            Paused
+        }
+
+        private GameState gameState;
 
         /// <summary>
         ///     Se llama una sola vez, al principio cuando se ejecuta el ejemplo.
@@ -123,6 +146,7 @@ namespace TGC.MonoGame.TP
             // Configuro las dimensiones de la pantalla.
             Graphics.PreferredBackBufferWidth = GraphicsAdapter.DefaultAdapter.CurrentDisplayMode.Width - 100;
             Graphics.PreferredBackBufferHeight = GraphicsAdapter.DefaultAdapter.CurrentDisplayMode.Height - 100;
+            //Graphics.IsFullScreen= true;
             Graphics.ApplyChanges();
             // Seria hasta aca.
 
@@ -136,16 +160,15 @@ namespace TGC.MonoGame.TP
                 new Checkpoint(new Vector3(3050,95,2245)),
                 new Checkpoint(new Vector3(1723,10,2537)),
                 new Checkpoint(new Vector3(1725,10,4800)),
-                new Checkpoint(new Vector3(1720,10,6302))
+                new Checkpoint(new Vector3(1720,10,6302)),
+                new Checkpoint(new Vector3(1719,15,8396))
             };
-            CurrentCheckpoint = 6;
-
+            CurrentCheckpoint = 0;
         
             // Esfera
-            SpherePosition = new Vector3(1719,15,8396);//Checkpoints[CurrentCheckpoint].Position;//new Vector3(0,50,0);//new Vector3(1732,20, 8073);
+            SpherePosition = Checkpoints[CurrentCheckpoint].Position;//new Vector3(1736,15,11505);//Checkpoints[CurrentCheckpoint].Position;//new Vector3(0,50,0);//new Vector3(1732,20, 8073);
             //
             SphereWorld = Matrix.CreateTranslation(SpherePosition);
-            SphereVelocity = Vector3.Zero;
             SphereFrontDirection =  Vector3.Backward;
             SphereRotationMatrix = Matrix.Identity;
 
@@ -158,20 +181,15 @@ namespace TGC.MonoGame.TP
                 new SphereMetal(),
                 new SpherePlastic() 
             };
-    
 
-            LINEAR_SPEED = SpheresArray[textureIndex].speed();
-            SALTO_BUFFER_VALUE = SpheresArray[textureIndex].jump();
-/*
-            View = Matrix.CreateLookAt(Vector3.UnitZ * 150, Vector3.Zero, Vector3.Up);
-            Projection =
-                Matrix.CreatePerspectiveFieldOfView(MathHelper.PiOver4, GraphicsDevice.Viewport.AspectRatio, 1, 250);
-                         
-*/
             Camera = new TargetCamera(GraphicsDevice.Viewport.AspectRatio, new Vector3(0, 20, 60), Vector3.Zero);
-
-
+            
             UpdateCamera();
+
+            //Menu
+            gameState = GameState.StartMenu;
+            PreviousKeyboardState = KeyboardState = Keyboard.GetState();
+            previousMouseState = mouseState = Mouse.GetState();
             base.Initialize();
         }
 
@@ -221,7 +239,20 @@ namespace TGC.MonoGame.TP
             //Bepu
             LoadPhysics();
 
+            Song = Content.Load<Song>(ContentFolderMusic + "soundtrack");
+            MediaPlayer.IsRepeating = true;
+            JumpSound = Content.Load<SoundEffect>(ContentFolderMusic + "jumpEffect");
+            LoosingSound = Content.Load<SoundEffect>(ContentFolderMusic + "loosingEffect");
             SpriteFont = Content.Load<SpriteFont>(ContentFolderSpriteFonts + "CascadiaCode/CascadiaCodePL");
+
+            //Menu
+            //Menu = Content.Load<Texture2D>(ContentFolderTextures + "menu/menu");
+            PlayButton = new Button(Content.Load<Texture2D>(ContentFolderTextures + "menu/play"), new Vector2(GraphicsDevice.Viewport.Width/7f, GraphicsDevice.Viewport.Height/5),0.3f);
+            QuitButton = new Button(Content.Load<Texture2D>(ContentFolderTextures + "menu/quit"), new Vector2(GraphicsDevice.Viewport.Width/7f, GraphicsDevice.Viewport.Height/2),0.3f);
+            RestartButton = new Button(Content.Load<Texture2D>(ContentFolderTextures + "menu/restart"), new Vector2(GraphicsDevice.Viewport.Width/7f, GraphicsDevice.Viewport.Height/2.9f),0.3f);
+            LeftButton= new Button(Content.Load<Texture2D>(ContentFolderTextures + "menu/left-button"), new Vector2(GraphicsDevice.Viewport.Width*0.42f, GraphicsDevice.Viewport.Height*0.7f),0.1f);
+            RightButton = new Button(Content.Load<Texture2D>(ContentFolderTextures + "menu/right-button"), new Vector2(GraphicsDevice.Viewport.Width*0.52f, GraphicsDevice.Viewport.Height*0.7f),0.1f);
+            
             base.LoadContent();
         }
 
@@ -249,9 +280,42 @@ namespace TGC.MonoGame.TP
         }
         protected override void Update(GameTime gameTime)
         {
+            KeyboardState = Keyboard.GetState();
+            mouseState = Mouse.GetState();
             var deltaTime= Convert.ToSingle(gameTime.ElapsedGameTime.TotalSeconds);
+
+            LINEAR_SPEED = SpheresArray[textureIndex].speed();
+            SALTO_BUFFER_VALUE = SpheresArray[textureIndex].jump();
+
             PowerupManager(gameTime);
-            MovementManager(deltaTime);
+
+            //Menu
+            if(gameState == GameState.Playing)
+            {
+                MovementManager(deltaTime);
+            }
+            else if(gameState == GameState.StartMenu)
+            {
+                if (PlayButton.IsPressed(previousMouseState,mouseState))    gameState = GameState.Playing;
+                else if(QuitButton.IsPressed(previousMouseState,mouseState))    Exit();
+                else if(RightButton.IsPressed(previousMouseState,mouseState))   textureIndex = textureIndex >=2? 0:textureIndex+1;
+                else if(LeftButton.IsPressed(previousMouseState,mouseState))    textureIndex = textureIndex <=0? 2:textureIndex-1;
+            }
+            else if(gameState == GameState.Paused)
+            {
+                if (PlayButton.IsPressed(previousMouseState,mouseState))    gameState = GameState.Playing;
+                else if(RestartButton.IsPressed(previousMouseState,mouseState))     {Initialize(); gameState = GameState.StartMenu;}
+                else if(QuitButton.IsPressed(previousMouseState,mouseState))    Exit();
+            }
+
+            // Capturar Input teclado
+            if (PreviousKeyboardState.IsKeyDown(Keys.Escape) && KeyboardState.IsKeyUp(Keys.Escape) )
+            {
+                if(gameState == GameState.Playing)
+                    gameState = GameState.Paused;
+                else if(gameState == GameState.Paused)
+                    gameState = GameState.Playing;
+            }
 
             BodyReference body = Simulation.Bodies.GetBodyReference(SphereHandle);
             var prevLinearVelocity = body.Velocity.Linear.Y;
@@ -281,19 +345,16 @@ namespace TGC.MonoGame.TP
                             Matrix.CreateTranslation(new Vector3(SpherePosition.X, SpherePosition.Y, SpherePosition.Z));
             SphereWorld = world;
             SpherePosition = pose.Position;
-               
-
             var bodyRef = Simulation.Bodies.GetBodyReference(SphereHandle);
 
             if(MathHelper.Distance(bodyRef.Velocity.Linear.Y, prevLinearVelocity) < 0.2f 
                && MathHelper.Distance(bodyRef.Velocity.Angular.Y, prevAngularVelocity) < 0.2f) OnGround = true;
-
-            // Capturar Input teclado
-            if (Keyboard.GetState().IsKeyDown(Keys.Escape))
-            {
-                //Salgo del juego.
-                Exit();
-            }
+            
+            if(MediaPlayer.State == MediaState.Stopped)
+                MediaPlayer.Play(Song,new TimeSpan(0,0,14));
+            
+            previousMouseState = mouseState;
+            PreviousKeyboardState = KeyboardState;
 
             UpdateCamera();
 
@@ -322,24 +383,24 @@ namespace TGC.MonoGame.TP
             
 
             var bodyRef= Simulation.Bodies.GetBodyReference(SphereHandle);
-            if (Keyboard.GetState().IsKeyDown(Keys.W))
+            if (KeyboardState.IsKeyDown(Keys.W))
             {
                 if(!PelotaEstaEnElSuelo())
                     bodyRef.ApplyLinearImpulse(Utils.ToNumericVector3(-SphereFrontDirection * JUMPING_SPEED));
                 else
                      bodyRef.ApplyLinearImpulse(Utils.ToNumericVector3(-SphereFrontDirection * FinalSpeed));
             }
-            if (Keyboard.GetState().IsKeyDown(Keys.S) && !PelotaSeCayo())
+            if (KeyboardState.IsKeyDown(Keys.S) && !PelotaSeCayo())
             {
                 //SphereVelocity += SphereFrontDirection * LINEAR_SPEED;
                 bodyRef.ApplyLinearImpulse(Utils.ToNumericVector3(SphereFrontDirection * FinalSpeed));
             }
 
-            if (Keyboard.GetState().IsKeyDown(Keys.A) && !PelotaSeCayo())
+            if (KeyboardState.IsKeyDown(Keys.A) && !PelotaSeCayo())
             {
                 bodyRef.ApplyLinearImpulse(Utils.ToNumericVector3(-SphereLateralDirection * FinalSpeed*0.5f));
             }
-            if (Keyboard.GetState().IsKeyDown(Keys.D) && !PelotaSeCayo())
+            if (KeyboardState.IsKeyDown(Keys.D) && !PelotaSeCayo())
             {
                 bodyRef.ApplyLinearImpulse(Utils.ToNumericVector3(SphereLateralDirection * FinalSpeed*0.5f));
             }
@@ -354,11 +415,13 @@ namespace TGC.MonoGame.TP
                 FinalImpulse += CurrentPowerUp.JumpBoost;
             }
 
-            if ((Keyboard.GetState().IsKeyDown(Keys.Space)|| Keyboard.GetState().IsKeyDown(Keys.Up))&& PelotaEstaEnElSuelo())
+            if ((KeyboardState.IsKeyDown(Keys.Space)|| KeyboardState.IsKeyDown(Keys.Up))&& PelotaEstaEnElSuelo())
             {
                 //SphereVelocity += Vector3.Up * SALTO_BUFFER_VALUE;
                 bodyRef.ApplyLinearImpulse(Utils.ToNumericVector3(Vector3.Up * FinalImpulse));
                 OnGround = false;
+                  // Fire and forget play
+                JumpSound.Play();
             }  
         }
 
@@ -367,14 +430,15 @@ namespace TGC.MonoGame.TP
         }
 
         protected bool PelotaSeCayo(){
-            return SpherePosition.Y < COORDENADA_Y_MAS_BAJA;
+            var state = SpherePosition.Y < COORDENADA_Y_MAS_BAJA;
+            if(state) LoosingSound.Play();
+            return state;
         }
         
         protected override void Draw(GameTime gameTime)
         {
             // Aca deberiamos poner toda la logia de renderizado del juego.
-            GraphicsDevice.Clear(Color.Black);
-
+            GraphicsDevice.Clear(Color.Transparent);
             DrawSkybox();
 
             DefaultEffect.Parameters["ModelTexture"].SetValue(FloorT);
@@ -385,6 +449,12 @@ namespace TGC.MonoGame.TP
             foreach(MovingObstacle obstacle in MovingObstacles)    {obstacle.Render(DefaultEffect,gameTime);}
             foreach(PeriodicObstacle obstacle in PeriodicObstacles)    {obstacle.Render(DefaultEffect,gameTime);}
 
+            var mainSphere = SpheresArray[textureIndex];
+            SphereEffect.Parameters["albedoTexture"]?.SetValue(mainSphere.Color);
+            SphereEffect.Parameters["normalTexture"]?.SetValue(mainSphere.Normal);
+            SphereEffect.Parameters["metallicTexture"]?.SetValue(mainSphere.Metalness);
+            SphereEffect.Parameters["roughnessTexture"]?.SetValue(mainSphere.Roughness);
+            SphereEffect.Parameters["aoTexture"]?.SetValue(mainSphere.Ao);
             Utils.SetEffect(Camera, SphereEffect, SphereWorld);
             SphereModel.Meshes.FirstOrDefault().Draw();
 
@@ -404,13 +474,29 @@ namespace TGC.MonoGame.TP
 
             var fps = MathF.Round(1/Convert.ToSingle(gameTime.ElapsedGameTime.TotalSeconds),1);
 
-            SpriteBatch.Begin(SpriteSortMode.BackToFront, BlendState.Opaque, SamplerState.PointClamp, DepthStencilState.Default, RasterizerState.CullCounterClockwise);
+            SpriteBatch.Begin(SpriteSortMode.BackToFront, BlendState.AlphaBlend, SamplerState.PointClamp, DepthStencilState.Default, RasterizerState.CullCounterClockwise);
             var position= new Vector3(MathF.Round(SpherePosition.X,1), MathF.Round(SpherePosition.Y,1), MathF.Round(SpherePosition.Z,1));
             SpriteBatch.DrawString(SpriteFont, "Position:" + position.ToString(), new Vector2(GraphicsDevice.Viewport.Width - 500, 0), Color.White);
             SpriteBatch.DrawString(SpriteFont, "FPS " + fps.ToString(), new Vector2(GraphicsDevice.Viewport.Width-1000, 0), Color.White);
+
+            //Menu
+            //draw the start menu
+            if (gameState == GameState.StartMenu)
+            {
+                PlayButton.Render(SpriteBatch);
+                QuitButton.Render(SpriteBatch);
+                RightButton.Render(SpriteBatch);
+                LeftButton.Render(SpriteBatch);
+            }
+ 
+            if (gameState == GameState.Paused)
+            {
+                PlayButton.Render(SpriteBatch);
+                RestartButton.Render(SpriteBatch);
+                QuitButton.Render(SpriteBatch);
+            }
+
             SpriteBatch.End();
-
-
             base.Draw(gameTime);
         }
 
@@ -475,19 +561,26 @@ namespace TGC.MonoGame.TP
         }
         private void LoadTextures()
         {
-            String folder = SpheresArray[textureIndex].folder();
+            foreach(var sphere in SpheresArray)
+            {
+                sphere.Ao = Content.Load<Texture2D>(ContentFolderTextures + sphere.folder() + "ao");
+                sphere.Metalness = Content.Load<Texture2D>(ContentFolderTextures +  sphere.folder() + "metalness");
+                sphere.Roughness = Content.Load<Texture2D>(ContentFolderTextures + sphere.folder() + "roughness");
+                sphere.Color = Content.Load<Texture2D>(ContentFolderTextures + sphere.folder() + "color");
+                sphere.Normal = Content.Load<Texture2D>(ContentFolderTextures + sphere.folder() +"normal");
+            }
+            var mainSphere = SpheresArray[textureIndex];
+            SphereEffect.Parameters["albedoTexture"]?.SetValue(mainSphere.Color);
+            SphereEffect.Parameters["normalTexture"]?.SetValue(mainSphere.Normal);
+            SphereEffect.Parameters["metallicTexture"]?.SetValue(mainSphere.Metalness);
+            SphereEffect.Parameters["roughnessTexture"]?.SetValue(mainSphere.Roughness);
+            SphereEffect.Parameters["aoTexture"]?.SetValue(mainSphere.Ao);
+        }
 
-            normals = Content.Load<Texture2D>(ContentFolderTextures + folder +"normal");
-            ao = Content.Load<Texture2D>(ContentFolderTextures + folder + "ao");
-            metalness = Content.Load<Texture2D>(ContentFolderTextures +  folder + "metalness");
-            roughness = Content.Load<Texture2D>(ContentFolderTextures + folder + "roughness");
-            albedo = Content.Load<Texture2D>(ContentFolderTextures + folder + "color");
-
-            SphereEffect.Parameters["albedoTexture"]?.SetValue(albedo);
-            SphereEffect.Parameters["normalTexture"]?.SetValue(normals);
-            SphereEffect.Parameters["metallicTexture"]?.SetValue(metalness);
-            SphereEffect.Parameters["roughnessTexture"]?.SetValue(roughness);
-            SphereEffect.Parameters["aoTexture"]?.SetValue(ao);
+        private void LoadMusic() 
+        {
+            Song = Content.Load<Song>(ContentFolderMusic + "soundtrack");
+            MediaPlayer.IsRepeating = true;
         }
 
         private void DrawSkybox()
@@ -553,7 +646,6 @@ namespace TGC.MonoGame.TP
             }
         }
     
-
         private void ObstacleContact()
         {
             var boundingSphere = new BepuUtilities.BoundingSphere(Utils.ToNumericVector3(SpherePosition), 5f);
@@ -576,6 +668,9 @@ namespace TGC.MonoGame.TP
                     FinalBossStage = false;
                 }
         }
+
     }
+
+
 
 }
