@@ -110,19 +110,18 @@ namespace TGC.MonoGame.TP
         //Music
         private Song Song { get; set; }
         private SoundEffect JumpSound { get; set; }
-        private SoundEffect LoosingSound { get; set; }
-
+        private SoundEffect LoseSound { get; set; }
+        private SoundEffect ButtonSound;
         //Menu
         private Button PlayButton;
         private Button QuitButton;
         private Button RestartButton;
         private Button LeftButton;
         private Button RightButton;
-        private MouseState  mouseState;
-        private MouseState  previousMouseState;
+        private MouseState  MouseState;
+        private MouseState  PreviousMouseState;
         private KeyboardState KeyboardState;
         private KeyboardState PreviousKeyboardState;
-
         enum GameState
         {
             StartMenu,
@@ -130,8 +129,10 @@ namespace TGC.MonoGame.TP
             Playing,
             Paused
         }
-
         private GameState gameState;
+
+        private bool GodMode;
+        private int respawn=0;
 
         /// <summary>
         ///     Se llama una sola vez, al principio cuando se ejecuta el ejemplo.
@@ -183,13 +184,13 @@ namespace TGC.MonoGame.TP
             };
 
             Camera = new TargetCamera(GraphicsDevice.Viewport.AspectRatio, new Vector3(0, 20, 60), Vector3.Zero);
-            
+            GodMode = false;
             UpdateCamera();
 
             //Menu
             gameState = GameState.StartMenu;
             PreviousKeyboardState = KeyboardState = Keyboard.GetState();
-            previousMouseState = mouseState = Mouse.GetState();
+            PreviousMouseState = MouseState = Mouse.GetState();
             base.Initialize();
         }
 
@@ -238,20 +239,22 @@ namespace TGC.MonoGame.TP
             Powerups.Add(new Powerup(new Vector3(1721,30,2785),100,0,CylinderModel,speedTexture,normalTexture,Camera));
             //Bepu
             LoadPhysics();
-
+            //Music
             Song = Content.Load<Song>(ContentFolderMusic + "soundtrack");
             MediaPlayer.IsRepeating = true;
             JumpSound = Content.Load<SoundEffect>(ContentFolderMusic + "jumpEffect");
-            LoosingSound = Content.Load<SoundEffect>(ContentFolderMusic + "loosingEffect");
+            LoseSound = Content.Load<SoundEffect>(ContentFolderMusic + "loosingEffect");
+            ButtonSound = Content.Load<SoundEffect>(ContentFolderMusic + "buttonEffect");
             SpriteFont = Content.Load<SpriteFont>(ContentFolderSpriteFonts + "CascadiaCode/CascadiaCodePL");
 
             //Menu
-            //Menu = Content.Load<Texture2D>(ContentFolderTextures + "menu/menu");
-            PlayButton = new Button(Content.Load<Texture2D>(ContentFolderTextures + "menu/play"), new Vector2(GraphicsDevice.Viewport.Width/7f, GraphicsDevice.Viewport.Height/5),0.3f);
-            QuitButton = new Button(Content.Load<Texture2D>(ContentFolderTextures + "menu/quit"), new Vector2(GraphicsDevice.Viewport.Width/7f, GraphicsDevice.Viewport.Height/2),0.3f);
-            RestartButton = new Button(Content.Load<Texture2D>(ContentFolderTextures + "menu/restart"), new Vector2(GraphicsDevice.Viewport.Width/7f, GraphicsDevice.Viewport.Height/2.9f),0.3f);
-            LeftButton= new Button(Content.Load<Texture2D>(ContentFolderTextures + "menu/left-button"), new Vector2(GraphicsDevice.Viewport.Width*0.42f, GraphicsDevice.Viewport.Height*0.7f),0.1f);
-            RightButton = new Button(Content.Load<Texture2D>(ContentFolderTextures + "menu/right-button"), new Vector2(GraphicsDevice.Viewport.Width*0.52f, GraphicsDevice.Viewport.Height*0.7f),0.1f);
+            var width = GraphicsDevice.Viewport.Width;
+            var height = GraphicsDevice.Viewport.Height;
+            PlayButton = new Button(Content.Load<Texture2D>(ContentFolderTextures + "menu/play"), new Vector2(width/7f, height/5),0.3f,ButtonSound);
+            QuitButton = new Button(Content.Load<Texture2D>(ContentFolderTextures + "menu/quit"), new Vector2(width/7f, height/2),0.3f,ButtonSound);
+            RestartButton = new Button(Content.Load<Texture2D>(ContentFolderTextures + "menu/restart"), new Vector2(width/7f, height/2.9f),0.3f,ButtonSound);
+            LeftButton= new Button(Content.Load<Texture2D>(ContentFolderTextures + "menu/left-button"), new Vector2(width*0.42f, height*0.7f),0.1f,ButtonSound);
+            RightButton = new Button(Content.Load<Texture2D>(ContentFolderTextures + "menu/right-button"), new Vector2(width*0.52f, height*0.7f),0.1f,ButtonSound);
             
             base.LoadContent();
         }
@@ -281,34 +284,33 @@ namespace TGC.MonoGame.TP
         protected override void Update(GameTime gameTime)
         {
             KeyboardState = Keyboard.GetState();
-            mouseState = Mouse.GetState();
-            var deltaTime= Convert.ToSingle(gameTime.ElapsedGameTime.TotalSeconds);
+            MouseState = Mouse.GetState();
 
             LINEAR_SPEED = SpheresArray[textureIndex].speed();
             SALTO_BUFFER_VALUE = SpheresArray[textureIndex].jump();
 
+            if(PreviousKeyboardState.IsKeyDown(Keys.F10) && KeyboardState.IsKeyUp(Keys.F10))    GodMode = !GodMode;  
             PowerupManager(gameTime);
 
             //Menu
             if(gameState == GameState.Playing)
             {
-                MovementManager(deltaTime);
+                MovementManager();
             }
             else if(gameState == GameState.StartMenu)
             {
-                if (PlayButton.IsPressed(previousMouseState,mouseState))    gameState = GameState.Playing;
-                else if(QuitButton.IsPressed(previousMouseState,mouseState))    Exit();
-                else if(RightButton.IsPressed(previousMouseState,mouseState))   textureIndex = textureIndex >=2? 0:textureIndex+1;
-                else if(LeftButton.IsPressed(previousMouseState,mouseState))    textureIndex = textureIndex <=0? 2:textureIndex-1;
+                if (PlayButton.IsPressed(PreviousMouseState,MouseState))    gameState = GameState.Playing;
+                else if(QuitButton.IsPressed(PreviousMouseState,MouseState))    Exit();
+                else if(RightButton.IsPressed(PreviousMouseState,MouseState))   textureIndex = textureIndex >=2? 0:textureIndex+1;
+                else if(LeftButton.IsPressed(PreviousMouseState,MouseState))    textureIndex = textureIndex <=0? 2:textureIndex-1;
             }
             else if(gameState == GameState.Paused)
             {
-                if (PlayButton.IsPressed(previousMouseState,mouseState))    gameState = GameState.Playing;
-                else if(RestartButton.IsPressed(previousMouseState,mouseState))     {Initialize(); gameState = GameState.StartMenu;}
-                else if(QuitButton.IsPressed(previousMouseState,mouseState))    Exit();
+                if (PlayButton.IsPressed(PreviousMouseState,MouseState))    gameState = GameState.Playing;
+                else if(RestartButton.IsPressed(PreviousMouseState,MouseState))     {Initialize(); gameState = GameState.StartMenu;}
+                else if(QuitButton.IsPressed(PreviousMouseState,MouseState))    Exit();
             }
 
-            // Capturar Input teclado
             if (PreviousKeyboardState.IsKeyDown(Keys.Escape) && KeyboardState.IsKeyUp(Keys.Escape) )
             {
                 if(gameState == GameState.Playing)
@@ -316,6 +318,7 @@ namespace TGC.MonoGame.TP
                 else if(gameState == GameState.Paused)
                     gameState = GameState.Playing;
             }
+            //
 
             BodyReference body = Simulation.Bodies.GetBodyReference(SphereHandle);
             var prevLinearVelocity = body.Velocity.Linear.Y;
@@ -329,22 +332,14 @@ namespace TGC.MonoGame.TP
                 FinalBossStage = true;
             }
             
-            
             CheckpointManager();
             ObstacleContact();
-
 
             Simulation.Timestep(1 / 60f, ThreadDispatcher);
 
             var pose = Simulation.Bodies.GetBodyReference(SphereHandle).Pose;
             SpherePosition = pose.Position;
-            var quaternion = pose.Orientation;
-            var world = Matrix.CreateScale(BepuSphere.Radius) *
-                            Matrix.CreateFromQuaternion(new Quaternion(quaternion.X, quaternion.Y, quaternion.Z,
-                                quaternion.W)) *
-                            Matrix.CreateTranslation(new Vector3(SpherePosition.X, SpherePosition.Y, SpherePosition.Z));
-            SphereWorld = world;
-            SpherePosition = pose.Position;
+            SphereWorld = Matrix.CreateScale(BepuSphere.Radius) * Matrix.CreateFromQuaternion(pose.Orientation) * Matrix.CreateTranslation(SpherePosition);
             var bodyRef = Simulation.Bodies.GetBodyReference(SphereHandle);
 
             if(MathHelper.Distance(bodyRef.Velocity.Linear.Y, prevLinearVelocity) < 0.2f 
@@ -353,14 +348,14 @@ namespace TGC.MonoGame.TP
             if(MediaPlayer.State == MediaState.Stopped)
                 MediaPlayer.Play(Song,new TimeSpan(0,0,14));
             
-            previousMouseState = mouseState;
+            PreviousMouseState = MouseState;
             PreviousKeyboardState = KeyboardState;
 
             UpdateCamera();
 
             base.Update(gameTime);
         }     
-        protected void MovementManager(float deltaTime){
+        protected void MovementManager(){
             var FinalSpeed = LINEAR_SPEED;
             if(CurrentPowerUp != null)
             {
@@ -404,10 +399,25 @@ namespace TGC.MonoGame.TP
             {
                 bodyRef.ApplyLinearImpulse(Utils.ToNumericVector3(SphereLateralDirection * FinalSpeed*0.5f));
             }
+            if(GodMode)
+            {
+                if(PreviousKeyboardState.IsKeyDown(Keys.Right) && KeyboardState.IsKeyUp(Keys.Right)) 
+                {
+                    respawn = respawn>=7? 0:respawn+1;
+                    bodyRef.Pose.Position =   Utils.ToNumericVector3(Checkpoints[respawn].Position);
+                }
+                
+                if(PreviousKeyboardState.IsKeyDown(Keys.Left) && KeyboardState.IsKeyUp(Keys.Left))  
+                {
+                    respawn = respawn <=0? 2:respawn-1; ;
+                    bodyRef.Pose.Position =   Utils.ToNumericVector3(Checkpoints[respawn].Position);
+                }
+                   
+            }
             
-            AdministrarSalto(deltaTime);
+            AdministrarSalto();
         }
-        protected void AdministrarSalto(float deltaTime){
+        protected void AdministrarSalto(){
             var bodyRef= Simulation.Bodies.GetBodyReference(SphereHandle);
             var FinalImpulse = SALTO_BUFFER_VALUE;
             if(CurrentPowerUp != null)
@@ -420,7 +430,6 @@ namespace TGC.MonoGame.TP
                 //SphereVelocity += Vector3.Up * SALTO_BUFFER_VALUE;
                 bodyRef.ApplyLinearImpulse(Utils.ToNumericVector3(Vector3.Up * FinalImpulse));
                 OnGround = false;
-                  // Fire and forget play
                 JumpSound.Play();
             }  
         }
@@ -431,7 +440,7 @@ namespace TGC.MonoGame.TP
 
         protected bool PelotaSeCayo(){
             var state = SpherePosition.Y < COORDENADA_Y_MAS_BAJA;
-            if(state) LoosingSound.Play();
+            if(state) LoseSound.Play();
             return state;
         }
         
@@ -458,12 +467,8 @@ namespace TGC.MonoGame.TP
             Utils.SetEffect(Camera, SphereEffect, SphereWorld);
             SphereModel.Meshes.FirstOrDefault().Draw();
 
-            foreach (var powerUp in Powerups)
-            {
-                powerUp.Render(DefaultEffect, gameTime);
-            }
+            foreach (var powerUp in Powerups)   powerUp.Render(DefaultEffect, gameTime);
 
-            
             if(FinalBossStage)
             {
             var pose = Simulation.Bodies.GetBodyReference(BossSphereHandle).Pose;
@@ -472,12 +477,13 @@ namespace TGC.MonoGame.TP
             SphereModel.Meshes.FirstOrDefault().Draw();
             }
 
+            //Hud 
             var fps = MathF.Round(1/Convert.ToSingle(gameTime.ElapsedGameTime.TotalSeconds),1);
-
             SpriteBatch.Begin(SpriteSortMode.BackToFront, BlendState.AlphaBlend, SamplerState.PointClamp, DepthStencilState.Default, RasterizerState.CullCounterClockwise);
             var position= new Vector3(MathF.Round(SpherePosition.X,1), MathF.Round(SpherePosition.Y,1), MathF.Round(SpherePosition.Z,1));
-            SpriteBatch.DrawString(SpriteFont, "Position:" + position.ToString(), new Vector2(GraphicsDevice.Viewport.Width - 500, 0), Color.White);
-            SpriteBatch.DrawString(SpriteFont, "FPS " + fps.ToString(), new Vector2(GraphicsDevice.Viewport.Width-1000, 0), Color.White);
+            SpriteBatch.DrawString(SpriteFont, "GODMODE :" + (GodMode?"ON":"OFF"), new Vector2(GraphicsDevice.Viewport.Width/4, 0), Color.Black);
+            SpriteBatch.DrawString(SpriteFont, "Position:" + position.ToString(), new Vector2(GraphicsDevice.Viewport.Width - 500, 0), Color.Black);
+            SpriteBatch.DrawString(SpriteFont, "FPS " + fps.ToString(), new Vector2(GraphicsDevice.Viewport.Width-1000, 0), Color.Black);
 
             //Menu
             //draw the start menu

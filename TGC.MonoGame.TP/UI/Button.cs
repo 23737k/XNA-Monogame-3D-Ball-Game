@@ -1,6 +1,7 @@
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
 using Microsoft.Xna.Framework.Input;
+using Microsoft.Xna.Framework.Audio;
 
 namespace TGC.MonoGame.TP.UI
 {   
@@ -11,8 +12,9 @@ namespace TGC.MonoGame.TP.UI
         private Vector2 Position;
         private Texture2D Texture;
         private bool Pressed;
+        private SoundEffect SoundEffect;
         
-        public Button(Texture2D texture, Vector2 position, float scale)
+        public Button(Texture2D texture, Vector2 position, float scale,SoundEffect soundEffect = null)
         {
             float scaleFactor = 0.9f; 
             int originalWidth = (int)(texture.Width * scale);
@@ -29,13 +31,18 @@ namespace TGC.MonoGame.TP.UI
             this.Texture = texture;
             this.Position = position;
             this.Pressed = false;
+            this.SoundEffect = soundEffect;
         }
         
         public bool IsPressed(MouseState prev, MouseState cur)
         {
             var mouseClickRect = new Rectangle(cur.X, cur.Y, 10, 10);
             Pressed = cur.LeftButton == ButtonState.Pressed && mouseClickRect.Intersects(NormalSize);
-            return prev.LeftButton == ButtonState.Pressed && cur.LeftButton == ButtonState.Released && mouseClickRect.Intersects(NormalSize);
+            var state = prev.LeftButton == ButtonState.Pressed && cur.LeftButton == ButtonState.Released && mouseClickRect.Intersects(NormalSize);
+            if(state && SoundEffect!= null)
+                SoundEffect.Play(); 
+
+            return state;
         }
 
         public void Render(SpriteBatch spriteBatch)

@@ -182,6 +182,12 @@
 /processorParam:TextureFormat=Compressed
 /build:Models/tgc-logo/tgc-logo.fbx
 
+#begin Music/buttonEffect.mp3
+/importer:Mp3Importer
+/processor:SoundEffectProcessor
+/processorParam:Quality=Best
+/build:Music/buttonEffect.mp3
+
 #begin Music/jumpEffect.mp3
 /importer:Mp3Importer
 /processor:SoundEffectProcessor
