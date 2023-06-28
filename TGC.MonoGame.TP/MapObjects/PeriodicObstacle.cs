@@ -6,6 +6,7 @@ using TGC.MonoGame.TP.Geometries;
 using BepuPhysics;
 using BepuPhysics.Collidables;
 using NumericVector3 = System.Numerics.Vector3;
+using TGC.MonoGame.TP.Collisions;
 
 namespace TGC.MonoGame.TP.MapObjects
 {
@@ -21,6 +22,8 @@ namespace TGC.MonoGame.TP.MapObjects
         public float VerticalOffset {get;set;}
         public float HorizontallOffset {get;set;}
         public string Axis {get;set;}
+        public BoundingBox BoundingBox {get;set;}
+
 
 
         public PeriodicObstacle (Matrix world, BoxPrimitive cubePrimitive, Simulation simulation, Camera camera,
@@ -36,6 +39,7 @@ namespace TGC.MonoGame.TP.MapObjects
             this.HorizontallOffset=horizontalOffset;
             this.Axis=axis;
             this.previousPosition = new NumericVector3(World.Translation.X, World.Translation.Y,World.Translation.Z); 
+            this.BoundingBox = BoundingVolumesExtensions.FromMatrix(world);
             loadObstacle();
         }
         private  NumericVector3 previousPosition;
@@ -61,9 +65,12 @@ namespace TGC.MonoGame.TP.MapObjects
                 default:
                     throw new ArgumentException("Eje no válido");
             }
+            World.Decompose(out var scale, out var rotation, out var pos);
+            BoundingBox = BoundingVolumesExtensions.FromMatrix(Matrix.CreateScale(scale)*Matrix.CreateTranslation(currentPosition));
             bodyRef.Pose.Position = currentPosition;
             bodyRef.Velocity.Linear = (currentPosition- previousPosition)* (1 / deltaTiempo);
             previousPosition = currentPosition;
+            
         }
         
         public void Render(Effect effect, GameTime gameTime)

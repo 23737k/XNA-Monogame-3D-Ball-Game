@@ -1,12 +1,11 @@
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
 using TGC.MonoGame.TP.Cameras;
-using TGC.MonoGame.TP.Geometries;
 using BepuPhysics;
 using BepuPhysics.Collidables;
 using NumericVector3 = System.Numerics.Vector3;
 using System.Linq;
-
+using TGC.MonoGame.TP.Collisions;
 
 namespace TGC.MonoGame.TP.MapObjects
 {

@@ -119,6 +119,8 @@ namespace TGC.MonoGame.TP
         private Button RestartButton;
         private Button LeftButton;
         private Button RightButton;
+        private Button MusicEnabledButton;
+        private Button MusicDisabledButton;
         private MouseState  MouseState;
         private MouseState  PreviousMouseState;
         private KeyboardState KeyboardState;
@@ -134,6 +136,7 @@ namespace TGC.MonoGame.TP
 
         private bool GodMode;
         private int respawn=0;
+        private BoundingFrustum BoundingFrustum;
 
         /// <summary>
         ///     Se llama una sola vez, al principio cuando se ejecuta el ejemplo.
@@ -168,7 +171,7 @@ namespace TGC.MonoGame.TP
             CurrentCheckpoint = 0;
         
             // Esfera
-            SpherePosition = Checkpoints[CurrentCheckpoint].Position;//new Vector3(1736,15,11505);//Checkpoints[CurrentCheckpoint].Position;//new Vector3(0,50,0);//new Vector3(1732,20, 8073);
+            SpherePosition = Checkpoints[CurrentCheckpoint].Position;
             //
             SphereWorld = Matrix.CreateTranslation(SpherePosition);
             SphereFrontDirection =  Vector3.Backward;
@@ -186,12 +189,14 @@ namespace TGC.MonoGame.TP
 
             Camera = new TargetCamera(GraphicsDevice.Viewport.AspectRatio, new Vector3(0, 20, 60), Vector3.Zero);
             GodMode = false;
+            BoundingFrustum = new BoundingFrustum(Camera.View * Camera.Projection);
             UpdateCamera();
 
             //Menu
             gameState = GameState.StartMenu;
             PreviousKeyboardState = KeyboardState = Keyboard.GetState();
             PreviousMouseState = MouseState = Mouse.GetState();
+
             base.Initialize();
         }
 
@@ -263,6 +268,8 @@ namespace TGC.MonoGame.TP
             RestartButton = new Button(Content.Load<Texture2D>(ContentFolderTextures + "menu/restart"), new Vector2(width/7f, height/2.9f),0.3f,ButtonSound);
             LeftButton= new Button(Content.Load<Texture2D>(ContentFolderTextures + "menu/left-button"), new Vector2(width*0.42f, height*0.7f),0.1f,ButtonSound);
             RightButton = new Button(Content.Load<Texture2D>(ContentFolderTextures + "menu/right-button"), new Vector2(width*0.52f, height*0.7f),0.1f,ButtonSound);
+            MusicEnabledButton = new Button(Content.Load<Texture2D>(ContentFolderTextures + "menu/music"), new Vector2(width*0.01f, height*0.01f),0.1f,ButtonSound);
+            MusicDisabledButton = new Button(Content.Load<Texture2D>(ContentFolderTextures + "menu/music-disabled"), new Vector2(width*0.01f, height*0.01f),0.1f,ButtonSound);
             
             base.LoadContent();
         }
@@ -286,8 +293,9 @@ namespace TGC.MonoGame.TP
             Camera.Position = SpherePosition + orbitalPosition + upDistance;
 
             Camera.TargetPosition = SpherePosition;
-
+            BoundingFrustum.Matrix = Camera.View * Camera.Projection;
             Camera.BuildView();
+            
         }
         protected override void Update(GameTime gameTime)
         {
@@ -311,12 +319,16 @@ namespace TGC.MonoGame.TP
                 else if(QuitButton.IsPressed(PreviousMouseState,MouseState))    Exit();
                 else if(RightButton.IsPressed(PreviousMouseState,MouseState))   textureIndex = textureIndex >=2? 0:textureIndex+1;
                 else if(LeftButton.IsPressed(PreviousMouseState,MouseState))    textureIndex = textureIndex <=0? 2:textureIndex-1;
+                else if(MusicEnabledButton.IsPressed(PreviousMouseState,MouseState)&& MediaPlayer.State == MediaState.Playing)  MediaPlayer.Pause();
+                else if(MusicEnabledButton.IsPressed(PreviousMouseState,MouseState)&& MediaPlayer.State == MediaState.Paused)      MediaPlayer.Resume();
             }
             else if(gameState == GameState.Paused)
             {
                 if (PlayButton.IsPressed(PreviousMouseState,MouseState))    gameState = GameState.Playing;
                 else if(RestartButton.IsPressed(PreviousMouseState,MouseState))     {RestoreGame();}
                 else if(QuitButton.IsPressed(PreviousMouseState,MouseState))    Exit();
+                else if(MusicEnabledButton.IsPressed(PreviousMouseState,MouseState)&& MediaPlayer.State == MediaState.Playing)  MediaPlayer.Pause();
+                else if(MusicEnabledButton.IsPressed(PreviousMouseState,MouseState)&& MediaPlayer.State == MediaState.Paused)      MediaPlayer.Resume();
             }
 
             if (PreviousKeyboardState.IsKeyDown(Keys.Escape) && KeyboardState.IsKeyUp(Keys.Escape) )
@@ -461,10 +473,16 @@ namespace TGC.MonoGame.TP
             DefaultEffect.Parameters["ModelTexture"].SetValue(FloorT);
             DefaultEffect.Parameters["NormalTexture"].SetValue(FloorN);
             //Dibujo el suelo
-            foreach(StaticObstacle obstacle in StaticObstacles)   {obstacle.Render(DefaultEffect,gameTime);}
+            foreach(StaticObstacle obstacle in StaticObstacles)   
+            {
+                obstacle.Render(DefaultEffect,gameTime);
+            }            
              //Dibujo los cilindros
             foreach(MovingObstacle obstacle in MovingObstacles)    {obstacle.Render(DefaultEffect,gameTime);}
-            foreach(PeriodicObstacle obstacle in PeriodicObstacles)    {obstacle.Render(DefaultEffect,gameTime);}
+            foreach(PeriodicObstacle obstacle in PeriodicObstacles)    
+            {
+                obstacle.Render(DefaultEffect,gameTime);
+            }
 
             Utils.SetEffect(Camera, SphereEffect, SphereWorld);
             SphereModel.Meshes.FirstOrDefault().Draw();
@@ -483,7 +501,8 @@ namespace TGC.MonoGame.TP
             var fps = MathF.Round(1/Convert.ToSingle(gameTime.ElapsedGameTime.TotalSeconds),1);
             SpriteBatch.Begin(SpriteSortMode.BackToFront, BlendState.AlphaBlend, SamplerState.PointClamp, DepthStencilState.Default, RasterizerState.CullCounterClockwise);
             var position= new Vector3(MathF.Round(SpherePosition.X,1), MathF.Round(SpherePosition.Y,1), MathF.Round(SpherePosition.Z,1));
-            SpriteBatch.DrawString(SpriteFont, "GODMODE :" + (GodMode?"ON":"OFF"), new Vector2(GraphicsDevice.Viewport.Width/4, 0), Color.Black);
+            SpriteBatch.DrawString(SpriteFont, "GODMODE (F10) :" + (GodMode?"ON":"OFF"), new Vector2(GraphicsDevice.Viewport.Width/4, 0), Color.Black);
+            if(GodMode)    SpriteBatch.DrawString(SpriteFont, "<-USE THE ARROW KEYS TO MOVE TO THE NEXT CHECKPOINT->", new Vector2(GraphicsDevice.Viewport.Width/3, GraphicsDevice.Viewport.Height*0.9F), Color.Black);
             SpriteBatch.DrawString(SpriteFont, "Position:" + position.ToString(), new Vector2(GraphicsDevice.Viewport.Width - 500, 0), Color.Black);
             SpriteBatch.DrawString(SpriteFont, "FPS " + fps.ToString(), new Vector2(GraphicsDevice.Viewport.Width-1000, 0), Color.Black);
 
@@ -495,6 +514,10 @@ namespace TGC.MonoGame.TP
                 QuitButton.Render(SpriteBatch);
                 RightButton.Render(SpriteBatch);
                 LeftButton.Render(SpriteBatch);
+                if(MediaPlayer.State == MediaState.Paused)
+                    MusicDisabledButton.Render(SpriteBatch);
+                else
+                    MusicEnabledButton.Render(SpriteBatch);
                 var mainSphere = SpheresArray[textureIndex];
                 SphereEffect.Parameters["albedoTexture"]?.SetValue(mainSphere.Color);
                 SphereEffect.Parameters["normalTexture"]?.SetValue(mainSphere.Normal);
@@ -508,6 +531,10 @@ namespace TGC.MonoGame.TP
                 PlayButton.Render(SpriteBatch);
                 RestartButton.Render(SpriteBatch);
                 QuitButton.Render(SpriteBatch);
+                if(MediaPlayer.State == MediaState.Paused)
+                    MusicDisabledButton.Render(SpriteBatch);
+                else
+                    MusicEnabledButton.Render(SpriteBatch);
             }
 
             SpriteBatch.End();

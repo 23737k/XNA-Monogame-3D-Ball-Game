@@ -5,6 +5,7 @@ using TGC.MonoGame.TP.Geometries;
 using BepuPhysics;
 using BepuPhysics.Collidables;
 using NumericVector3 = System.Numerics.Vector3;
+using TGC.MonoGame.TP.Collisions;
 
 namespace TGC.MonoGame.TP.MapObjects
 {
@@ -14,8 +15,8 @@ namespace TGC.MonoGame.TP.MapObjects
         public Matrix World {get;set;}
         public Camera Camera {get;set;}
         public BoxPrimitive GeometricPrimitive {get;set;}
-        public StaticHandle StaticHandle {get;set;}
-
+        public StaticHandle StaticHandle {get;set;}      
+        public BoundingBox BoundingBox {get;set;}
 
         public StaticObstacle (Matrix world, BoxPrimitive geometricPrimitive, Simulation simulation, Camera camera)
         {
@@ -23,6 +24,7 @@ namespace TGC.MonoGame.TP.MapObjects
             this.World = world;
             this.Camera = camera;
             this.GeometricPrimitive = geometricPrimitive;
+            this.BoundingBox = BoundingVolumesExtensions.FromMatrix(world);
             loadObstacle();
         }
 
