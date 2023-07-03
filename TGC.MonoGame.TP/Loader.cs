@@ -117,11 +117,11 @@ namespace TGC.MonoGame.TP
 
             //Pared que aplastan contra el suelo
             Obstacles.Add(new PeriodicObstacle(Matrix.CreateScale(80,10,80) * Matrix.CreateTranslation(1720,45,4240),new BoxPrimitive(GraphicsDevice),Simulation,
-                    Camera,35f,5f,45,0f, "Y"));
+                    Camera,32f,5f,45,0f, "Y"));
             Obstacles.Add(new PeriodicObstacle(Matrix.CreateScale(80,10,80) * Matrix.CreateTranslation(1720,45,4430),new BoxPrimitive(GraphicsDevice),Simulation,
-                    Camera,35f,5f,45,+MathHelper.PiOver4, "Y"));
+                    Camera,32f,5f,45,+MathHelper.PiOver4, "Y"));
             Obstacles.Add(new PeriodicObstacle(Matrix.CreateScale(80,10,80) * Matrix.CreateTranslation(1720,45,4620),new BoxPrimitive(GraphicsDevice),Simulation,
-                    Camera,35f,5f,45,MathHelper.PiOver4, "Y"));
+                    Camera,32f,5f,45,MathHelper.PiOver4, "Y"));
             //Plataformas que suben y bajan
             Obstacles.Add(new PeriodicObstacle(Matrix.CreateScale(50,10,50) * Matrix.CreateTranslation(600f,-60,4.5f),new BoxPrimitive(GraphicsDevice),Simulation,
                 Camera,-70f,3f,-60f,0f, "Y"));

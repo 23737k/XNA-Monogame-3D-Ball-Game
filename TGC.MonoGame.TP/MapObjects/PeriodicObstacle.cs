@@ -45,8 +45,8 @@ namespace TGC.MonoGame.TP.MapObjects
         private  NumericVector3 previousPosition;
         public void UpdateMovement(GameTime gameTime)
         {
-            var time = Convert.ToSingle(gameTime.TotalGameTime.TotalSeconds); 
-            var deltaTiempo = (float)gameTime.ElapsedGameTime.TotalSeconds;
+            var time = Convert.ToSingle(gameTime.TotalGameTime.TotalSeconds)+0.0001f; 
+            var deltaTiempo = Convert.ToSingle(gameTime.ElapsedGameTime.TotalSeconds)+0.0001f;
             var bodyRef = Simulation.Bodies.GetBodyReference(BodyHandle);
             
             NumericVector3 currentPosition;
@@ -72,10 +72,8 @@ namespace TGC.MonoGame.TP.MapObjects
             previousPosition = currentPosition;
             
         }
-        
         public void Render(Effect effect, GameTime gameTime)
         {
-            UpdateMovement(gameTime);
             var bodyPosition = Simulation.Bodies.GetBodyReference(BodyHandle).Pose.Position;
             World.Decompose(out var scale, out var rotation, out var pos);
         

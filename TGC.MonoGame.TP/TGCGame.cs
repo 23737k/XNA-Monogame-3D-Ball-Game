@@ -356,6 +356,7 @@ namespace TGC.MonoGame.TP
             ObstacleContact();
 
             Simulation.Timestep(1 / 60f, ThreadDispatcher);
+            foreach(PeriodicObstacle obstacle in PeriodicObstacles)    {obstacle.UpdateMovement(gameTime);}
 
             var pose = Simulation.Bodies.GetBodyReference(SphereHandle).Pose;
             SpherePosition = pose.Position;
@@ -475,13 +476,15 @@ namespace TGC.MonoGame.TP
             //Dibujo el suelo
             foreach(StaticObstacle obstacle in StaticObstacles)   
             {
-                obstacle.Render(DefaultEffect,gameTime);
+                if(BoundingFrustum.Intersects(obstacle.BoundingBox))
+                    obstacle.Render(DefaultEffect,gameTime);
             }            
              //Dibujo los cilindros
             foreach(MovingObstacle obstacle in MovingObstacles)    {obstacle.Render(DefaultEffect,gameTime);}
             foreach(PeriodicObstacle obstacle in PeriodicObstacles)    
             {
-                obstacle.Render(DefaultEffect,gameTime);
+                if(BoundingFrustum.Intersects(obstacle.BoundingBox))
+                    obstacle.Render(DefaultEffect,gameTime);
             }
 
             Utils.SetEffect(Camera, SphereEffect, SphereWorld);
