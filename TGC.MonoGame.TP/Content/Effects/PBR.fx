@@ -104,6 +104,16 @@ struct VertexShaderOutput
 	float4 WorldPosition : TEXCOORD2;
 };
 
+texture environmentMap;
+samplerCUBE environmentMapSampler = sampler_state
+{
+    Texture = (environmentMap);
+    MagFilter = Linear;
+    MinFilter = Linear;
+    AddressU = Clamp;
+    AddressV = Clamp;
+};
+
 //Vertex Shader
 VertexShaderOutput MainVS(VertexShaderInput input)
 {
@@ -248,11 +258,39 @@ float4 MainPS(VertexShaderOutput input) : COLOR
     return float4(color, 1.0);
 }
 
+float4 EnvironmentMapPS(VertexShaderOutput input) : COLOR
+{
+	//Normalizar vectores
+	float3 normal = normalize(input.WorldNormal.xyz);
+    
+	// Get the texel from the texture
+	float3 baseColor = MainPS(input).rgb;
+	    
+	//Obtener texel de CubeMap
+	float3 view = normalize(eyePosition.xyz - input.WorldPosition.xyz);
+	float3 reflection = reflect(view, normal);
+	float3 reflectionColor = texCUBE(environmentMapSampler, reflection).rgb;
+
+    float fresnel = saturate((1.0 - dot(normal, view)));
+
+    return float4(lerp(baseColor, reflectionColor, fresnel), 1);
+}
+
+
 technique PBR
 {
 	pass P0
 	{
 		VertexShader = compile VS_SHADERMODEL MainVS();
 		PixelShader = compile PS_SHADERMODEL MainPS();
+	}
+};
+
+technique EnvironmentMap
+{
+	pass P0
+	{
+		VertexShader = compile VS_SHADERMODEL MainVS();
+		PixelShader = compile PS_SHADERMODEL EnvironmentMapPS();
 	}
 };

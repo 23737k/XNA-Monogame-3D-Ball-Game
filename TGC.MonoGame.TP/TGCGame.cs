@@ -138,6 +138,9 @@ namespace TGC.MonoGame.TP
         private int respawn=0;
         private BoundingFrustum BoundingFrustum;
 
+        //POST-PROCESING
+        private RenderTargetCube EnviromentMapRenderTarget;
+
         /// <summary>
         ///     Se llama una sola vez, al principio cuando se ejecuta el ejemplo.
         ///     Escribir aqui el codigo de inicializacion: el procesamiento que podemos pre calcular para nuestro juego.
@@ -147,11 +150,14 @@ namespace TGC.MonoGame.TP
             var rasterizerState = new RasterizerState();
             rasterizerState.CullMode = CullMode.None;
             GraphicsDevice.RasterizerState = rasterizerState;
+            
 
             // Configuro las dimensiones de la pantalla.
             Graphics.PreferredBackBufferWidth = GraphicsAdapter.DefaultAdapter.CurrentDisplayMode.Width - 100;
             Graphics.PreferredBackBufferHeight = GraphicsAdapter.DefaultAdapter.CurrentDisplayMode.Height - 100;
             //Graphics.IsFullScreen= true;
+            EnviromentMapRenderTarget =new RenderTargetCube(GraphicsDevice, 1000, false,
+                SurfaceFormat.Color, DepthFormat.Depth24, 0, RenderTargetUsage.DiscardContents);
             Graphics.ApplyChanges();
             // Seria hasta aca.
 
@@ -271,6 +277,8 @@ namespace TGC.MonoGame.TP
             MusicEnabledButton = new Button(Content.Load<Texture2D>(ContentFolderTextures + "menu/music"), new Vector2(width*0.01f, height*0.01f),0.1f,ButtonSound);
             MusicDisabledButton = new Button(Content.Load<Texture2D>(ContentFolderTextures + "menu/music-disabled"), new Vector2(width*0.01f, height*0.01f),0.1f,ButtonSound);
             
+            
+
             base.LoadContent();
         }
 
@@ -468,6 +476,89 @@ namespace TGC.MonoGame.TP
         protected override void Draw(GameTime gameTime)
         {
             // Aca deberiamos poner toda la logia de renderizado del juego.
+            
+
+            GraphicsDevice.DepthStencilState = DepthStencilState.Default;
+            // Draw to our cubemap from the robot position
+            for (var face = CubeMapFace.PositiveX; face <= CubeMapFace.NegativeZ; face++)
+            {
+                // Set the render target as our cubemap face, we are drawing the scene in this texture
+                GraphicsDevice.SetRenderTarget(EnviromentMapRenderTarget, face);
+                GraphicsDevice.Clear(ClearOptions.Target | ClearOptions.DepthBuffer, Color.CornflowerBlue, 1f, 0);
+
+                SetCubemapCameraForOrientation(face);
+                UpdateCamera();
+
+                // Draw our scene. Do not draw our tank as it would be occluded by itself 
+                // (if it has backface culling on)
+                GraphicsDevice.Clear(Color.Transparent);
+            DrawSkybox();
+
+            DefaultEffect.Parameters["ModelTexture"].SetValue(FloorT);
+            DefaultEffect.Parameters["NormalTexture"].SetValue(FloorN);
+            //Dibujo el suelo
+            foreach(StaticObstacle obstacle in StaticObstacles)   
+            {
+                if(BoundingFrustum.Intersects(obstacle.BoundingBox))
+                    obstacle.Render(DefaultEffect,gameTime);
+            }            
+             //Dibujo los cilindros
+            foreach(MovingObstacle obstacle in MovingObstacles)    {obstacle.Render(DefaultEffect,gameTime);}
+            foreach(PeriodicObstacle obstacle in PeriodicObstacles)    
+            {
+                if(BoundingFrustum.Intersects(obstacle.BoundingBox))
+                    obstacle.Render(DefaultEffect,gameTime);
+            }
+
+            }
+
+            // Set the render target as null, we are drawing on the screen!
+            GraphicsDevice.SetRenderTarget(null);
+            GraphicsDevice.Clear(ClearOptions.Target | ClearOptions.DepthBuffer, Color.CornflowerBlue, 1f, 0);
+
+
+            GraphicsDevice.Clear(Color.Transparent);
+            DrawSkybox();
+
+            DefaultEffect.Parameters["ModelTexture"].SetValue(FloorT);
+            DefaultEffect.Parameters["NormalTexture"].SetValue(FloorN);
+            //Dibujo el suelo
+            foreach(StaticObstacle obstacle in StaticObstacles)   
+            {
+                if(BoundingFrustum.Intersects(obstacle.BoundingBox))
+                    obstacle.Render(DefaultEffect,gameTime);
+            }            
+             //Dibujo los cilindros
+            foreach(MovingObstacle obstacle in MovingObstacles)    {obstacle.Render(DefaultEffect,gameTime);}
+            foreach(PeriodicObstacle obstacle in PeriodicObstacles)    
+            {
+                if(BoundingFrustum.Intersects(obstacle.BoundingBox))
+                    obstacle.Render(DefaultEffect,gameTime);
+            }
+
+
+            foreach (var powerUp in Powerups)   powerUp.Render(DefaultEffect, gameTime);
+
+            if(FinalBossStage)
+            {
+            var pose = Simulation.Bodies.GetBodyReference(BossSphereHandle).Pose;
+            var bossWorld = Matrix.CreateScale(45f) * Matrix.CreateFromQuaternion(pose.Orientation) * Matrix.CreateTranslation(pose.Position);
+            Utils.SetEffect(Camera,SphereEffect,bossWorld);
+            SphereModel.Meshes.FirstOrDefault().Draw();
+            }
+
+            // Draw our sphere
+
+           
+
+            SphereEffect.CurrentTechnique = SphereEffect.Techniques["EnvironmentMap"];
+            SphereEffect.Parameters["environmentMap"].SetValue(EnviromentMapRenderTarget);
+            SphereEffect.Parameters["eyePosition"].SetValue(Camera.Position);
+
+            Utils.SetEffect(Camera, SphereEffect, SphereWorld);
+            SphereModel.Meshes.FirstOrDefault().Draw();
+
+/*
             GraphicsDevice.Clear(Color.Transparent);
             DrawSkybox();
 
@@ -499,6 +590,7 @@ namespace TGC.MonoGame.TP
             Utils.SetEffect(Camera,SphereEffect,bossWorld);
             SphereModel.Meshes.FirstOrDefault().Draw();
             }
+            */
 
             //Hud 
             var fps = MathF.Round(1/Convert.ToSingle(gameTime.ElapsedGameTime.TotalSeconds),1);
@@ -591,7 +683,7 @@ namespace TGC.MonoGame.TP
         private void InitializeEffect()
         {
             SphereEffect = Content.Load<Effect>(ContentFolderEffects + "PBR");
-            SphereEffect.CurrentTechnique = SphereEffect.Techniques["PBR"];
+            SphereEffect.CurrentTechnique = SphereEffect.Techniques["EnvironmentMap"];
 
             var positions = SphereEffect.Parameters["lightPositions"].Elements;
             var colors = SphereEffect.Parameters["lightColors"].Elements;
@@ -628,7 +720,7 @@ namespace TGC.MonoGame.TP
             rasterizerState.CullMode = CullMode.None;
             Graphics.GraphicsDevice.RasterizerState = rasterizerState;
             SkyBox.Draw(Camera.View, Camera.Projection, SpherePosition+new Vector3(0,-300,0) );
-           GraphicsDevice.RasterizerState = originalRasterizerState;
+            GraphicsDevice.RasterizerState = originalRasterizerState;
         }
         protected override void UnloadContent()
         {
@@ -722,8 +814,45 @@ namespace TGC.MonoGame.TP
             gameState = GameState.StartMenu;
         }
 
+    private void SetCubemapCameraForOrientation(CubeMapFace face)
+        {
+            switch (face)
+            {
+                default:
+                case CubeMapFace.PositiveX:
+                    Camera.FrontDirection = -Vector3.UnitX;
+                    Camera.UpDirection = Vector3.Down;
+                    break;
+
+                case CubeMapFace.NegativeX:
+                    Camera.FrontDirection = Vector3.UnitX;
+                    Camera.UpDirection = Vector3.Down;
+                    break;
+
+                case CubeMapFace.PositiveY:
+                    Camera.FrontDirection = Vector3.Down;
+                    Camera.UpDirection = Vector3.UnitZ;
+                    break;
+
+                case CubeMapFace.NegativeY:
+                    Camera.FrontDirection = Vector3.Up;
+                    Camera.UpDirection = -Vector3.UnitZ;
+                    break;
+
+                case CubeMapFace.PositiveZ:
+                    Camera.FrontDirection = -Vector3.UnitZ;
+                    Camera.UpDirection = Vector3.Down;
+                    break;
+
+                case CubeMapFace.NegativeZ:
+                    Camera.FrontDirection = Vector3.UnitZ;
+                    Camera.UpDirection = Vector3.Down;
+                    break;
+            }
+        }
+    
+
+
+
     }
-
-
-
 }

@@ -13,23 +13,10 @@
 
 #---------------------------------- Content ---------------------------------#
 
-#begin Effects/BasicShader.fx
-/importer:EffectImporter
-/processor:EffectProcessor
-/processorParam:DebugMode=Auto
-/build:Effects/BasicShader.fx
-
-#begin Effects/BlinnPhongTypes.fx
-/importer:EffectImporter
-/processor:EffectProcessor
-/processorParam:DebugMode=Auto
-/build:Effects/BlinnPhongTypes.fx
-
 #begin Effects/ColorShader.fx
 /importer:EffectImporter
 /processor:EffectProcessor
 /processorParam:DebugMode=Auto
-/processorParam:Defines=
 /build:Effects/ColorShader.fx
 
 #begin Effects/PBR.fx
@@ -43,12 +30,6 @@
 /processor:EffectProcessor
 /processorParam:DebugMode=Auto
 /build:Effects/SkyBox.fx
-
-#begin Effects/TextureShader.fx
-/importer:EffectImporter
-/processor:EffectProcessor
-/processorParam:DebugMode=Auto
-/build:Effects/TextureShader.fx
 
 #begin Models/cylinder.fbx
 /importer:FbxImporter

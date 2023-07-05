@@ -111,8 +111,7 @@ float4 MainPS(VertexShaderOutput input) : COLOR
     float3 specularLight = KSpecular * specularColor * pow(saturate(NdotH), shininess);
     
     // Final calculation
-    float4 finalColor = float4(saturate(ambientColor * KAmbient + diffuseLight) * texelColor.rgb + specularLight, texelColor.a);
-     
+    float4 finalColor = float4(saturate(ambientColor * KAmbient + diffuseLight) * texelColor.rgb + specularLight, texelColor.a);     
     return finalColor;
 
 }
