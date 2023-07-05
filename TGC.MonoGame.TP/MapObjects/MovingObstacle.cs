@@ -46,13 +46,13 @@ namespace TGC.MonoGame.TP.MapObjects
             loadObstacle();
         }
 
-        public void Render(Effect effect, GameTime gameTime)
+        public void Render(Effect effect, Camera camera, GameTime gameTime)
         {
             var bodyPosition = Simulation.Bodies.GetBodyReference(BodyHandle).Pose;
             World.Decompose(out var scale, out var rotation, out var pos);
             World = Matrix.CreateScale(scale) * Matrix.CreateFromQuaternion(rotation) * Matrix.CreateTranslation(bodyPosition.Position);
             var world = Matrix.CreateScale(scale.X/5,scale.Y/5,scale.Z/5) * Matrix.CreateFromQuaternion(bodyPosition.Orientation) * Matrix.CreateTranslation(bodyPosition.Position);
-            Utils.SetEffect(Camera,effect,world);
+            Utils.SetEffect(camera,effect,world);
             Cylinder.Meshes.FirstOrDefault().Draw();
         }
         private void loadObstacle()

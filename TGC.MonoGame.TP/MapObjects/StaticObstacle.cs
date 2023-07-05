@@ -28,9 +28,9 @@ namespace TGC.MonoGame.TP.MapObjects
             loadObstacle();
         }
 
-        public void Render(Effect effect, GameTime gameTime)
+        public void Render(Effect effect, Camera camera, GameTime gameTime)
         {
-            Utils.SetEffect(Camera,effect,World);
+            Utils.SetEffect(camera,effect,World);
             GeometricPrimitive.Draw(effect);
         }
 

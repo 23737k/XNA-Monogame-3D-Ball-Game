@@ -265,13 +265,14 @@ float4 EnvironmentMapPS(VertexShaderOutput input) : COLOR
     
 	// Get the texel from the texture
 	float3 baseColor = MainPS(input).rgb;
-	    
 	//Obtener texel de CubeMap
 	float3 view = normalize(eyePosition.xyz - input.WorldPosition.xyz);
 	float3 reflection = reflect(view, normal);
 	float3 reflectionColor = texCUBE(environmentMapSampler, reflection).rgb;
 
-    float fresnel = saturate((1.0 - dot(normal, view)));
+    //float fresnel = saturate((1.0 - dot(normal, view)));
+	float roughness = tex2D(roughnessSampler, input.TextureCoordinates).r;
+	float fresnel = saturate(roughness);
 
     return float4(lerp(baseColor, reflectionColor, fresnel), 1);
 }

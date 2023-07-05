@@ -72,13 +72,13 @@ namespace TGC.MonoGame.TP.MapObjects
             previousPosition = currentPosition;
             
         }
-        public void Render(Effect effect, GameTime gameTime)
+        public void Render(Effect effect, Camera camera, GameTime gameTime)
         {
             var bodyPosition = Simulation.Bodies.GetBodyReference(BodyHandle).Pose.Position;
             World.Decompose(out var scale, out var rotation, out var pos);
         
             World = Matrix.CreateScale(scale) * Matrix.CreateFromQuaternion(rotation) * Matrix.CreateTranslation(bodyPosition);
-            Utils.SetEffect(Camera,effect,World);
+            Utils.SetEffect(camera,effect,World);
             CubePrimitive.Draw(effect);
         }
         private void loadObstacle()

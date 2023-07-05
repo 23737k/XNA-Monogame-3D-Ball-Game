@@ -140,6 +140,7 @@ namespace TGC.MonoGame.TP
 
         //POST-PROCESING
         private RenderTargetCube EnviromentMapRenderTarget;
+        private StaticCamera CubeMapCamera;
 
         /// <summary>
         ///     Se llama una sola vez, al principio cuando se ejecuta el ejemplo.
@@ -156,7 +157,7 @@ namespace TGC.MonoGame.TP
             Graphics.PreferredBackBufferWidth = GraphicsAdapter.DefaultAdapter.CurrentDisplayMode.Width - 100;
             Graphics.PreferredBackBufferHeight = GraphicsAdapter.DefaultAdapter.CurrentDisplayMode.Height - 100;
             //Graphics.IsFullScreen= true;
-            EnviromentMapRenderTarget =new RenderTargetCube(GraphicsDevice, 256, false,
+            EnviromentMapRenderTarget =new RenderTargetCube(GraphicsDevice, 64, false,
                 SurfaceFormat.Color, DepthFormat.Depth24, 0, RenderTargetUsage.DiscardContents);
             Graphics.ApplyChanges();
             // Seria hasta aca.
@@ -185,7 +186,7 @@ namespace TGC.MonoGame.TP
 
             //Texture Index
             //Elegimos el texture index que querramos para modificar los valores de la textura, salto, etc.
-            textureIndex = 2;
+            textureIndex = 0;
             SpheresArray = new SphereType[]
             {   
                 new SphereMarble(),
@@ -194,6 +195,9 @@ namespace TGC.MonoGame.TP
             };
 
             Camera = new TargetCamera(GraphicsDevice.Viewport.AspectRatio, new Vector3(0, 20, 60), Vector3.Zero);
+            CubeMapCamera = new StaticCamera(1f, SpherePosition, Vector3.UnitX, Vector3.Up);
+            CubeMapCamera.BuildProjection(1f, 1f, 2000, MathHelper.PiOver2);
+
             GodMode = false;
             BoundingFrustum = new BoundingFrustum(Camera.View * Camera.Projection);
             UpdateCamera();
@@ -302,6 +306,7 @@ namespace TGC.MonoGame.TP
 
             Camera.TargetPosition = SpherePosition;
             BoundingFrustum.Matrix = Camera.View * Camera.Projection;
+            CubeMapCamera.Position = SpherePosition;
             Camera.BuildView();
             
         }
@@ -475,73 +480,22 @@ namespace TGC.MonoGame.TP
         
         protected override void Draw(GameTime gameTime)
         {
-            // Aca deberiamos poner toda la logia de renderizado del juego.
-            
-
             GraphicsDevice.DepthStencilState = DepthStencilState.Default;
-            // Draw to our cubemap from the robot position
+            // Draw to our cubemap from the Sphere position
             for (var face = CubeMapFace.PositiveX; face <= CubeMapFace.NegativeZ; face++)
             {
                 // Set the render target as our cubemap face, we are drawing the scene in this texture
                 GraphicsDevice.SetRenderTarget(EnviromentMapRenderTarget, face);
                 GraphicsDevice.Clear(ClearOptions.Target | ClearOptions.DepthBuffer, Color.CornflowerBlue, 1f, 0);
-
                 SetCubemapCameraForOrientation(face);
-                UpdateCamera();
-
-                // Draw our scene. Do not draw our tank as it would be occluded by itself 
-                // (if it has backface culling on)
-                GraphicsDevice.Clear(Color.Transparent);
-                DrawSkybox();
-                if(face != CubeMapFace.NegativeY && face != CubeMapFace.NegativeZ )
-                {
-                    DefaultEffect.Parameters["ModelTexture"].SetValue(FloorT);
-                    DefaultEffect.Parameters["NormalTexture"].SetValue(FloorN);
-                    //Dibujo el suelo
-                    foreach(StaticObstacle obstacle in StaticObstacles)   
-                    {
-                        if(BoundingFrustum.Intersects(obstacle.BoundingBox))
-                            obstacle.Render(DefaultEffect,gameTime);
-                    }            
-                    //Dibujo los cilindros
-                    foreach(MovingObstacle obstacle in MovingObstacles)    {obstacle.Render(DefaultEffect,gameTime);}
-                    foreach(PeriodicObstacle obstacle in PeriodicObstacles)    
-                    {
-                        if(BoundingFrustum.Intersects(obstacle.BoundingBox))
-                            obstacle.Render(DefaultEffect,gameTime);
-                    }
-
-                }
-                }
-
-           
+                CubeMapCamera.BuildView();
+                DrawScene(gameTime, CubeMapCamera);
+            }
 
             // Set the render target as null, we are drawing on the screen!
             GraphicsDevice.SetRenderTarget(null);
             GraphicsDevice.Clear(ClearOptions.Target | ClearOptions.DepthBuffer, Color.CornflowerBlue, 1f, 0);
-
-
-            GraphicsDevice.Clear(Color.Transparent);
-            DrawSkybox();
-
-            DefaultEffect.Parameters["ModelTexture"].SetValue(FloorT);
-            DefaultEffect.Parameters["NormalTexture"].SetValue(FloorN);
-            //Dibujo el suelo
-            foreach(StaticObstacle obstacle in StaticObstacles)   
-            {
-                if(BoundingFrustum.Intersects(obstacle.BoundingBox))
-                    obstacle.Render(DefaultEffect,gameTime);
-            }            
-             //Dibujo los cilindros
-            foreach(MovingObstacle obstacle in MovingObstacles)    {obstacle.Render(DefaultEffect,gameTime);}
-            foreach(PeriodicObstacle obstacle in PeriodicObstacles)    
-            {
-                if(BoundingFrustum.Intersects(obstacle.BoundingBox))
-                    obstacle.Render(DefaultEffect,gameTime);
-            }
-
-
-            foreach (var powerUp in Powerups)   powerUp.Render(DefaultEffect, gameTime);
+            DrawScene(gameTime, Camera);
 
             if(FinalBossStage)
             {
@@ -551,92 +505,15 @@ namespace TGC.MonoGame.TP
             SphereModel.Meshes.FirstOrDefault().Draw();
             }
 
-            // Draw our sphere
-
-           
-
-            SphereEffect.CurrentTechnique = SphereEffect.Techniques["EnvironmentMap"];
+            // Draw sphere
+            string technique = textureIndex==2?"PBR":"EnvironmentMap";
+            SphereEffect.CurrentTechnique = SphereEffect.Techniques[technique];
             SphereEffect.Parameters["environmentMap"].SetValue(EnviromentMapRenderTarget);
             SphereEffect.Parameters["eyePosition"].SetValue(Camera.Position);
-
             Utils.SetEffect(Camera, SphereEffect, SphereWorld);
             SphereModel.Meshes.FirstOrDefault().Draw();
 
-/*
-            GraphicsDevice.Clear(Color.Transparent);
-            DrawSkybox();
-
-            DefaultEffect.Parameters["ModelTexture"].SetValue(FloorT);
-            DefaultEffect.Parameters["NormalTexture"].SetValue(FloorN);
-            //Dibujo el suelo
-            foreach(StaticObstacle obstacle in StaticObstacles)   
-            {
-                if(BoundingFrustum.Intersects(obstacle.BoundingBox))
-                    obstacle.Render(DefaultEffect,gameTime);
-            }            
-             //Dibujo los cilindros
-            foreach(MovingObstacle obstacle in MovingObstacles)    {obstacle.Render(DefaultEffect,gameTime);}
-            foreach(PeriodicObstacle obstacle in PeriodicObstacles)    
-            {
-                if(BoundingFrustum.Intersects(obstacle.BoundingBox))
-                    obstacle.Render(DefaultEffect,gameTime);
-            }
-
-            Utils.SetEffect(Camera, SphereEffect, SphereWorld);
-            SphereModel.Meshes.FirstOrDefault().Draw();
-
-            foreach (var powerUp in Powerups)   powerUp.Render(DefaultEffect, gameTime);
-
-            if(FinalBossStage)
-            {
-            var pose = Simulation.Bodies.GetBodyReference(BossSphereHandle).Pose;
-            var bossWorld = Matrix.CreateScale(45f) * Matrix.CreateFromQuaternion(pose.Orientation) * Matrix.CreateTranslation(pose.Position);
-            Utils.SetEffect(Camera,SphereEffect,bossWorld);
-            SphereModel.Meshes.FirstOrDefault().Draw();
-            }
-            */
-
-            //Hud 
-            var fps = MathF.Round(1/Convert.ToSingle(gameTime.ElapsedGameTime.TotalSeconds),1);
-            SpriteBatch.Begin(SpriteSortMode.BackToFront, BlendState.AlphaBlend, SamplerState.PointClamp, DepthStencilState.Default, RasterizerState.CullCounterClockwise);
-            var position= new Vector3(MathF.Round(SpherePosition.X,1), MathF.Round(SpherePosition.Y,1), MathF.Round(SpherePosition.Z,1));
-            SpriteBatch.DrawString(SpriteFont, "GODMODE (F10) :" + (GodMode?"ON":"OFF"), new Vector2(GraphicsDevice.Viewport.Width/4, 0), Color.Black);
-            if(GodMode)    SpriteBatch.DrawString(SpriteFont, "<-USE THE ARROW KEYS TO MOVE TO THE NEXT CHECKPOINT->", new Vector2(GraphicsDevice.Viewport.Width/3, GraphicsDevice.Viewport.Height*0.9F), Color.Black);
-            SpriteBatch.DrawString(SpriteFont, "Position:" + position.ToString(), new Vector2(GraphicsDevice.Viewport.Width - 500, 0), Color.Black);
-            SpriteBatch.DrawString(SpriteFont, "FPS " + fps.ToString(), new Vector2(GraphicsDevice.Viewport.Width-1000, 0), Color.Black);
-
-            //Menu
-            //draw the start menu
-            if (gameState == GameState.StartMenu)
-            {
-                PlayButton.Render(SpriteBatch);
-                QuitButton.Render(SpriteBatch);
-                RightButton.Render(SpriteBatch);
-                LeftButton.Render(SpriteBatch);
-                if(MediaPlayer.State == MediaState.Paused)
-                    MusicDisabledButton.Render(SpriteBatch);
-                else
-                    MusicEnabledButton.Render(SpriteBatch);
-                var mainSphere = SpheresArray[textureIndex];
-                SphereEffect.Parameters["albedoTexture"]?.SetValue(mainSphere.Color);
-                SphereEffect.Parameters["normalTexture"]?.SetValue(mainSphere.Normal);
-                SphereEffect.Parameters["metallicTexture"]?.SetValue(mainSphere.Metalness);
-                SphereEffect.Parameters["roughnessTexture"]?.SetValue(mainSphere.Roughness);
-                SphereEffect.Parameters["aoTexture"]?.SetValue(mainSphere.Ao);
-            }
- 
-            if (gameState == GameState.Paused)
-            {
-                PlayButton.Render(SpriteBatch);
-                RestartButton.Render(SpriteBatch);
-                QuitButton.Render(SpriteBatch);
-                if(MediaPlayer.State == MediaState.Paused)
-                    MusicDisabledButton.Render(SpriteBatch);
-                else
-                    MusicEnabledButton.Render(SpriteBatch);
-            }
-
-            SpriteBatch.End();
+            DrawUI(gameTime);
             base.Draw(gameTime);
         }
 
@@ -717,13 +594,13 @@ namespace TGC.MonoGame.TP
             SphereEffect.Parameters["aoTexture"]?.SetValue(mainSphere.Ao);
         }
 
-        private void DrawSkybox()
+        private void DrawSkybox(Camera camera)
         {
             var originalRasterizerState = GraphicsDevice.RasterizerState;
             var rasterizerState = new RasterizerState();
             rasterizerState.CullMode = CullMode.None;
             Graphics.GraphicsDevice.RasterizerState = rasterizerState;
-            SkyBox.Draw(Camera.View, Camera.Projection, SpherePosition+new Vector3(0,-300,0) );
+            SkyBox.Draw(camera.View, camera.Projection, SpherePosition+new Vector3(0,-300,0) );
             GraphicsDevice.RasterizerState = originalRasterizerState;
         }
         protected override void UnloadContent()
@@ -818,45 +695,114 @@ namespace TGC.MonoGame.TP
             gameState = GameState.StartMenu;
         }
 
-    private void SetCubemapCameraForOrientation(CubeMapFace face)
-        {
+        private void SetCubemapCameraForOrientation(CubeMapFace face)
+        {            
             switch (face)
             {
                 default:
                 case CubeMapFace.PositiveX:
-                    Camera.FrontDirection = -Vector3.UnitX;
-                    Camera.UpDirection = Vector3.Down;
+                    CubeMapCamera.FrontDirection = -Vector3.UnitX;
+                    CubeMapCamera.UpDirection = Vector3.Down;
                     break;
 
                 case CubeMapFace.NegativeX:
-                    Camera.FrontDirection = Vector3.UnitX;
-                    Camera.UpDirection = Vector3.Down;
+                    CubeMapCamera.FrontDirection = Vector3.UnitX;
+                    CubeMapCamera.UpDirection = Vector3.Down;
                     break;
 
                 case CubeMapFace.PositiveY:
-                    Camera.FrontDirection = Vector3.Down;
-                    Camera.UpDirection = Vector3.UnitZ;
+                    CubeMapCamera.FrontDirection = Vector3.Down;
+                    CubeMapCamera.UpDirection = Vector3.UnitZ;
                     break;
 
                 case CubeMapFace.NegativeY:
-                    Camera.FrontDirection = Vector3.Up;
-                    Camera.UpDirection = -Vector3.UnitZ;
+                    CubeMapCamera.FrontDirection = Vector3.Up;
+                    CubeMapCamera.UpDirection = -Vector3.UnitZ;
                     break;
 
                 case CubeMapFace.PositiveZ:
-                    Camera.FrontDirection = -Vector3.UnitZ;
-                    Camera.UpDirection = Vector3.Down;
+                    CubeMapCamera.FrontDirection = -Vector3.UnitZ;
+                    CubeMapCamera.UpDirection = Vector3.Down;
                     break;
 
                 case CubeMapFace.NegativeZ:
-                    Camera.FrontDirection = Vector3.UnitZ;
-                    Camera.UpDirection = Vector3.Down;
+                    CubeMapCamera.FrontDirection = Vector3.UnitZ;
+                    CubeMapCamera.UpDirection = Vector3.Down;
                     break;
             }
         }
     
+        private void DrawScene(GameTime gameTime, Camera camera)
+        {
+            GraphicsDevice.Clear(Color.Transparent);
+            DrawSkybox(camera);
+                DefaultEffect.Parameters["ModelTexture"].SetValue(FloorT);
+                DefaultEffect.Parameters["NormalTexture"].SetValue(FloorN);
+                //Dibujo el suelo
+                foreach(StaticObstacle obstacle in StaticObstacles)   
+                {
+                    if(BoundingFrustum.Intersects(obstacle.BoundingBox))
+                        obstacle.Render(DefaultEffect,camera,gameTime);
+                }            
+                //Dibujo los cilindros
+                foreach(MovingObstacle obstacle in MovingObstacles)    {obstacle.Render(DefaultEffect,camera,gameTime);}
+                foreach(PeriodicObstacle obstacle in PeriodicObstacles)    
+                {
+                    if(BoundingFrustum.Intersects(obstacle.BoundingBox))
+                        obstacle.Render(DefaultEffect,camera,gameTime);
+                }
+                foreach (var powerUp in Powerups)   powerUp.Render(DefaultEffect, gameTime);
+        } 
+        private void DrawUI(GameTime gameTime)
+        {
+             //Hud 
+            var Height = GraphicsDevice.Viewport.Height;
+            var Width = GraphicsDevice.Viewport.Width;
+            var fps = MathF.Round(1/Convert.ToSingle(gameTime.ElapsedGameTime.TotalSeconds),1);
+            SpriteBatch.Begin(SpriteSortMode.BackToFront, BlendState.AlphaBlend, SamplerState.PointClamp, DepthStencilState.Default, RasterizerState.CullCounterClockwise);
+            var position= new Vector3(MathF.Round(SpherePosition.X,1), MathF.Round(SpherePosition.Y,1), MathF.Round(SpherePosition.Z,1));
+            SpriteBatch.DrawString(SpriteFont, "GODMODE (F10) :" + (GodMode?"ON":"OFF"), new Vector2(GraphicsDevice.Viewport.Width/4, 0), Color.Black);
+            if(GodMode)    SpriteBatch.DrawString(SpriteFont, "<-USE THE ARROW KEYS TO MOVE TO THE NEXT CHECKPOINT->", new Vector2(Width/3, Height*0.9F), Color.Black);
+            SpriteBatch.DrawString(SpriteFont, "Position:" + position.ToString(), new Vector2(Width - 500, 0), Color.Black);
+            SpriteBatch.DrawString(SpriteFont, "FPS " + fps.ToString(), new Vector2(Width-1000, 0), Color.Black);
+            //Menu
+            //draw the start menu
+            if (gameState == GameState.StartMenu)
+            {
+                PlayButton.Render(SpriteBatch);
+                QuitButton.Render(SpriteBatch);
+                RightButton.Render(SpriteBatch);
+                LeftButton.Render(SpriteBatch);
+                if(MediaPlayer.State == MediaState.Paused)
+                    MusicDisabledButton.Render(SpriteBatch);
+                else
+                    MusicEnabledButton.Render(SpriteBatch);
+                var mainSphere = SpheresArray[textureIndex];
+                SphereEffect.Parameters["albedoTexture"]?.SetValue(mainSphere.Color);
+                SphereEffect.Parameters["normalTexture"]?.SetValue(mainSphere.Normal);
+                SphereEffect.Parameters["metallicTexture"]?.SetValue(mainSphere.Metalness);
+                SphereEffect.Parameters["roughnessTexture"]?.SetValue(mainSphere.Roughness);
+                SphereEffect.Parameters["aoTexture"]?.SetValue(mainSphere.Ao);
 
+                
+                SpriteBatch.DrawString(SpriteFont, SpheresArray[textureIndex].Name, new Vector2(Width*0.6f, Height*0.45f), Color.Black);
+                SpriteBatch.DrawString(SpriteFont, "SPEED: " + SpheresArray[textureIndex].speed().ToString(), new Vector2(Width*0.6f, Height*0.5f), Color.Black);
+                SpriteBatch.DrawString(SpriteFont, "JUMP: " + SpheresArray[textureIndex].jump().ToString(), new Vector2(Width*0.6f, Height*0.55f), Color.Black);
 
+            }
+ 
+            if (gameState == GameState.Paused)
+            {
+                PlayButton.Render(SpriteBatch);
+                RestartButton.Render(SpriteBatch);
+                QuitButton.Render(SpriteBatch);
+                if(MediaPlayer.State == MediaState.Paused)
+                    MusicDisabledButton.Render(SpriteBatch);
+                else
+                    MusicEnabledButton.Render(SpriteBatch);
+            }
 
+            SpriteBatch.End();
+        }
     }
 }

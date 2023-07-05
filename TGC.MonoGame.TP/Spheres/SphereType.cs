@@ -7,6 +7,7 @@ namespace TGC.MonoGame.TP {
         public Texture2D Metalness {get;set;}
         public Texture2D Normal {get;set;}
         public Texture2D Roughness {get;set;}
+        public string Name {get;}
 
         public string folder();
 
