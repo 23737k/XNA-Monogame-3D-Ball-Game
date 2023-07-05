@@ -156,7 +156,7 @@ namespace TGC.MonoGame.TP
             Graphics.PreferredBackBufferWidth = GraphicsAdapter.DefaultAdapter.CurrentDisplayMode.Width - 100;
             Graphics.PreferredBackBufferHeight = GraphicsAdapter.DefaultAdapter.CurrentDisplayMode.Height - 100;
             //Graphics.IsFullScreen= true;
-            EnviromentMapRenderTarget =new RenderTargetCube(GraphicsDevice, 1000, false,
+            EnviromentMapRenderTarget =new RenderTargetCube(GraphicsDevice, 256, false,
                 SurfaceFormat.Color, DepthFormat.Depth24, 0, RenderTargetUsage.DiscardContents);
             Graphics.ApplyChanges();
             // Seria hasta aca.
@@ -492,25 +492,29 @@ namespace TGC.MonoGame.TP
                 // Draw our scene. Do not draw our tank as it would be occluded by itself 
                 // (if it has backface culling on)
                 GraphicsDevice.Clear(Color.Transparent);
-            DrawSkybox();
+                DrawSkybox();
+                if(face != CubeMapFace.NegativeY && face != CubeMapFace.NegativeZ )
+                {
+                    DefaultEffect.Parameters["ModelTexture"].SetValue(FloorT);
+                    DefaultEffect.Parameters["NormalTexture"].SetValue(FloorN);
+                    //Dibujo el suelo
+                    foreach(StaticObstacle obstacle in StaticObstacles)   
+                    {
+                        if(BoundingFrustum.Intersects(obstacle.BoundingBox))
+                            obstacle.Render(DefaultEffect,gameTime);
+                    }            
+                    //Dibujo los cilindros
+                    foreach(MovingObstacle obstacle in MovingObstacles)    {obstacle.Render(DefaultEffect,gameTime);}
+                    foreach(PeriodicObstacle obstacle in PeriodicObstacles)    
+                    {
+                        if(BoundingFrustum.Intersects(obstacle.BoundingBox))
+                            obstacle.Render(DefaultEffect,gameTime);
+                    }
 
-            DefaultEffect.Parameters["ModelTexture"].SetValue(FloorT);
-            DefaultEffect.Parameters["NormalTexture"].SetValue(FloorN);
-            //Dibujo el suelo
-            foreach(StaticObstacle obstacle in StaticObstacles)   
-            {
-                if(BoundingFrustum.Intersects(obstacle.BoundingBox))
-                    obstacle.Render(DefaultEffect,gameTime);
-            }            
-             //Dibujo los cilindros
-            foreach(MovingObstacle obstacle in MovingObstacles)    {obstacle.Render(DefaultEffect,gameTime);}
-            foreach(PeriodicObstacle obstacle in PeriodicObstacles)    
-            {
-                if(BoundingFrustum.Intersects(obstacle.BoundingBox))
-                    obstacle.Render(DefaultEffect,gameTime);
-            }
+                }
+                }
 
-            }
+           
 
             // Set the render target as null, we are drawing on the screen!
             GraphicsDevice.SetRenderTarget(null);
