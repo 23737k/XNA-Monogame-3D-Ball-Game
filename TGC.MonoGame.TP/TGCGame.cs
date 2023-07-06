@@ -140,6 +140,7 @@ namespace TGC.MonoGame.TP
 
         //POST-PROCESING
         private RenderTargetCube EnviromentMapRenderTarget;
+        private RenderTarget2D ShadowMapRenderTarget;
         private StaticCamera CubeMapCamera;
 
         /// <summary>
@@ -159,6 +160,9 @@ namespace TGC.MonoGame.TP
             //Graphics.IsFullScreen= true;
             EnviromentMapRenderTarget =new RenderTargetCube(GraphicsDevice, 64, false,
                 SurfaceFormat.Color, DepthFormat.Depth24, 0, RenderTargetUsage.DiscardContents);
+            
+            ShadowMapRenderTarget = new RenderTarget2D(GraphicsDevice, 2048, 2048, false,
+                SurfaceFormat.Single, DepthFormat.Depth24, 0, RenderTargetUsage.PlatformContents);
             Graphics.ApplyChanges();
             // Seria hasta aca.
 
@@ -493,9 +497,27 @@ namespace TGC.MonoGame.TP
                 DrawScene(gameTime, CubeMapCamera);
             }
 
+            // ShadowMap
+            GraphicsDevice.DepthStencilState = DepthStencilState.Default;
+            // Set the render target as our shadow map, we are drawing the depth into this texture
+            GraphicsDevice.SetRenderTarget(ShadowMapRenderTarget);
+            GraphicsDevice.Clear(ClearOptions.Target | ClearOptions.DepthBuffer, Color.Black, 1f, 0);
+
+            DefaultEffect.CurrentTechnique = DefaultEffect.Techniques["DepthPass"];
+            DrawScene(gameTime, Camera);
+            
             // Set the render target as null, we are drawing on the screen!
             GraphicsDevice.SetRenderTarget(null);
-            GraphicsDevice.Clear(ClearOptions.Target | ClearOptions.DepthBuffer, Color.CornflowerBlue, 1f, 0);
+
+            GraphicsDevice.Clear(ClearOptions.Target | ClearOptions.DepthBuffer, Color.Transparent, 1f, 0);
+
+            DefaultEffect.CurrentTechnique = DefaultEffect.Techniques["NormalMapping"];
+            //DefaultEffect.Parameters["baseTexture"]?.SetValue(BasicEffect.Texture);
+            DefaultEffect.Parameters["shadowMap"]?.SetValue(ShadowMapRenderTarget);
+            DefaultEffect.Parameters["lightPosition"]?.SetValue(LightPosition);
+            DefaultEffect.Parameters["shadowMapSize"]?.SetValue(Vector2.One * 2048);
+            DefaultEffect.Parameters["LightViewProjection"]?.SetValue(Camera.View * Camera.Projection);
+
             DrawScene(gameTime, Camera);
 
             if(FinalBossStage)
