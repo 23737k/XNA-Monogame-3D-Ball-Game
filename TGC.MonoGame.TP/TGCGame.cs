@@ -195,6 +195,7 @@ namespace TGC.MonoGame.TP
             };
 
             Camera = new TargetCamera(GraphicsDevice.Viewport.AspectRatio, new Vector3(0, 20, 60), Vector3.Zero);
+            Camera.FarPlane= 1000;
             CubeMapCamera = new StaticCamera(1f, SpherePosition, Vector3.UnitX, Vector3.Up);
             CubeMapCamera.BuildProjection(1f, 1f, 2000, MathHelper.PiOver2);
 
@@ -509,6 +510,8 @@ namespace TGC.MonoGame.TP
             string technique = textureIndex==2?"PBR":"EnvironmentMap";
             SphereEffect.CurrentTechnique = SphereEffect.Techniques[technique];
             SphereEffect.Parameters["environmentMap"].SetValue(EnviromentMapRenderTarget);
+            SphereEffect.Parameters["ActivePowerUp"]?.SetValue(CurrentPowerUp != null);
+            SphereEffect.Parameters["Time"]?.SetValue(Convert.ToSingle(gameTime.TotalGameTime.TotalSeconds));
             SphereEffect.Parameters["eyePosition"].SetValue(Camera.Position);
             Utils.SetEffect(Camera, SphereEffect, SphereWorld);
             SphereModel.Meshes.FirstOrDefault().Draw();

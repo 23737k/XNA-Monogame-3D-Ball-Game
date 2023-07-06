@@ -11,6 +11,9 @@ float4x4 World; //Matriz de transformacion World
 float4x4 WorldViewProjection; //Matriz World * View * Projection
 float3x3 InverseTransposeWorld; //Matriz Transpose(Invert(World))
 
+uniform bool ActivePowerUp;
+uniform float Time;
+
 //Textura para Albedo
 texture albedoTexture;
 sampler2D albedoSampler = sampler_state
@@ -102,6 +105,7 @@ struct VertexShaderOutput
 	float2 TextureCoordinates : TEXCOORD0;
 	float3 WorldNormal : TEXCOORD1;
 	float4 WorldPosition : TEXCOORD2;
+	float4 LocalPosition : TEXCOORD3;
 };
 
 texture environmentMap;
@@ -121,6 +125,7 @@ VertexShaderOutput MainVS(VertexShaderInput input)
 
 	// Proyectamos la position
 	output.Position = mul(input.Position, WorldViewProjection);
+	output.LocalPosition = input.Position;
 
 	// Propagamos las coordenadas de textura
 	output.TextureCoordinates = input.TextureCoordinates;
@@ -133,6 +138,8 @@ VertexShaderOutput MainVS(VertexShaderInput input)
 
 	return output;
 }
+
+
 
 float3 getNormalFromMap(float2 textureCoordinates, float3 worldPosition, float3 worldNormal)
 {
@@ -190,6 +197,7 @@ float3 fresnelSchlick(float cosTheta, float3 F0)
 {
 	return F0 + (1.0 - F0) * pow(1.0 - cosTheta, 5.0);
 }
+
 
 //Pixel Shader
 float4 MainPS(VertexShaderOutput input) : COLOR
@@ -255,8 +263,20 @@ float4 MainPS(VertexShaderOutput input) : COLOR
 	// Gamma correct
 	color = pow(color, float3(exponent, exponent, exponent));
 
-    return float4(color, 1.0);
+	float4 finalColor = float4(color, 1.0);
+
+	if(ActivePowerUp)
+	{
+		float transitionFactor = 0.2* cos(Time*3)+0.8;
+		float4 gold = float4(1.0, 0.929, 0.0, 1.0);
+		float4 effect = lerp(gold, finalColor, transitionFactor);
+		finalColor = effect;
+	}
+
+    return finalColor;
 }
+
+
 
 float4 EnvironmentMapPS(VertexShaderOutput input) : COLOR
 {
