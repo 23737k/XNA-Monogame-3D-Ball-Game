@@ -84,7 +84,7 @@ namespace TGC.MonoGame.TP
         private bool OnGround { get; set; }
         private Vector3 SphereFrontDirection { get; set; }
         private Vector3 SphereLateralDirection {get;set;}
-        private Vector3 LightPosition { get; set; } = new Vector3 (0,2500,0);
+        private Vector3 LightPosition { get; set; } = new Vector3 (1600,2500,1600);
 
         //Bepu
         private BodyHandle SphereHandle { get; set; }
@@ -142,6 +142,7 @@ namespace TGC.MonoGame.TP
         private RenderTargetCube EnviromentMapRenderTarget;
         private RenderTarget2D ShadowMapRenderTarget;
         private StaticCamera CubeMapCamera;
+        private TargetCamera LightCamera;
 
         /// <summary>
         ///     Se llama una sola vez, al principio cuando se ejecuta el ejemplo.
@@ -161,7 +162,7 @@ namespace TGC.MonoGame.TP
             EnviromentMapRenderTarget =new RenderTargetCube(GraphicsDevice, 64, false,
                 SurfaceFormat.Color, DepthFormat.Depth24, 0, RenderTargetUsage.DiscardContents);
             
-            ShadowMapRenderTarget = new RenderTarget2D(GraphicsDevice, 2048, 2048, false,
+            ShadowMapRenderTarget = new RenderTarget2D(GraphicsDevice, 3072, 3072, false,
                 SurfaceFormat.Single, DepthFormat.Depth24, 0, RenderTargetUsage.PlatformContents);
             Graphics.ApplyChanges();
             // Seria hasta aca.
@@ -198,10 +199,15 @@ namespace TGC.MonoGame.TP
                 new SpherePlastic() 
             };
 
-            Camera = new TargetCamera(GraphicsDevice.Viewport.AspectRatio, new Vector3(0, 20, 60), Vector3.Zero);
-            Camera.FarPlane= 1000;
+            Camera = new TargetCamera(GraphicsDevice.Viewport.AspectRatio, new Vector3(0, 20, 60), Vector3.Zero,1f,1000);
             CubeMapCamera = new StaticCamera(1f, SpherePosition, Vector3.UnitX, Vector3.Up);
+            
+            LightCamera = new TargetCamera(1f, new Vector3(SpherePosition.X ,SpherePosition.Y+1000, SpherePosition.Z+200),SpherePosition ,1f,250);
+            
             CubeMapCamera.BuildProjection(1f, 1f, 2000, MathHelper.PiOver2);
+            LightCamera.BuildProjection(1f, 5f, 3000, MathHelper.PiOver2);
+            LightCamera.BuildView();
+
 
             GodMode = false;
             BoundingFrustum = new BoundingFrustum(Camera.View * Camera.Projection);
@@ -222,7 +228,7 @@ namespace TGC.MonoGame.TP
             var skyBox = Content.Load<Model>(ContentFolder3D + "skybox/cube");
             var skyBoxTexture = Content.Load<TextureCube>(ContentFolderTextures + "/skyboxes/skybox/skybox");
             var skyBoxEffect = Content.Load<Effect>(ContentFolderEffects + "SkyBox");
-            SkyBox = new SkyBox(skyBox, skyBoxTexture, skyBoxEffect, 1000);
+            SkyBox = new SkyBox(skyBox, skyBoxTexture, skyBoxEffect,500);
 
             //Luz
             DefaultEffect = Content.Load<Effect>(ContentFolderEffects + "ColorShader");
@@ -240,7 +246,7 @@ namespace TGC.MonoGame.TP
             DefaultEffect.Parameters["ModelTexture"].SetValue(FloorT);
             DefaultEffect.Parameters["NormalTexture"].SetValue(FloorN);
 
-            DefaultEffect.CurrentTechnique = DefaultEffect.Techniques["NormalMapping"];
+            DefaultEffect.CurrentTechnique = DefaultEffect.Techniques["DepthPass"];
 
             InitializeLights();
             InitializeEffect();
@@ -308,13 +314,14 @@ namespace TGC.MonoGame.TP
             var upDistance = Vector3.Up * camera_up_distance;
 
             Camera.Position = SpherePosition + orbitalPosition + upDistance;
-
             Camera.TargetPosition = SpherePosition;
+            LightCamera.Position = new Vector3(SpherePosition.X +1,SpherePosition.Y+1000, SpherePosition.Z+500); //SpherePosition + -sphereBackDirection * 1000 + Vector3.Up * 2500;// new Vector3(SpherePosition.X ,SpherePosition.Y+2500, SpherePosition.Z+200);
+            LightCamera.TargetPosition =  SpherePosition;
             BoundingFrustum.Matrix = Camera.View * Camera.Projection;
             CubeMapCamera.Position = SpherePosition;
             Camera.BuildView();
-            
-        }
+            LightCamera.BuildView();
+            }
         protected override void Update(GameTime gameTime)
         {
             KeyboardState = Keyboard.GetState();
@@ -483,6 +490,7 @@ namespace TGC.MonoGame.TP
             return state;
         }
         
+        private bool drawSkybox= true;
         protected override void Draw(GameTime gameTime)
         {
             GraphicsDevice.DepthStencilState = DepthStencilState.Default;
@@ -504,29 +512,26 @@ namespace TGC.MonoGame.TP
             GraphicsDevice.Clear(ClearOptions.Target | ClearOptions.DepthBuffer, Color.Black, 1f, 0);
 
             DefaultEffect.CurrentTechnique = DefaultEffect.Techniques["DepthPass"];
-            DrawScene(gameTime, Camera);
+            drawSkybox  = false;
+            DrawScene(gameTime, LightCamera);
+            // Draw sphere
+            SphereModel.Meshes.FirstOrDefault().MeshParts.FirstOrDefault().Effect = DefaultEffect;
+            SphereEffect.CurrentTechnique = SphereEffect.Techniques["DepthPass"];
+            Utils.SetEffect(LightCamera, DefaultEffect, SphereWorld);
+            SphereModel.Meshes.FirstOrDefault().Draw();
+            SphereModel.Meshes.FirstOrDefault().MeshParts.FirstOrDefault().Effect = SphereEffect;
             
             // Set the render target as null, we are drawing on the screen!
             GraphicsDevice.SetRenderTarget(null);
-
             GraphicsDevice.Clear(ClearOptions.Target | ClearOptions.DepthBuffer, Color.Transparent, 1f, 0);
-
             DefaultEffect.CurrentTechnique = DefaultEffect.Techniques["NormalMapping"];
-            //DefaultEffect.Parameters["baseTexture"]?.SetValue(BasicEffect.Texture);
-            DefaultEffect.Parameters["shadowMap"]?.SetValue(ShadowMapRenderTarget);
-            DefaultEffect.Parameters["lightPosition"]?.SetValue(LightPosition);
-            DefaultEffect.Parameters["shadowMapSize"]?.SetValue(Vector2.One * 2048);
-            DefaultEffect.Parameters["LightViewProjection"]?.SetValue(Camera.View * Camera.Projection);
+            DefaultEffect.Parameters["shadowMap"].SetValue(ShadowMapRenderTarget);
+            DefaultEffect.Parameters["lightPosition"].SetValue(LightCamera.Position);
+            DefaultEffect.Parameters["shadowMapSize"].SetValue(Vector2.One * 4096);
+            DefaultEffect.Parameters["LightViewProjection"]?.SetValue(LightCamera.View * LightCamera.Projection);
+            DrawSkybox(Camera);
 
             DrawScene(gameTime, Camera);
-
-            if(FinalBossStage)
-            {
-            var pose = Simulation.Bodies.GetBodyReference(BossSphereHandle).Pose;
-            var bossWorld = Matrix.CreateScale(45f) * Matrix.CreateFromQuaternion(pose.Orientation) * Matrix.CreateTranslation(pose.Position);
-            Utils.SetEffect(Camera,SphereEffect,bossWorld);
-            SphereModel.Meshes.FirstOrDefault().Draw();
-            }
 
             // Draw sphere
             string technique = textureIndex==2?"PBR":"EnvironmentMap";
@@ -537,6 +542,14 @@ namespace TGC.MonoGame.TP
             SphereEffect.Parameters["eyePosition"].SetValue(Camera.Position);
             Utils.SetEffect(Camera, SphereEffect, SphereWorld);
             SphereModel.Meshes.FirstOrDefault().Draw();
+
+            if(FinalBossStage)
+            {
+                var pose = Simulation.Bodies.GetBodyReference(BossSphereHandle).Pose;
+                var bossWorld = Matrix.CreateScale(45f) * Matrix.CreateFromQuaternion(pose.Orientation) * Matrix.CreateTranslation(pose.Position);
+                Utils.SetEffect(Camera,SphereEffect,bossWorld);
+                SphereModel.Meshes.FirstOrDefault().Draw();
+            }
 
             DrawUI(gameTime);
             base.Draw(gameTime);
@@ -625,7 +638,7 @@ namespace TGC.MonoGame.TP
             var rasterizerState = new RasterizerState();
             rasterizerState.CullMode = CullMode.None;
             Graphics.GraphicsDevice.RasterizerState = rasterizerState;
-            SkyBox.Draw(camera.View, camera.Projection, SpherePosition+new Vector3(0,-300,0) );
+            SkyBox.Draw(camera.View, camera.Projection, SpherePosition+new Vector3(0,-100,0) );
             GraphicsDevice.RasterizerState = originalRasterizerState;
         }
         protected override void UnloadContent()
@@ -759,8 +772,8 @@ namespace TGC.MonoGame.TP
     
         private void DrawScene(GameTime gameTime, Camera camera)
         {
-            GraphicsDevice.Clear(Color.Transparent);
-            DrawSkybox(camera);
+                if(drawSkybox)
+                    DrawSkybox(camera);
                 DefaultEffect.Parameters["ModelTexture"].SetValue(FloorT);
                 DefaultEffect.Parameters["NormalTexture"].SetValue(FloorN);
                 //Dibujo el suelo

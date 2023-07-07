@@ -123,7 +123,7 @@ struct ShadowedVertexShaderOutput
 */
 
 float4 ShadowedPCFPS(VertexShaderOutput input, float4 sceneTexture) :COLOR
-{
+{ 
     float3 lightSpacePosition = input.LightSpacePosition.xyz / input.LightSpacePosition.w;
     float2 shadowMapTextureCoordinates = 0.5 * lightSpacePosition.xy + float2(0.5, 0.5);
     shadowMapTextureCoordinates.y = 1.0f - shadowMapTextureCoordinates.y;
@@ -143,7 +143,7 @@ float4 ShadowedPCFPS(VertexShaderOutput input, float4 sceneTexture) :COLOR
             notInShadow += step(lightSpacePosition.z, pcfDepth) / 9.0;
         }
 	
-    float4 baseColor =sceneTexture;
+    float4 baseColor = sceneTexture;
     baseColor.rgb *= 0.5 + 0.5 * notInShadow;
     return baseColor;
 }
@@ -156,13 +156,16 @@ VertexShaderOutput NormalMapVS(in VertexShaderInput input)
 
     output.Position = mul(input.Position, WorldViewProjection);
     output.WorldPosition = mul(input.Position, World);
-    //output.Normal = mul(input.Normal, InverseTransposeWorld);
+    output.Normal = mul(input.Normal, InverseTransposeWorld);
     output.TextureCoordinates = input.TextureCoordinates * Tiling;
 
     //ShadowMap
 	output.WorldSpacePosition = mul(input.Position, World);
 	output.LightSpacePosition = mul(output.WorldSpacePosition, LightViewProjection);
     output.Normal = mul(float4(input.Normal.xyz, 1), InverseTransposeWorld);//mul(float4(input.Normal, 1), InverseTransposeWorld);
+	return output;
+
+
 	
     return output;
 }
