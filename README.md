@@ -9,6 +9,5 @@ TGC, Tgcito  |  Apellido, Nombre
 ------------ | -------------
 | | Antezana, Kenti Gabriel |
 
-https://www.youtube.com/watch?v=2RKeCRaWuZo<VIDEO ID>
-https://www.youtube.com/watch?v=2RKeCRaWuZo<VIDEO URL>
+[![Watch the video](https://img.youtube.com/vi/2RKeCRaWuZo/maxresdefault.jpg)](https://www.youtube.com/watch?v=2RKeCRaWuZo)
 
