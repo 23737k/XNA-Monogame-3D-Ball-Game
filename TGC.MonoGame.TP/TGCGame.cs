@@ -144,6 +144,8 @@ namespace TGC.MonoGame.TP
         private StaticCamera CubeMapCamera;
         private TargetCamera LightCamera;
 
+        private Effect CheckpointEffect;
+
         /// <summary>
         ///     Se llama una sola vez, al principio cuando se ejecuta el ejemplo.
         ///     Escribir aqui el codigo de inicializacion: el procesamiento que podemos pre calcular para nuestro juego.
@@ -292,7 +294,8 @@ namespace TGC.MonoGame.TP
             MusicEnabledButton = new Button(Content.Load<Texture2D>(ContentFolderTextures + "menu/music"), new Vector2(width*0.01f, height*0.01f),0.1f,ButtonSound);
             MusicDisabledButton = new Button(Content.Load<Texture2D>(ContentFolderTextures + "menu/music-disabled"), new Vector2(width*0.01f, height*0.01f),0.1f,ButtonSound);
             
-            
+            CheckpointEffect = Content.Load<Effect>(ContentFolderEffects + "CheckpointEffect");
+            //CheckpointEffect.Parameters["lightPosition"].SetValue(LightPosition);
 
             base.LoadContent();
         }
@@ -315,8 +318,10 @@ namespace TGC.MonoGame.TP
 
             Camera.Position = SpherePosition + orbitalPosition + upDistance;
             Camera.TargetPosition = SpherePosition;
+            
             LightCamera.Position = new Vector3(SpherePosition.X +1,SpherePosition.Y+1000, SpherePosition.Z+500); //SpherePosition + -sphereBackDirection * 1000 + Vector3.Up * 2500;// new Vector3(SpherePosition.X ,SpherePosition.Y+2500, SpherePosition.Z+200);
             LightCamera.TargetPosition =  SpherePosition;
+            
             BoundingFrustum.Matrix = Camera.View * Camera.Projection;
             CubeMapCamera.Position = SpherePosition;
             Camera.BuildView();
@@ -550,6 +555,19 @@ namespace TGC.MonoGame.TP
                 Utils.SetEffect(Camera,SphereEffect,bossWorld);
                 SphereModel.Meshes.FirstOrDefault().Draw();
             }
+            
+            
+            CylinderModel.Meshes.FirstOrDefault().MeshParts.FirstOrDefault().Effect = CheckpointEffect;
+            CheckpointEffect.Parameters["Time"]?.SetValue(Convert.ToSingle(gameTime.TotalGameTime.TotalSeconds));
+            for(int i = CurrentCheckpoint; i<Checkpoints.Length;i++)
+            {
+                if(i>CurrentCheckpoint)
+                {
+                    Utils.SetEffect(Camera,CheckpointEffect,Matrix.CreateScale(6,6,6)*Matrix.CreateTranslation(Checkpoints[i].Position));
+                    CylinderModel.Meshes.FirstOrDefault().Draw();
+                }
+            }
+            CylinderModel.Meshes.FirstOrDefault().MeshParts.FirstOrDefault().Effect = DefaultEffect;
 
             DrawUI(gameTime);
             base.Draw(gameTime);

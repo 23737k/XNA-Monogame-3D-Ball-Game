@@ -10,7 +10,7 @@ namespace TGC.MonoGame.TP.Checkpoints
         public Checkpoint (Vector3 position)
         {
             this.Position = position;
-            var world = Matrix.CreateScale(60,30,60) * Matrix.CreateTranslation(position);
+            var world = Matrix.CreateScale(6,6,6) * Matrix.CreateTranslation(position);
             this.BoundingBox = BoundingVolumesExtensions.FromMatrix(world);
         }
         public bool IsWithinBounds(Vector3 position)

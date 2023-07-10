@@ -34,9 +34,9 @@ namespace TGC.MonoGame.TP
         {
             effect.Parameters["eyePosition"]?.SetValue(camera.Position);
             effect.Parameters["Tiling"]?.SetValue(Vector2.One);
-            effect.Parameters["World"].SetValue(world);
-            effect.Parameters["WorldViewProjection"].SetValue(world  * camera.View* camera.Projection);
-            effect.Parameters["InverseTransposeWorld"].SetValue(Matrix.Transpose(Matrix.Invert(world)));
+            effect.Parameters["World"]?.SetValue(world);
+            effect.Parameters["WorldViewProjection"].SetValue(world  * camera.View * camera.Projection);
+            effect.Parameters["InverseTransposeWorld"]?.SetValue(Matrix.Transpose(Matrix.Invert(world)));
         }
         public static void SetEffect(Camera camera, Effect effect, Matrix world, Texture2D texture, Texture2D normal)
         {

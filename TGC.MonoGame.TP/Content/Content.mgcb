@@ -13,6 +13,12 @@
 
 #---------------------------------- Content ---------------------------------#
 
+#begin Effects/CheckpointEffect.fx
+/importer:EffectImporter
+/processor:EffectProcessor
+/processorParam:DebugMode=Auto
+/build:Effects/CheckpointEffect.fx
+
 #begin Effects/ColorShader.fx
 /importer:EffectImporter
 /processor:EffectProcessor
