@@ -98,7 +98,7 @@ namespace TGC.MonoGame.TP
             {
                 int orientation = (i % 2 == 0) ? 1 : -1;
                Obstacles.Add(new MovingObstacle(Matrix.CreateScale(BasicCylindersMeasures[i].Y,BasicCylindersMeasures[i].X,BasicCylindersMeasures[i].Y) *CylinderWorld[i],
-                     Cylinder,Simulation,Camera, orientation* new Vector3(0,5,0), Vector3.Zero));
+                     Cylinder,Simulation,Camera, orientation* new Vector3(0,12,0), Vector3.Zero));
             }
             Obstacles.Add(new MovingObstacle(Matrix.CreateScale(BasicCylindersMeasures[17].Y,BasicCylindersMeasures[17].X,BasicCylindersMeasures[17].Y) * CylinderWorld[17],
                      Cylinder,Simulation,Camera, new Vector3(0,-13f,0), Vector3.Zero));
