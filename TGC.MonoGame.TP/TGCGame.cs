@@ -162,8 +162,8 @@ namespace TGC.MonoGame.TP
             
 
             // Configuro las dimensiones de la pantalla.
-            Graphics.PreferredBackBufferWidth = GraphicsAdapter.DefaultAdapter.CurrentDisplayMode.Width - 100;
-            Graphics.PreferredBackBufferHeight = GraphicsAdapter.DefaultAdapter.CurrentDisplayMode.Height - 100;
+            Graphics.PreferredBackBufferWidth = GraphicsAdapter.DefaultAdapter.CurrentDisplayMode.Width;
+            Graphics.PreferredBackBufferHeight = GraphicsAdapter.DefaultAdapter.CurrentDisplayMode.Height;
             //Graphics.IsFullScreen= true;
             EnviromentMapRenderTarget =new RenderTargetCube(GraphicsDevice, 64, false,
                 SurfaceFormat.Color, DepthFormat.Depth24, 0, RenderTargetUsage.DiscardContents);
@@ -187,10 +187,10 @@ namespace TGC.MonoGame.TP
                 new Checkpoint(new Vector3(1719,15,8396)),
                 new Checkpoint(new Vector3(1720,15,12505))
             };
-            CurrentCheckpoint = 7;
+            CurrentCheckpoint = 0;
         
             // Esfera
-            SpherePosition = new Vector3(1720,20, 12314);//Checkpoints[CurrentCheckpoint].Position;
+            SpherePosition =Checkpoints[CurrentCheckpoint].Position;
             //
             SphereWorld = Matrix.CreateTranslation(SpherePosition);
             SphereFrontDirection =  Vector3.Backward;
