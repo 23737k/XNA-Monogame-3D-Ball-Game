@@ -193,11 +193,11 @@ namespace TGC.MonoGame.TP
             Obstacles.Add(new PeriodicObstacle(Matrix.CreateScale(30,30,10) * Matrix.CreateTranslation(2062,100,2345),new BoxPrimitive(GraphicsDevice),Simulation,
                 Camera,35,4.8f,2345,5*MathF.PI/6, "Z"));
 
-            Obstacles.Add(new PeriodicObstacle(Matrix.CreateScale(30,20,10) * Matrix.CreateTranslation(1720,20,12095),new BoxPrimitive(GraphicsDevice),Simulation,
+            Obstacles.Add(new PeriodicObstacle(Matrix.CreateScale(30,20,10) * Matrix.CreateTranslation(1720,15,12095),new BoxPrimitive(GraphicsDevice),Simulation,
                 Camera,35,2.3f,1720,0, "X"));
             
-            Obstacles.Add(new PeriodicObstacle(Matrix.CreateScale(30,20,10) * Matrix.CreateTranslation(1720,20,12095),new BoxPrimitive(GraphicsDevice),Simulation,
-                Camera,35,2.3f,1720,0, "X"));
+            //Obstacles.Add(new PeriodicObstacle(Matrix.CreateScale(30,20,10) * Matrix.CreateTranslation(1720,20,12095),new BoxPrimitive(GraphicsDevice),Simulation,
+                //Camera,35,2.3f,1720,0, "X"));
             
             return Obstacles;
         }
@@ -257,6 +257,8 @@ namespace TGC.MonoGame.TP
                 Matrix.CreateScale(35,10f,100) * Matrix.CreateTranslation(new Vector3(1737.5f,0,11905)),
                 Matrix.CreateScale(70,10f,200) * Matrix.CreateTranslation(new Vector3(1720,0,12095)),
                 Matrix.CreateScale(70,10f,300) * Matrix.CreateTranslation(new Vector3(1720,0,12385)),
+                Matrix.CreateScale(400,10f,70) * Matrix.CreateTranslation(new Vector3(1955,0,12500)),
+                Matrix.CreateScale(500,10f,70) * Matrix.CreateTranslation(new Vector3(2405,0,12500)),
 
                 
 
@@ -325,6 +327,13 @@ namespace TGC.MonoGame.TP
                 Matrix.CreateScale(30,40f,10) * Matrix.CreateTranslation(new Vector3(1700,20f,11060)),
                 Matrix.CreateScale(30,30,10) * Matrix.CreateTranslation(new Vector3(1737,15,12185)),
                 Matrix.CreateScale(30,30,10) * Matrix.CreateTranslation(new Vector3(1700,15,12252)),
+
+                Matrix.CreateScale(30,30,10) * Matrix.CreateTranslation(new Vector3(1740,20,12468)),
+                Matrix.CreateScale(30,30,10) * Matrix.CreateTranslation(new Vector3(1700,20,12468)),
+                Matrix.CreateScale(70,20,10) * Matrix.CreateTranslation(new Vector3(1720,45,12468)),
+
+
+
                 
                 //Matrix.CreateScale(80,10,10) * Matrix.CreateTranslation(new Vector3(1720, 10, 7825)),
 
@@ -375,7 +384,7 @@ namespace TGC.MonoGame.TP
                             CreateKinematic(new RigidPose(position), 
             collidableDescription, new BodyActivityDescription(-0.1f)));
 
-            Simulation.Bodies.GetBodyReference(bodyHandle).Velocity.Linear= new NumericVector3(0,0,130f);
+            Simulation.Bodies.GetBodyReference(bodyHandle).Velocity.Linear= new NumericVector3(0,0,130);
             Simulation.Bodies.GetBodyReference(bodyHandle).Velocity.Angular= new NumericVector3(15,0,0);
             return bodyHandle;
         }

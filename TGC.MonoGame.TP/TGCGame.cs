@@ -70,6 +70,7 @@ namespace TGC.MonoGame.TP
         private List<Light> Lights {get;set;} 
         //TEXTURES
         private Texture2D FloorT, FloorN;
+        private Texture2D GameOver;
         //Texture index
         private int textureIndex;
         private SphereType[] SpheresArray; 
@@ -102,6 +103,7 @@ namespace TGC.MonoGame.TP
         private Loader Loader {get;set;}
 
         private bool FinalBossStage {get;set;} =false;
+        private bool FinalBossEnded = false;
 
         //Skybox
         private SkyBox SkyBox { get; set; }
@@ -113,6 +115,7 @@ namespace TGC.MonoGame.TP
         private SoundEffect LoseSound { get; set; }
         private SoundEffect ButtonSound;
         private SoundEffect PowerupSound;
+        private SoundEffect CheckpointSound;
         //Menu
         private Button PlayButton;
         private Button QuitButton;
@@ -130,7 +133,8 @@ namespace TGC.MonoGame.TP
             StartMenu,
             Loading,
             Playing,
-            Paused
+            Paused,
+            Ended
         }
         private GameState gameState;
 
@@ -180,12 +184,13 @@ namespace TGC.MonoGame.TP
                 new Checkpoint(new Vector3(1723,10,2537)),
                 new Checkpoint(new Vector3(1725,10,4800)),
                 new Checkpoint(new Vector3(1720,10,6302)),
-                new Checkpoint(new Vector3(1719,15,8396))
+                new Checkpoint(new Vector3(1719,15,8396)),
+                new Checkpoint(new Vector3(1720,15,12505))
             };
-            CurrentCheckpoint = 0;
+            CurrentCheckpoint = 7;
         
             // Esfera
-            SpherePosition = Checkpoints[CurrentCheckpoint].Position;
+            SpherePosition = new Vector3(1720,20, 12314);//Checkpoints[CurrentCheckpoint].Position;
             //
             SphereWorld = Matrix.CreateTranslation(SpherePosition);
             SphereFrontDirection =  Vector3.Backward;
@@ -245,6 +250,7 @@ namespace TGC.MonoGame.TP
             DefaultEffect.Parameters["shininess"]?.SetValue(10f);
             FloorT = Content.Load<Texture2D>(ContentFolderTextures +"piso/" +"color");
             FloorN = Content.Load<Texture2D>(ContentFolderTextures + "piso/" + "normal");
+            GameOver = Content.Load<Texture2D>(ContentFolderTextures + "gameover");
             DefaultEffect.Parameters["ModelTexture"].SetValue(FloorT);
             DefaultEffect.Parameters["NormalTexture"].SetValue(FloorN);
 
@@ -266,10 +272,11 @@ namespace TGC.MonoGame.TP
             Powerups.Add(new Powerup(new Vector3(30,15,0),100,0,CylinderModel,speedTexture,normalTexture,Camera));
             Powerups.Add(new Powerup(new Vector3(1590,60,434),0,800,CylinderModel,jumpTexture,normalTexture,Camera));
             Powerups.Add(new Powerup(new Vector3(3080,40,707),0,800,CylinderModel,jumpTexture,normalTexture,Camera));
-            Powerups.Add(new Powerup(new Vector3(3064,100,2415),150,0,CylinderModel,jumpTexture,normalTexture,Camera));
-            Powerups.Add(new Powerup(new Vector3(2347,108,2354),200,0,CylinderModel,jumpTexture,normalTexture,Camera));
+            Powerups.Add(new Powerup(new Vector3(3064,100,2415),0,1000,CylinderModel,jumpTexture,normalTexture,Camera));
+            Powerups.Add(new Powerup(new Vector3(2347,108,2354),0,700,CylinderModel,jumpTexture,normalTexture,Camera));
             Powerups.Add(new Powerup(new Vector3(1722,30,2733),100,0,CylinderModel,speedTexture,normalTexture,Camera));
-            Powerups.Add(new Powerup(new Vector3(1733,15,4934   ),0,900,CylinderModel,speedTexture,normalTexture,Camera));
+            Powerups.Add(new Powerup(new Vector3(1733,15,4934   ),0,900,CylinderModel,jumpTexture,normalTexture,Camera));
+            Powerups.Add(new Powerup(new Vector3(1717,15,4153 ),100,0,CylinderModel,speedTexture,normalTexture,Camera));
             //Bepu
             LoadPhysics();
             //Music
@@ -280,6 +287,7 @@ namespace TGC.MonoGame.TP
             LoseSound = Content.Load<SoundEffect>(ContentFolderMusic + "loosingEffect");
             ButtonSound = Content.Load<SoundEffect>(ContentFolderMusic + "buttonEffect");
             PowerupSound = Content.Load<SoundEffect>(ContentFolderMusic + "powerupEffect");
+            CheckpointSound = Content.Load<SoundEffect>(ContentFolderMusic + "checkpointEffect");
 
             SpriteFont = Content.Load<SpriteFont>(ContentFolderSpriteFonts + "CascadiaCode/CascadiaCodePL");
 
@@ -360,6 +368,13 @@ namespace TGC.MonoGame.TP
                 else if(MusicEnabledButton.IsPressed(PreviousMouseState,MouseState)&& MediaPlayer.State == MediaState.Playing)  MediaPlayer.Pause();
                 else if(MusicEnabledButton.IsPressed(PreviousMouseState,MouseState)&& MediaPlayer.State == MediaState.Paused)      MediaPlayer.Resume();
             }
+            else if(gameState == GameState.Ended)
+            {
+                if(RestartButton.IsPressed(PreviousMouseState,MouseState))     {RestoreGame();}
+                else if(QuitButton.IsPressed(PreviousMouseState,MouseState))    Exit();
+                else if(MusicEnabledButton.IsPressed(PreviousMouseState,MouseState)&& MediaPlayer.State == MediaState.Playing)  MediaPlayer.Pause();
+                else if(MusicEnabledButton.IsPressed(PreviousMouseState,MouseState)&& MediaPlayer.State == MediaState.Paused)      MediaPlayer.Resume();
+            }
 
             if (PreviousKeyboardState.IsKeyDown(Keys.Escape) && KeyboardState.IsKeyUp(Keys.Escape) )
             {
@@ -375,12 +390,31 @@ namespace TGC.MonoGame.TP
             var prevAngularVelocity = body.Velocity.Angular.Y;
             
             
-            if(SpherePosition.Z > 8437 && FinalBossEnabled)
+            if(SpherePosition.Z > 8437 && SpherePosition.Z < 8500 && FinalBossEnabled)
             {
                 BossSphereHandle = Loader.LoadFinalBoss();
                 FinalBossEnabled = false;
                 FinalBossStage = true;
             }
+
+            if(SpherePosition.X>2448 && SpherePosition.Z>12450 )
+            {
+                gameState = GameState.Ended;
+            }
+            if(FinalBossStage)
+            {
+                var bossBodyRef = Simulation.Bodies.GetBodyReference(BossSphereHandle);
+                if(bossBodyRef.Pose.Position.Z >12425)
+                {
+                    bossBodyRef.Velocity.Linear = NumericVector3.Zero;
+                    bossBodyRef.Velocity.Angular = NumericVector3.Zero;
+                    FinalBossEnabled = false;
+                    FinalBossStage = false;
+                    FinalBossEnded = true;
+                }
+            }
+
+
             
             CheckpointManager();
             ObstacleContact();
@@ -454,13 +488,13 @@ namespace TGC.MonoGame.TP
             {
                 if(PreviousKeyboardState.IsKeyDown(Keys.Right) && KeyboardState.IsKeyUp(Keys.Right)) 
                 {
-                    respawn = respawn>=7? 0:respawn+1;
+                    respawn = respawn>=8? 0:respawn+1;
                     bodyRef.Pose.Position =   Utils.ToNumericVector3(Checkpoints[respawn].Position);
                 }
                 
                 if(PreviousKeyboardState.IsKeyDown(Keys.Left) && KeyboardState.IsKeyUp(Keys.Left))  
                 {
-                    respawn = respawn <=0? 2:respawn-1; ;
+                    respawn = respawn <=0? 2:respawn-1;
                     bodyRef.Pose.Position =   Utils.ToNumericVector3(Checkpoints[respawn].Position);
                 }
                    
@@ -548,7 +582,7 @@ namespace TGC.MonoGame.TP
             Utils.SetEffect(Camera, SphereEffect, SphereWorld);
             SphereModel.Meshes.FirstOrDefault().Draw();
 
-            if(FinalBossStage)
+            if(FinalBossStage || FinalBossEnded)
             {
                 var pose = Simulation.Bodies.GetBodyReference(BossSphereHandle).Pose;
                 var bossWorld = Matrix.CreateScale(45f) * Matrix.CreateFromQuaternion(pose.Orientation) * Matrix.CreateTranslation(pose.Position);
@@ -568,6 +602,7 @@ namespace TGC.MonoGame.TP
                 }
             }
             CylinderModel.Meshes.FirstOrDefault().MeshParts.FirstOrDefault().Effect = DefaultEffect;
+            foreach (var powerUp in Powerups)   powerUp.Render(DefaultEffect, gameTime);
 
             DrawUI(gameTime);
             base.Draw(gameTime);
@@ -679,10 +714,11 @@ namespace TGC.MonoGame.TP
                 FinalBossStage = false;
                 return;
             }
-            for(int i= CurrentCheckpoint; i< Checkpoints.Length; i++)
+            for(int i= CurrentCheckpoint+1; i< Checkpoints.Length; i++)
             {
                 if(Checkpoints[i].IsWithinBounds(bodyRef.Pose.Position))
                 {
+                    CheckpointSound.Play();
                     CurrentCheckpoint = i;
                     break;
                 }
@@ -740,6 +776,8 @@ namespace TGC.MonoGame.TP
         {
             OnGround = false;
             GodMode = false;
+            FinalBossEnabled = true;
+            FinalBossEnded = false;
             CurrentCheckpoint = 0;
             SpherePosition = Checkpoints[0].Position;
             foreach (var powerUp in Powerups)    powerUp.Used=false;
@@ -807,7 +845,6 @@ namespace TGC.MonoGame.TP
                     if(BoundingFrustum.Intersects(obstacle.BoundingBox))
                         obstacle.Render(DefaultEffect,camera,gameTime);
                 }
-                foreach (var powerUp in Powerups)   powerUp.Render(DefaultEffect, gameTime);
         } 
         private void DrawUI(GameTime gameTime)
         {
@@ -825,6 +862,7 @@ namespace TGC.MonoGame.TP
             //draw the start menu
             if (gameState == GameState.StartMenu)
             {
+                QuitButton.ChangePosition(new Vector2(Width/7f, Height/2));
                 PlayButton.Render(SpriteBatch);
                 QuitButton.Render(SpriteBatch);
                 RightButton.Render(SpriteBatch);
@@ -849,6 +887,8 @@ namespace TGC.MonoGame.TP
  
             if (gameState == GameState.Paused)
             {
+                RestartButton.ChangePosition(new Vector2(Width/7f, Height/2.9f)); 
+                QuitButton.ChangePosition(new Vector2(Width/7f, Height/2));
                 PlayButton.Render(SpriteBatch);
                 RestartButton.Render(SpriteBatch);
                 QuitButton.Render(SpriteBatch);
@@ -856,6 +896,22 @@ namespace TGC.MonoGame.TP
                     MusicDisabledButton.Render(SpriteBatch);
                 else
                     MusicEnabledButton.Render(SpriteBatch);
+            }
+
+            if(gameState == GameState.Ended)
+            {
+                RestartButton.ChangePosition(new Vector2(Width/4f, Height*0.7f));
+                RestartButton.Render(SpriteBatch);
+                QuitButton.ChangePosition(new Vector2((int)(Width*0.55f), Height*0.7f));
+                QuitButton.Render(SpriteBatch);
+                if(MediaPlayer.State == MediaState.Paused)
+                    MusicDisabledButton.Render(SpriteBatch);
+                else
+                    MusicEnabledButton.Render(SpriteBatch);
+
+                SpriteBatch.Draw(GameOver, new Rectangle((int)(Width*0.27f),(int)(Height*0.1f),GameOver.Width/5,GameOver.Height/5), Color.White);
+
+                
             }
 
             SpriteBatch.End();

@@ -13,6 +13,12 @@
 
 #---------------------------------- Content ---------------------------------#
 
+#begin Effects/BlackHoleEffect.fx
+/importer:EffectImporter
+/processor:EffectProcessor
+/processorParam:DebugMode=Auto
+/build:Effects/BlackHoleEffect.fx
+
 #begin Effects/CheckpointEffect.fx
 /importer:EffectImporter
 /processor:EffectProcessor
@@ -176,6 +182,12 @@
 /processorParam:Quality=Best
 /build:Music/buttonEffect.mp3
 
+#begin Music/checkpointEffect.mp3
+/importer:Mp3Importer
+/processor:SoundEffectProcessor
+/processorParam:Quality=Best
+/build:Music/checkpointEffect.mp3
+
 #begin Music/jumpEffect.mp3
 /importer:Mp3Importer
 /processor:SoundEffectProcessor
@@ -219,6 +231,18 @@
 
 #begin SpriteFonts/CascadiaCode/CascadiaMonoPL.ttf
 /copy:SpriteFonts/CascadiaCode/CascadiaMonoPL.ttf
+
+#begin Textures/gameover.png
+/importer:TextureImporter
+/processor:TextureProcessor
+/processorParam:ColorKeyColor=255,0,255,255
+/processorParam:ColorKeyEnabled=True
+/processorParam:GenerateMipmaps=False
+/processorParam:PremultiplyAlpha=True
+/processorParam:ResizeToPowerOfTwo=False
+/processorParam:MakeSquare=False
+/processorParam:TextureFormat=Color
+/build:Textures/gameover.png
 
 #begin Textures/gold/ao.png
 /importer:TextureImporter
@@ -375,6 +399,30 @@
 /processorParam:MakeSquare=False
 /processorParam:TextureFormat=Color
 /build:Textures/jump-powerup.png
+
+#begin Textures/lava/color.jpg
+/importer:TextureImporter
+/processor:TextureProcessor
+/processorParam:ColorKeyColor=255,0,255,255
+/processorParam:ColorKeyEnabled=True
+/processorParam:GenerateMipmaps=True
+/processorParam:PremultiplyAlpha=True
+/processorParam:ResizeToPowerOfTwo=False
+/processorParam:MakeSquare=False
+/processorParam:TextureFormat=Color
+/build:Textures/lava/color.jpg
+
+#begin Textures/lava/normal.jpg
+/importer:TextureImporter
+/processor:TextureProcessor
+/processorParam:ColorKeyColor=255,0,255,255
+/processorParam:ColorKeyEnabled=True
+/processorParam:GenerateMipmaps=True
+/processorParam:PremultiplyAlpha=True
+/processorParam:ResizeToPowerOfTwo=False
+/processorParam:MakeSquare=False
+/processorParam:TextureFormat=Color
+/build:Textures/lava/normal.jpg
 
 #begin Textures/marble/ao.png
 /importer:TextureImporter
