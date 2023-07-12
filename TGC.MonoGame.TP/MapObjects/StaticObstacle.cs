@@ -36,12 +36,18 @@ namespace TGC.MonoGame.TP.MapObjects
 
         private void loadObstacle()
         {
+            
             Vector3 scale, translation;
             Quaternion rotation; 
             this.World.Decompose(out scale, out rotation , out translation);
-            StaticHandle = this.Simulation.Statics.Add(new StaticDescription(new NumericVector3(translation.X, translation.Y, translation.Z),new System.Numerics.Quaternion(rotation.X,
+            //new CollidableDescription(Simulation.Shapes.Add(new Cylinder(scale.X/2.05f ,scale.Y/1.005f)), 0.1f, ContinuousDetection.Continuous(1e-4f, 1e-4f));
+            //, new BodyActivityDescription(-0.1f))
+            var description = new StaticDescription(new NumericVector3(translation.X, translation.Y, translation.Z),new System.Numerics.Quaternion(rotation.X,
                 rotation.Y, rotation.Z, rotation.W),
-            this.Simulation.Shapes.Add(new Box(scale.X, scale.Y, scale.Z))));   
+            this.Simulation.Shapes.Add(new Box(scale.X, scale.Y, scale.Z)),ContinuousDetection.Continuous(0.1f, 0.1f));
+           
+            
+            StaticHandle = this.Simulation.Statics.Add(description);   
         }
     }
 }

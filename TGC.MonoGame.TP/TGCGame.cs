@@ -150,6 +150,15 @@ namespace TGC.MonoGame.TP
 
         private Effect CheckpointEffect;
 
+        private Vector2 RegionABottomLeft = new Vector2(3030,3109);
+        private Vector2 RegionATopRight= new Vector2(1724,2044);
+        private Vector2 RegionBBottomLeft= new Vector2(2892,3018);
+        private Vector2 RegionBTopRight= new Vector2(2347,2463);
+        private Vector2 RegionCBottomLeft= new Vector2(2573,2820);
+        private Vector2 RegionCTopRight= new Vector2(2347,2384);
+        private Vector2 RegionDBottomLeft= new Vector2(2527,2820);
+        private Vector2 RegionDTopRight= new Vector2(2424,2463);
+
         /// <summary>
         ///     Se llama una sola vez, al principio cuando se ejecuta el ejemplo.
         ///     Escribir aqui el codigo de inicializacion: el procesamiento que podemos pre calcular para nuestro juego.
@@ -426,6 +435,16 @@ namespace TGC.MonoGame.TP
             SpherePosition = pose.Position;
             SphereWorld = Matrix.CreateScale(BepuSphere.Radius) * Matrix.CreateFromQuaternion(pose.Orientation) * Matrix.CreateTranslation(SpherePosition);
             var bodyRef = Simulation.Bodies.GetBodyReference(SphereHandle);
+            var pos2d = new Vector2(SpherePosition.X, SpherePosition.Z);
+            if(Vector2.Clamp(pos2d,RegionABottomLeft, RegionATopRight)==pos2d||
+            Vector2.Clamp(pos2d,RegionBBottomLeft, RegionBTopRight)==pos2d || Vector2.Clamp(pos2d,RegionCBottomLeft, RegionCTopRight)==pos2d 
+            ||Vector2.Clamp(pos2d,RegionDBottomLeft, RegionDTopRight)==pos2d)
+            {
+                if(SpherePosition.Y<94.9f)
+                    {
+                        bodyRef.Pose.Position.Y = 95;
+                    }
+            }
 
             if(MathHelper.Distance(bodyRef.Velocity.Linear.Y, prevLinearVelocity) < 0.2f 
                && MathHelper.Distance(bodyRef.Velocity.Angular.Y, prevAngularVelocity) < 0.2f) OnGround = true;
