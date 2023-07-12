@@ -563,7 +563,7 @@ namespace TGC.MonoGame.TP
                 GraphicsDevice.Clear(ClearOptions.Target | ClearOptions.DepthBuffer, Color.CornflowerBlue, 1f, 0);
                 SetCubemapCameraForOrientation(face);
                 CubeMapCamera.BuildView();
-                DrawScene(gameTime, CubeMapCamera);
+                DrawScene(gameTime, CubeMapCamera,true);
             }
 
             // ShadowMap
@@ -574,7 +574,7 @@ namespace TGC.MonoGame.TP
 
             DefaultEffect.CurrentTechnique = DefaultEffect.Techniques["DepthPass"];
             drawSkybox  = false;
-            DrawScene(gameTime, LightCamera);
+            DrawScene(gameTime, LightCamera,false);
             // Draw sphere
             SphereModel.Meshes.FirstOrDefault().MeshParts.FirstOrDefault().Effect = DefaultEffect;
             SphereEffect.CurrentTechnique = SphereEffect.Techniques["DepthPass"];
@@ -592,7 +592,7 @@ namespace TGC.MonoGame.TP
             DefaultEffect.Parameters["LightViewProjection"]?.SetValue(LightCamera.View * LightCamera.Projection);
             DrawSkybox(Camera);
 
-            DrawScene(gameTime, Camera);
+            DrawScene(gameTime, Camera,true);
 
             // Draw sphere
             string technique = textureIndex==2?"PBR":"EnvironmentMap";
@@ -848,7 +848,7 @@ namespace TGC.MonoGame.TP
             }
         }
     
-        private void DrawScene(GameTime gameTime, Camera camera)
+        private void DrawScene(GameTime gameTime, Camera camera, bool frustumCulling)
         {
                 if(drawSkybox)
                     DrawSkybox(camera);
@@ -857,14 +857,14 @@ namespace TGC.MonoGame.TP
                 //Dibujo el suelo
                 foreach(StaticObstacle obstacle in StaticObstacles)   
                 {
-                    if(BoundingFrustum.Intersects(obstacle.BoundingBox))
+                    if(BoundingFrustum.Intersects(obstacle.BoundingBox)||!frustumCulling)
                         obstacle.Render(DefaultEffect,camera,gameTime);
                 }            
                 //Dibujo los cilindros
                 foreach(MovingObstacle obstacle in MovingObstacles)    {obstacle.Render(DefaultEffect,camera,gameTime);}
                 foreach(PeriodicObstacle obstacle in PeriodicObstacles)    
                 {
-                    if(BoundingFrustum.Intersects(obstacle.BoundingBox))
+                    if(BoundingFrustum.Intersects(obstacle.BoundingBox)||!frustumCulling)
                         obstacle.Render(DefaultEffect,camera,gameTime);
                 }
         } 
