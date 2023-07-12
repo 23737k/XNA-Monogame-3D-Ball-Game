@@ -6,9 +6,9 @@ Este proyecto es un videojuego de tercera persona desarrollado como parte de la 
 
 El jugador tiene la posibilidad de elegir entre tres tipos diferentes de bola: plástico, metal y mármol. Cada tipo de bola posee propiedades únicas en términos de salto y velocidad, lo que influye en el manejo y las habilidades requeridas para superar los desafíos del juego.
 
-El mapa del juego está compuesto por diferentes niveles que presentan una variedad de obstáculos diseñados para poner a prueba las habilidades del jugador. Los obstáculos pueden incluir plataformas en movimiento, trampas, acertijos y zonas de peligro. La habilidad y destreza del jugador son fundamentales para superar estos desafíos de manera exitosa.
+El mapa del juego está compuesto por diferentes niveles que presentan una variedad de obstáculos diseñados para poner a prueba las habilidades del jugador. Los obstáculos pueden incluir plataformas en movimiento, trampas y zonas de peligro. La habilidad y destreza del jugador son fundamentales para superar estos desafíos de manera exitosa.
 
-A lo largo del recorrido del juego, se han colocado power-ups estratégicamente que potencian una de las propiedades de la bola elegida. Estos power-ups proporcionan al jugador mejoras temporales en salto o velocidad, lo que facilita la superación de determinados obstáculos.
+A lo largo del recorrido del juego, se han colocado power-ups estratégicamente que potencian una de las propiedades de la bola elegida, lo que facilita la superación de determinados obstáculos.
 
 El juego también cuenta con checkpoints distribuidos a lo largo del mapa. Estos checkpoints sirven como puntos de guardado para que el jugador pueda continuar desde ese punto en caso de perder una vida o fallar en un desafío específico. Esto ayuda a mantener un flujo de juego más fluido y evita la frustración de tener que comenzar desde el principio cada vez.
 
