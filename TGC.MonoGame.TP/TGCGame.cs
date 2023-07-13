@@ -327,6 +327,7 @@ namespace TGC.MonoGame.TP
             {
                 sphereBackDirection = Vector3.UnitZ;
                 camera_follow_radius += 40;
+
             }
 
             var orbitalPosition = sphereBackDirection * camera_follow_radius;
@@ -612,7 +613,10 @@ namespace TGC.MonoGame.TP
                 SphereModel.Meshes.FirstOrDefault().Draw();
             }
             
-            
+            RasterizerState rasterizerState = new RasterizerState();
+            rasterizerState.CullMode = CullMode.None;
+            GraphicsDevice.RasterizerState = rasterizerState;
+            GraphicsDevice.DepthStencilState = DepthStencilState.DepthRead;
             CylinderModel.Meshes.FirstOrDefault().MeshParts.FirstOrDefault().Effect = CheckpointEffect;
             CheckpointEffect.Parameters["Time"]?.SetValue(Convert.ToSingle(gameTime.TotalGameTime.TotalSeconds));
             for(int i = CurrentCheckpoint; i<Checkpoints.Length;i++)
