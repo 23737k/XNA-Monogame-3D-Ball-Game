@@ -15,7 +15,7 @@ El juego también cuenta con checkpoints distribuidos a lo largo del mapa. Estos
 Además, se ha implementado un modo "God" dentro del juego, que permite al jugador recorrer libremente el mapa sin restricciones. Este modo proporciona una experiencia más relajada y exploratoria, permitiendo al jugador apreciar los detalles del entorno y descubrir secretos ocultos.
 ## Integrantes
 
-TGC, Tgcito  |  Apellido, Nombre
+Integrante  |  Apellido, Nombre
 ------------ | -------------
 |<img src="https://github.com/mSpagnol/2023-1C-3051-lepreguntoAChatGPT/assets/82678482/f772b697-1a7e-4471-bcd3-de3828c3df25)"  width="150" > | Antezana, Kenti Gabriel |
 
