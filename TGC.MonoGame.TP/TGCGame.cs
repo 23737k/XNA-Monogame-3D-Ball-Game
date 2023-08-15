@@ -627,6 +627,7 @@ namespace TGC.MonoGame.TP
                     CylinderModel.Meshes.FirstOrDefault().Draw();
                 }
             }
+            GraphicsDevice.DepthStencilState = DepthStencilState.Default;
             CylinderModel.Meshes.FirstOrDefault().MeshParts.FirstOrDefault().Effect = DefaultEffect;
             foreach (var powerUp in Powerups)   powerUp.Render(DefaultEffect, gameTime);
 
@@ -883,7 +884,7 @@ namespace TGC.MonoGame.TP
             SpriteBatch.DrawString(SpriteFont, "GODMODE (F10) :" + (GodMode?"ON":"OFF"), new Vector2(GraphicsDevice.Viewport.Width/4, 0), Color.Black);
             if(GodMode)    SpriteBatch.DrawString(SpriteFont, "<-USE THE ARROW KEYS TO MOVE TO THE NEXT CHECKPOINT->", new Vector2(Width/3, Height*0.9F), Color.Black);
             SpriteBatch.DrawString(SpriteFont, "Position:" + position.ToString(), new Vector2(Width - 500, 0), Color.Black);
-            SpriteBatch.DrawString(SpriteFont, "FPS " + fps.ToString(), new Vector2(Width-1000, 0), Color.Black);
+            SpriteBatch.DrawString(SpriteFont, "FPS " + fps.ToString(), new Vector2(Width*0.1f, 0), Color.Black);
             //Menu
             //draw the start menu
             if (gameState == GameState.StartMenu)
